@@ -89,7 +89,7 @@ parent panel fixes both, and is more robust than widening the phrase-matching re
 widening it is what caused the round-2 regressions.
 
 While fixing this, two regexes were found to contain literal backspace characters (0x08)
-where `` was intended, introduced by shell here-doc escaping in an earlier round. One
+where a word-boundary escape was intended, introduced by shell here-doc escaping in an earlier round. One
 silently disabled a Zoom venue fallback (`no-venue` 43 → 37 once repaired). The files are
 now checked for stray control characters.
 
