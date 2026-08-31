@@ -1,0 +1,6 @@
+_src/
+*.pyc
+__pycache__/
+_*.png
+_*.js
+_*.html
