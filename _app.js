@@ -4,10 +4,11 @@
    AND every identity gate it sits behind is one the user claimed.
 ------------------------------------------------------------------------- */
 var GATES = ["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence",
-             "Mature & Transfer","Accessible Learning","Bachelor of Education"];
+             "Mature & Transfer","Accessible Learning"];
 var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"];
 var DOW = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
+var ALL_STREAMS = GATES.slice();
 var sel = null, showFit = "mine", hidePast = false, Q = "";
 
 function gatesOf(e) {
@@ -18,7 +19,8 @@ function gatesOf(e) {
 function assess(e) {
   if (!sel) return { ok: true, reason: "" };
   if (e.tm !== sel.term)   return { ok: false, reason: "Different term (" + e.tm + ")" };
-  if (e.cp !== sel.campus) return { ok: false, reason: "Different campus (" + e.cp + ")" };
+  if ((e.cp || []).indexOf(sel.campus) === -1)
+    return { ok: false, reason: "Different campus (" + (e.cp || []).join("/") + ")" };
 
   var levelOk = (e.lv === sel.level) || (e.lv === "all") || e.oa;
   if (!levelOk) {
@@ -58,14 +60,21 @@ function card(e) {
   var facts = "";
   function row(k, v) { if (v) facts += "<dt>" + k + "</dt><dd>" + v + "</dd>"; }
   row("When", when);
-  row("Where", esc(e.w) || "Not published");
+  row("Where", esc(e.w) || "Not published by Laurier");
   row("Host", esc(e.h));
   row("Audience", esc(e.a));
   row("Cost", esc(e.c));
   row("Stream", (e.tg || []).length ? esc((e.tg || []).join(", ")) : "");
-  row("Schedule", esc(e.lv === "all" ? "All levels" : e.lv) + " &middot; " + esc(e.cp) + " &middot; " + esc(e.tm));
+  if (e.s && /Program and Faculty Welcomes/i.test(e.s))
+    row("Note", "This is a welcome for one specific program. Attend only the one matching your own.");
+  row("Schedule", esc(e.lv === "all" ? "All levels" : e.lv) + " &middot; " + esc((e.cp || []).join(", ")) + " &middot; " + esc(e.tm));
 
-  var links = (e.l || []).filter(function (l) { return !/^mailto:/.test(l.href) || true; });
+  Object.keys(e.si || {}).forEach(function (k) { row(k, esc(e.si[k])); });
+
+  var links = (e.l || []).slice();
+  (e.sl || []).concat(e.pl || []).forEach(function (l) {
+    if (!links.some(function (x) { return x.href === l.href; })) links.push(l);
+  });
   var linkHtml = links.length
     ? links.map(function (l) {
         return '<a class="reglink" href="' + esc(l.href) + '" target="_blank" rel="noopener">' + esc(l.text) + " &rarr;</a>";
@@ -150,8 +159,26 @@ function buildNotes() {
       "January is the winter term at Laurier, so this page appears to be either mislabelled or left over from a previous cycle. " +
       "Dates are reproduced exactly as published — confirm with aspire@wlu.ca before relying on them."]);
   }
-  var noTime = EV.filter(function (e) { return !e.n; }).length;
-  if (noTime) notes.push(["Events published without a time", noTime + " events give a venue but no time."]);
+  var noTime  = EV.filter(function (e) { return (e.f || []).indexOf("no-time") >= 0; }).length;
+  var noVenue = EV.filter(function (e) { return (e.f || []).indexOf("no-venue") >= 0; }).length;
+  if (noTime || noVenue) {
+    notes.push(["Events without a usable time or venue",
+      noTime + " events have no usable time and " + noVenue + " no usable venue. This counts " +
+      "Laurier's own “TBD” placeholders, not just blank fields."]);
+  }
+  var winter = EV.filter(function (e) { return e.tm === "Winter 2027"; });
+  if (winter.length && winter.every(function (e) { return !e.d; })) {
+    notes.push(["The entire Winter 2027 schedule is a placeholder",
+      "All " + winter.length + " Winter 2027 events are published with no date and TBD for time and venue. " +
+      "Laurier states registration opens in October 2026."]);
+  }
+  var prog = EV.filter(function (e) { return e.s && /Program and Faculty Welcomes/i.test(e.s); }).length;
+  if (prog) {
+    notes.push(["Program welcomes are not filtered by program",
+      prog + " graduate program and faculty welcomes carry no audience restriction on Laurier's page, so they " +
+      "all appear for every graduate student on that campus. Only the one matching your own program is yours — " +
+      "each card is marked accordingly."]);
+  }
 
   var list = document.getElementById("noteslist");
   if (!notes.length) return;
@@ -173,6 +200,7 @@ document.getElementById("go").onclick = function () {
   var bits = [sel.level.replace(/-/g, " "), sel.campus, sel.term];
   if (sel.streams.length) bits.push(sel.streams.join(" + "));
   document.getElementById("who").textContent = bits.join("  ·  ");
+  writeHash();
   document.getElementById("chooser").hidden = true;
   document.getElementById("whobar").hidden = false;
   document.getElementById("filterbar").hidden = false;
@@ -211,7 +239,7 @@ document.getElementById("q").oninput = function () { Q = this.value.toLowerCase(
 function countFor(level, campus, term) {
   return EV.filter(function (e) {
     if (e.tm !== term) return false;
-    if (e.cp !== campus) return false;
+    if ((e.cp || []).indexOf(campus) === -1) return false;
     return (e.lv === level) || (e.lv === "all") || e.oa;
   }).length;
 }
@@ -219,8 +247,7 @@ function refreshAvailability() {
   var s = readChooser();
   if (!s.level) return;
   [].slice.call(document.querySelectorAll('input[name="campus"]')).forEach(function (i) {
-    var any = document.querySelector('input[name="term"]:checked');
-    var n = countFor(s.level, i.value, any ? any.value : s.term);
+    var n = countFor(s.level, i.value, s.term);
     i.disabled = (n === 0);
     i.parentNode.classList.toggle("off", n === 0);
     i.parentNode.title = n === 0 ? "Laurier publishes no schedule for this combination" : n + " events";
@@ -240,9 +267,23 @@ function refreshAvailability() {
     }
   });
   var s2 = readChooser();
+  if (s2.campus !== s.campus || s2.term !== s.term) {
+    [].slice.call(document.querySelectorAll('input[name="term"]')).forEach(function (i) {
+      var n = countFor(s2.level, s2.campus, i.value);
+      i.disabled = (n === 0);
+      i.parentNode.classList.toggle("off", n === 0);
+    });
+    [].slice.call(document.querySelectorAll('input[name="campus"]')).forEach(function (i) {
+      var n = countFor(s2.level, i.value, s2.term);
+      i.disabled = (n === 0);
+      i.parentNode.classList.toggle("off", n === 0);
+    });
+    s2 = readChooser();
+  }
   var total = countFor(s2.level, s2.campus, s2.term);
+  // countFor() ignores stream gating, so this is an UPPER bound: say so.
   document.getElementById("go").textContent =
-    total ? "Show my events (" + total + "+)" : "No schedule published";
+    total ? "Show my events (up to " + total + ")" : "No schedule published";
   document.getElementById("go").disabled = !total;
 }
 [].slice.call(document.querySelectorAll('.chooser input')).forEach(function (i) {

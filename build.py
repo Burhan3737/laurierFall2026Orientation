@@ -7,8 +7,9 @@ TODAY = "2026-08-31"
 
 # ---- compact the payload: short keys, drop empties -------------------------
 K = {"date":"d","title":"t","desc":"x","where":"w","when":"n","host":"h","cost":"c",
-     "audience":"a","links":"l","level":"lv","campus":"cp","term":"tm","tags":"tg",
-     "open_to_all":"oa","url":"u","section":"s","flags":"f"}
+     "audience":"a","links":"l","level":"lv","campuses":"cp","term":"tm","tags":"tg",
+     "open_to_all":"oa","url":"u","section":"s","flags":"f",
+     "section_info":"si","section_links":"sl","page_links":"pl"}
 def pack(e):
     o = {}
     for long, short in K.items():
@@ -38,7 +39,7 @@ def opts(name, values, labels=None, kind="radio"):
     for i, v in enumerate(values):
         lb = (labels or {}).get(v, v)
         out.append('<label class="opt"><input type="%s" name="%s" value="%s"%s><span>%s</span></label>'
-                   % (kind, name, v.replace('"','&quot;'), ' checked' if kind=="radio" and i==0 else '', lb))
+                   % (kind, name, v.replace('&','&amp;').replace('"','&quot;'), ' checked' if kind=="radio" and i==0 else '', lb))
     return "\n        ".join(out)
 
 # fail the build rather than shipping a script that will not parse
