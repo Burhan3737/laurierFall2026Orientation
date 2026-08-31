@@ -1,0 +1,67 @@
+# Review log
+
+Two independent review passes were run against the generated event finder. The second
+reviewer was given only the 13 source URLs, the generated page and the verification goals
+— no knowledge of the first review or its findings — and was explicitly told that
+"no problems found" was a valid result, so as not to manufacture issues.
+
+---
+
+## Round 2 findings and resolution
+
+Status key: **fixed** · *reproduced deliberately* · not a defect
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | 10 events lost their "… Students Only" restriction and showed to everyone as "For you" (grocery tour, Music Bingo, journal decorating, ISL meet-and-greet) | **fixed** |
+| 2 | Exchange Student Orientation was hidden from a student who ticks "Exchange" — its 7 events were tagged International only | **fixed** |
+| 3 | 24 sub-events displayed their parent panel's title, producing 8 groups of identical cards | **fixed** |
+| 4 | Fire Safety Demonstration split into two cards; one claimed "Time TBA" though the page publishes a time; the other's venue was invented from a session-assignment table | **fixed** |
+| 5 | Brantford Scavenger Hunt dropped its published time and host (Laurier left them as bare text outside any `<p>`) | **fixed** |
+| 6 | 17 cards said `Location: Zoom` and `Where: not published` simultaneously | **fixed** |
+| 7 | SEEDs day 2 lost its campus scope and its `#waterloo` anchor, so Milton/Virtual students saw day 1 but not day 2 | **fixed** |
+| 8 | One published item, "Your Time! 6:30 p.m. onwards", was missing — it has no accordion | **fixed** |
+| 9 | `cms03.wlu.ca` link does not resolve (NXDOMAIN) | *reproduced, flagged* — Laurier leaked a CMS authoring URL into their own page; the copy is faithful, so the card now labels it "link broken on Laurier's site" rather than hiding it |
+| 10 | Button read "up to N" then rendered an empty board; one heading stored as "Satur day" | **fixed** (heading); empty state now points at the stream checkboxes |
+
+### Four of these were regressions from the round-1 fixes
+
+Worth recording, because the pattern was over-correction:
+
+- **#1** — round 1 stopped matching tags against descriptions, to kill false positives where
+  "Accessible Learning" appeared in an exhibitor list and "Indigenous"/"International" appeared
+  inside programme names. That also removed the legitimate signal, because Laurier writes the
+  restriction in a `<span>` after the title, which lands in the description. The rule is now
+  narrow: it matches only the literal phrase `"… Students Only"`, which the programme names
+  do not contain.
+- **#3** — round 1 rejected any candidate title ending in `!` to block "Get Your Ticket Now!".
+  That also rejected "Valorant Esports Tournament!" and "Group Exercise: Outdoor Yoga Class!".
+  Now only call-to-action wording and full sentences are rejected.
+- **#4** and **#6** were introduced by the round-1 table-handling and section-facts changes.
+
+`test_regressions.py` exists so these cannot silently return.
+
+---
+
+## Verified sound in round 2
+
+Checked across **all 503 events**, not a sample:
+
+- 379/379 accordion panels processed; **no fabricated values** anywhere
+- 487/487 citation anchors resolve *and* point at the section the event actually came from
+- 147/149 links resolve (1 `mailto:`, 1 the dead Laurier link above)
+- All 13 live pages **character-identical** to the `_src/` snapshots — no drift
+- Zero date/weekday errors; zero console errors across 14 chooser states
+- Source errors reproduced rather than silently corrected
+
+## Known limitations, by choice
+
+- **Programme granularity.** 24 graduate programme welcomes carry no audience restriction on
+  Laurier's page, so they appear for every graduate student on that campus. Each card is
+  marked programme-specific and a data note explains it. Filtering properly would need a
+  taxonomy of ~28 programme names.
+- **Kitchener** folds into Waterloo, matching Laurier's own grouping
+  ("Waterloo and Kitchener Student Orientation"), but the word does not appear in the UI.
+- **Spring graduate schedule** lists January dates. Reproduced exactly and flagged in a
+  data note; confirm with `aspire@wlu.ca` before relying on it.
+- **Winter 2027** is a placeholder: all 20 events undated, TBD time and venue.

@@ -109,10 +109,13 @@ def grab(lines, label):
             return clean(m.group(1))
     return ""
 
-SENTENCEY = re.compile(r'[!?]$|\.\s*$|^(ITINERARY|NOTE|BONUS|Get Your|Click|Register|Sign up)', re.I)
+# Reject call-to-action wording and full sentences, NOT every '!' ending:
+# 'Valorant Esports Tournament!' is a real event name, 'Get Your Ticket Now!' is not.
+CTA = re.compile(r'^(ITINERARY|NOTE|BONUS|Get Your|Click|Register|Sign up|RSVP|Buy|Watch|Learn more|This session)', re.I)
 
 def looks_like_title(s):
-    return bool(s) and len(s) < 90 and len(s.split()) <= 14 and not SENTENCEY.search(s) and not FIELD.match(s)
+    return (bool(s) and len(s) < 90 and len(s.split()) <= 9
+            and not s.endswith('.') and not CTA.match(s) and not FIELD.match(s))
 
 def parse_panel(panel, fallback_title):
     """-> list of sub-event dicts"""
@@ -132,13 +135,11 @@ def parse_panel(panel, fallback_title):
                 if cells:
                     rows.append(" — ".join(cells))
             if rows:
-                blob = "Locations — " + "; ".join(rows)
-                # Laurier writes "Where:" with an empty value and puts the venues in a table
-                if events and not events[-1]["where"]:
-                    events[-1]["where"] = "See building list in the details"
-                    events[-1]["desc"] = (events[-1]["desc"] + " " + blob).strip()
-                else:
-                    pend_desc.append(blob)
+                cap = clean((p.find('caption').get_text(' ') if p.find('caption') else "") + " " + rows[0])
+                is_venue = bool(re.search(r'location|building|residence|room|where', cap, re.I))
+                # Only a location table stands in for a venue. "Who Attends What Session"
+                # is a session-assignment table and must not become the venue.
+                pend_desc.append(("Locations — " if is_venue else clean(cap) + " — ") + "; ".join(rows))
             continue
 
         lns = lines_of(p)
@@ -187,6 +188,27 @@ def parse_panel(panel, fallback_title):
         pend_desc.append(txt)
         pend_links += links_in(p)
 
+    # Fields left as bare text children of the panel (no wrapping <p>) — happens once,
+    # on the Brantford Scavenger Hunt, which otherwise loses its published time and host.
+    stray = []
+    for c in panel.children:
+        if getattr(c, 'name', None) in ('p', 'ul', 'ol', 'table', 'h3', 'h4', 'h5'):
+            continue
+        if isinstance(c, NavigableString):
+            stray.append(str(c))
+        elif getattr(c, 'name', None) == 'br':
+            stray.append('\n')
+        else:
+            stray.append(para_text(c))
+            pend_links += [l for l in links_in(c) if l not in pend_links]
+    stray_lines = [clean(l) for l in ''.join(stray).split('\n') if clean(l)]
+    if events and stray_lines:
+        for key, label in (("when", "When"), ("where", "Where"), ("host", "Host"), ("cost", "Cost")):
+            if not events[-1][key]:
+                v = grab(stray_lines, label)
+                if v:
+                    events[-1][key] = v
+
     # trailing prose after the last Where/When belongs to the last event
     if events and (pend_desc or pend_links):
         tail = " ".join(pend_desc).strip()
@@ -219,6 +241,10 @@ def parse_panel(panel, fallback_title):
                 continue
         merged.append(e)
     events = merged
+
+    for e in events:
+        if not e["where"] and "Locations —" in e["desc"]:
+            e["where"] = "See building list in the details"
 
     if not events:
         events.append({"title": fallback_title, "desc": " ".join(pend_desc).strip(),
@@ -253,10 +279,13 @@ def parse_page(fname):
                 if l not in page_links and not re.search(r'/orientation/(undergraduate|graduate)\.html$', l['href']):
                     page_links.append(l)
 
+    prev_anchor, prev_campuses, prev_info = None, None, None
     for cont in soup.find_all('div', id=re.compile(r'^multicomponent_')):
         anchor = slug_anchor(cont)
         head = cont.find(['h2', 'h3'])
-        sect = re.sub(r'(\d)\s*([A-Z])', r'\1 \2', clean(head.get_text(' '))) if head else ""
+        # para_text joins with no separator, so a heading split by an inline anchor
+        # ("Satur<a id=...></a>day") does not become "Satur day".
+        sect = re.sub(r'(\d)([A-Z])', r'\1 \2', clean(para_text(head))) if head else ""
         prose = section_prose(cont)
         prose_txt = [clean(" ".join(lines_of(p))) for p in prose]
 
@@ -287,6 +316,11 @@ def parse_page(fname):
         else:
             c = campus
         campuses = [c] if c != "All" else list(ALL_CAMPUSES)
+        # A continuation subsection (only an <h3>, no anchor of its own) is still governed
+        # by the preceding section: SEEDs day 2 otherwise loses its campus scope and anchor.
+        if anchor is None and head is not None and head.name == 'h3' and prev_anchor:
+            anchor = prev_anchor
+            campuses = list(prev_campuses)
 
         # "Who Should Attend: Students from the Milton, Virtual, and Waterloo Campuses"
         for t in prose_txt:
@@ -301,7 +335,9 @@ def parse_page(fname):
         for p, t in zip(prose, prose_txt):
             for label in ("Registration", "Location", "Cost"):
                 v = grab([t], label)
-                if v and label not in sect_info:
+                # a section fact of "TBD" adds nothing and reads as a contradiction
+                # next to the card's own "not published" venue line
+                if v and clean(v).upper() not in ("TBD", "TBA", "N/A") and label not in sect_info:
                     sect_info[label] = v
             if re.search(r'regist|rsvp|sign up|tickets?', t, re.I):
                 sect_links += [l for l in links_in(p) if l not in sect_links]
@@ -315,6 +351,9 @@ def parse_page(fname):
                         sect_links.append(l)
         if re.search(r'open to ALL new to Laurier undergraduate students only', " ".join(prose_txt), re.I):
             sect_info["Note"] = "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
+
+        if anchor:
+            prev_anchor, prev_campuses = anchor, list(campuses)
 
         triggers = cont.find_all('button', class_='accordion-trigger')
         # A section that yields no events still carries page-wide registration links
@@ -331,6 +370,10 @@ def parse_page(fname):
                 continue
             d = date_from_text(title, year) or sect_date
             for ev in parse_panel(panel, title):
+                if not ev["where"] or clean(ev["where"]).upper() in ("TBD", "TBA", "N/A"):
+                    ev["where"] = sect_info.get("Location", "") or ev["where"]
+                    if not ev["where"] and re.search(r'zoom', " ".join(prose_txt), re.I):
+                        ev["where"] = "Zoom"
                 dd = date_from_text(ev["when"], year) or d if ev["when"] else d
                 ev.update({"date": dd, "section": sect, "anchor": anchor,
                            "level": level, "campus": c, "campuses": campuses, "term": term,
@@ -339,6 +382,35 @@ def parse_page(fname):
                            "url": URL[fname] + ("#" + anchor if anchor else "")})
                 out.append(ev)
                 made += 1
+
+        # Overview items with no accordion of their own (e.g. SEEDs "Your Time! 6:30 p.m.
+        # onwards") would otherwise be dropped, since extraction is accordion-driven.
+        if triggers:
+            known = {clean(b.get_text()).lower() for b in triggers}
+            for p in prose:
+                lns = lines_of(p)
+                if len(lns) < 2:
+                    continue
+                lead = p.find(['strong', 'b'])
+                nm = clean(lead.get_text()) if lead else ""
+                if not nm or not looks_like_title(nm) or FIELD.search(lns[0]):
+                    continue
+                rest = clean(" ".join(lns[1:]))
+                if not re.match(r'^\d{1,2}(:\d\d)?\s*(a\.m\.|p\.m\.|onwards|-|to)', rest, re.I):
+                    continue
+                if any(nm.lower() in k or k in nm.lower() for k in known):
+                    continue
+                out.append({
+                    "title": nm, "desc": "", "where": sect_info.get("Location", ""),
+                    "when": rest, "host": "", "cost": sect_info.get("Cost", ""),
+                    "audience": None, "links": [],
+                    "date": sect_date, "section": sect, "anchor": anchor,
+                    "level": level, "campus": c, "campuses": campuses, "term": term,
+                    "stream": stream, "source_file": fname,
+                    "section_info": sect_info, "section_links": sect_links,
+                    "page_links": page_links,
+                    "url": URL[fname] + ("#" + anchor if anchor else ""),
+                })
 
         # A section with no accordion can still BE an event (e.g. the Virtual Campus welcome).
         # It must carry its own heading — otherwise it is page intro prose that merely
@@ -377,14 +449,29 @@ TAG_RULES = [
  ("Mature & Transfer",    r'mature|transfer student'),
  ("Accessible Learning",  r'accessible learning'),
 ]
-ONLY_PHRASE = re.compile(r'([A-Za-z&\-\' ]{3,60}?)\s+(?:Students\s+)?Only\b', re.I)
+# Requires the literal phrase "... Students Only". Laurier writes the restriction in a
+# <span> after the bolded title, which lands in `desc`, so `desc` must be searched — but
+# only for this exact phrasing. Matching bare keywords in `desc` wrongly tags program
+# names ("...Indigenous Field of Study") and exhibitor lists ("...Accessible Learning...").
+ONLY_PHRASE = re.compile(r'([A-Za-z&\-\' ]{3,60}?)\s+Students\s+Only\b', re.I)
+# A section heading that names a stream ("Exchange Student Orientation") governs its events.
+SECT_STREAM = re.compile(r'\b(Exchange|International|Indigenous)\s+Student', re.I)
 OPEN_TO_ALL = re.compile(r'open to all laurier students|undergraduate and graduate', re.I)
 
 def enrich(e):
     hay = e.get("audience") or ""
-    m = ONLY_PHRASE.search(e.get("title", "") + " " + (e.get("section") or ""))
+    m = ONLY_PHRASE.search(e.get("title", "") + " " + (e.get("section") or "")
+                           + " " + e.get("desc", "")[:250])
     if m:
-        hay += " " + m.group(1)
+        phrase = clean(m.group(1))
+        # the match can start mid-sentence ("... Events - International and Exchange")
+        phrase = re.sub(r'^.*?[-–]\s*', '', phrase).strip(' -–')
+        hay += " " + phrase + " Students Only"
+        if not e.get("audience") and phrase:
+            e["audience"] = phrase + " Students Only"
+    sm = SECT_STREAM.search(e.get("section") or "")
+    if sm:
+        hay += " " + sm.group(1)
     tags = [name for name, pat in TAG_RULES if re.search(pat, hay, re.I)]
     if e["stream"] and e["stream"] not in tags:
         tags.append(e["stream"])

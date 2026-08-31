@@ -243,3 +243,4 @@ footer{
 .opt.off span{opacity:.3;cursor:not-allowed;text-decoration:line-through}
 .opt.off{cursor:not-allowed}
 .go:disabled{background:none;border-color:var(--ink-18);color:var(--ink-35);cursor:not-allowed}
+.reglink.dead{border-bottom-style:dotted;color:var(--ink-35);cursor:not-allowed}

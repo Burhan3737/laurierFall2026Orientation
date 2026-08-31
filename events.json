@@ -925,7 +925,7 @@
     }
    ],
    "date": "2026-09-12",
-   "section": "Satur day, Sept. 12 Events (Brantford)",
+   "section": "Saturday, Sept. 12 Events (Brantford)",
    "anchor": "sept-12-brantford",
    "level": "bachelor-of-education",
    "campus": "Brantford",
@@ -1756,8 +1756,8 @@
    "flags": []
   },
   {
-   "title": "Athletics and Recreation - Fitness Programming",
-   "desc": "Group Exercise: Outdoor Yoga Class! Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere on Ansley Alumni Field. Bring your own yoga mat, or mats will also be provided.",
+   "title": "Group Exercise: Outdoor Yoga Class!",
+   "desc": "Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere on Ansley Alumni Field. Bring your own yoga mat, or mats will also be provided.",
    "where": "Ansley Alumni Field",
    "when": "1 to 1:45 p.m.",
    "host": "",
@@ -1912,7 +1912,7 @@
    "when": "5 to 6:30 p.m.",
    "host": "International Student Support",
    "cost": "",
-   "audience": null,
+   "audience": "International and Exchange Students Only",
    "links": [
     {
      "text": "International Student Support",
@@ -1941,7 +1941,10 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html#sept-8-waterloo",
-   "tags": [],
+   "tags": [
+    "Exchange",
+    "International"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -1992,7 +1995,7 @@
    "when": "5 to 7 p.m.",
    "host": "LOCUS",
    "cost": "",
-   "audience": null,
+   "audience": "First-Year Off-Campus Students Only",
    "links": [
     {
      "text": "LOCUS",
@@ -2021,7 +2024,9 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html#sept-8-waterloo",
-   "tags": [],
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -2070,8 +2075,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "General Gaming with the Golden Hawk Gaming Club! Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
+   "title": "General Gaming with the Golden Hawk Gaming Club!",
+   "desc": "Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -2114,8 +2119,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "Character Creation in Dungeons and Dragons! Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
+   "title": "Character Creation in Dungeons and Dragons!",
+   "desc": "Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -2657,7 +2662,7 @@
    "when": "4 to 5:30 p.m.",
    "host": "International Student Support",
    "cost": "",
-   "audience": null,
+   "audience": "International and Exchange Students Only",
    "links": [
     {
      "text": "International Student Support",
@@ -2686,7 +2691,10 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html#sept-9-waterloo",
-   "tags": [],
+   "tags": [
+    "Exchange",
+    "International"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -2737,7 +2745,7 @@
    "when": "5:30 to 7 p.m.",
    "host": "LOCUS",
    "cost": "",
-   "audience": null,
+   "audience": "First-Year Off-Campus Students Only",
    "links": [
     {
      "text": "LOCUS",
@@ -2766,13 +2774,15 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html#sept-9-waterloo",
-   "tags": [],
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
    "open_to_all": false,
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "General Gaming with the Golden Hawk Gaming Club! Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
+   "title": "General Gaming with the Golden Hawk Gaming Club!",
+   "desc": "Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -2815,8 +2825,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "Character Creation in Dungeons and Dragons! Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
+   "title": "Character Creation in Dungeons and Dragons!",
+   "desc": "Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -2859,8 +2869,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "Valorant Esports Tournament! GHG is hosting our very own Valorant tournament! Students can enter and be randomly assigned a team to compete with! There will be 4 teams of 5 total competing for 1st! Each member of the winning team will receive a $20 gift card of their choice!",
+   "title": "Valorant Esports Tournament!",
+   "desc": "GHG is hosting our very own Valorant tournament! Students can enter and be randomly assigned a team to compete with! There will be 4 teams of 5 total competing for 1st! Each member of the winning team will receive a $20 gift card of their choice!",
    "where": "GHG Discord Server | Team Registration is Required",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -3092,8 +3102,8 @@
    "flags": []
   },
   {
-   "title": "Athletics and Recreation - Fitness Programming",
-   "desc": "Group Exercise: Outdoor Barre/Lower Sculpt Class! Enjoy a low-impact workout that combines barre-inspired movements with sculpting exercises. Strengthen and tone your legs, glutes, core, and arms while improving balance, posture, and muscular endurance in a supportive and motivating atmosphere at the Quad.",
+   "title": "Group Exercise: Outdoor Barre/Lower Sculpt Class!",
+   "desc": "Enjoy a low-impact workout that combines barre-inspired movements with sculpting exercises. Strengthen and tone your legs, glutes, core, and arms while improving balance, posture, and muscular endurance in a supportive and motivating atmosphere at the Quad.",
    "where": "The Quad",
    "when": "1 to 1:45 p.m.",
    "host": "",
@@ -3127,8 +3137,8 @@
    "flags": []
   },
   {
-   "title": "Athletics and Recreation - Fitness Programming",
-   "desc": "Group Exercise: Outdoor Yoga Class! Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere at the Quad. No mats are needed as this is standing yoga.",
+   "title": "Group Exercise: Outdoor Yoga Class!",
+   "desc": "Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere at the Quad. No mats are needed as this is standing yoga.",
    "where": "The Quad",
    "when": "4 to 4:45 p.m.",
    "host": "",
@@ -4958,8 +4968,8 @@
    "flags": []
   },
   {
-   "title": "Tuesday, Sept. 8 - Athletics and Recreation - Fitness Programming",
-   "desc": "Group Exercise: Outdoor Yoga Class! Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere on Ansley Alumni Field. Bring your own yoga mat, or mats will also be provided.",
+   "title": "Group Exercise: Outdoor Yoga Class!",
+   "desc": "Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere on Ansley Alumni Field. Bring your own yoga mat, or mats will also be provided.",
    "where": "Ansley Alumni Field",
    "when": "1 to 1:45 p.m.",
    "host": "",
@@ -5450,8 +5460,8 @@
    "flags": []
   },
   {
-   "title": "Thursday, Sept. 10 - Athletics and Recreation - Fitness Programming",
-   "desc": "Group Exercise: Outdoor Barre/Lower Sculpt Class! Enjoy a low-impact workout that combines barre-inspired movements with sculpting exercises. Strengthen and tone your legs, glutes, core, and arms while improving balance, posture, and muscular endurance in a supportive and motivating atmosphere at the Quad.",
+   "title": "Group Exercise: Outdoor Barre/Lower Sculpt Class!",
+   "desc": "Enjoy a low-impact workout that combines barre-inspired movements with sculpting exercises. Strengthen and tone your legs, glutes, core, and arms while improving balance, posture, and muscular endurance in a supportive and motivating atmosphere at the Quad.",
    "where": "The Quad",
    "when": "1 to 1:45 p.m.",
    "host": "",
@@ -5478,8 +5488,8 @@
    "flags": []
   },
   {
-   "title": "Thursday, Sept. 10 - Athletics and Recreation - Fitness Programming",
-   "desc": "Group Exercise: Outdoor Yoga Class! Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere at the Quad. No mats are needed as this is standing yoga.",
+   "title": "Group Exercise: Outdoor Yoga Class!",
+   "desc": "Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere at the Quad. No mats are needed as this is standing yoga.",
    "where": "The Quad",
    "when": "4 to 4:45 p.m.",
    "host": "",
@@ -6976,7 +6986,7 @@
   {
    "title": "Dean's Welcome: Dr. Brent Wolfe",
    "desc": "Join us for opening remarks and a welcome from the Dean of the Faculty of Graduate and Postdoctoral Studies, Dr. Brent Wolfe.",
-   "where": "",
+   "where": "Zoom",
    "when": "7 p.m. to 7:10 p.m.",
    "host": "",
    "cost": "",
@@ -7007,14 +7017,12 @@
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/spring.html#virtual",
    "tags": [],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "Let's Break the Ice!",
    "desc": "Join us for an icebreaker to help kick-start connections with other graduate students. It’s a great way to start forming your graduate community from day one.",
-   "where": "",
+   "where": "Zoom",
    "when": "7:10 p.m. to 7:20 p.m.",
    "host": "",
    "cost": "",
@@ -7045,14 +7053,12 @@
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/spring.html#virtual",
    "tags": [],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "Staying Connected: Learn about Laurier's Student Resources",
    "desc": "Get an overview of key resources and departments for graduate students that you can access remotely.",
-   "where": "",
+   "where": "Zoom",
    "when": "7:20 p.m. to 7:35 p.m.",
    "host": "",
    "cost": "",
@@ -7083,14 +7089,12 @@
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/spring.html#virtual",
    "tags": [],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "How to Succeed in Graduate School",
    "desc": "Learn about graduate school expectations, studying remotely, and how to stay well and succeed in your program.",
-   "where": "",
+   "where": "Zoom",
    "when": "7:35 p.m. to 8 p.m.",
    "host": "",
    "cost": "",
@@ -7121,14 +7125,12 @@
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/spring.html#virtual",
    "tags": [],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "Program Welcomes",
    "desc": "Meet your classmates, program staff, and faculty, and learn about your program and supports available to you.",
-   "where": "",
+   "where": "Zoom",
    "when": "8 p.m. to 9 p.m.",
    "host": "",
    "cost": "",
@@ -7159,9 +7161,7 @@
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/spring.html#virtual",
    "tags": [],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "Check-In",
@@ -7436,7 +7436,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -7476,7 +7475,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -7511,7 +7509,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -7546,7 +7543,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -7581,7 +7577,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -7616,7 +7611,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -7651,7 +7645,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -7668,7 +7661,7 @@
   {
    "title": "Deans Welcome to New Graduate Students",
    "desc": "Join us for opening remarks and a welcome from the Dean of the Faculty of Graduate and Postdoctoral Studies, Dr. Brent Wolfe, to kick off Orientation.",
-   "where": "",
+   "where": "Zoom",
    "when": "TBD",
    "host": "",
    "cost": "",
@@ -7696,14 +7689,13 @@
    "open_to_all": false,
    "flags": [
     "no-date",
-    "no-time",
-    "no-venue"
+    "no-time"
    ]
   },
   {
    "title": "Graduate Students' Association President's Welcome",
    "desc": "Start your graduate journey with a warm welcome from the Graduate Students’ Association (GSA) President, who will share greetings and introduce you to the support and community available through the GSA.",
-   "where": "",
+   "where": "Zoom",
    "when": "TBD",
    "host": "",
    "cost": "",
@@ -7736,14 +7728,13 @@
    "open_to_all": false,
    "flags": [
     "no-date",
-    "no-time",
-    "no-venue"
+    "no-time"
    ]
   },
   {
    "title": "Grad Connections: Let's Break the Ice!",
    "desc": "Join us for an icebreaker to help kick-start connections with other graduate students. It’s a great way to start forming your graduate community from day one.",
-   "where": "",
+   "where": "Zoom",
    "when": "TBD",
    "host": "",
    "cost": "",
@@ -7771,14 +7762,13 @@
    "open_to_all": false,
    "flags": [
     "no-date",
-    "no-time",
-    "no-venue"
+    "no-time"
    ]
   },
   {
    "title": "Staying Connected: Learn about Laurier's Student Resources",
    "desc": "Get an overview of key resources and departments for graduate students that you can access remotely.",
-   "where": "",
+   "where": "Zoom",
    "when": "TBD",
    "host": "",
    "cost": "",
@@ -7806,14 +7796,13 @@
    "open_to_all": false,
    "flags": [
     "no-date",
-    "no-time",
-    "no-venue"
+    "no-time"
    ]
   },
   {
    "title": "Virtual Learning Success: Expectations and Strategies for Virtual Students",
    "desc": "Build your virtual learning skills with essential strategies for succeeding online, then learn what to expect in your first few weeks as a new student. You’ll also get a quick overview of the key tools and campus systems that support your coursework and communication.",
-   "where": "",
+   "where": "Zoom",
    "when": "TBD",
    "host": "",
    "cost": "",
@@ -7841,14 +7830,13 @@
    "open_to_all": false,
    "flags": [
     "no-date",
-    "no-time",
-    "no-venue"
+    "no-time"
    ]
   },
   {
    "title": "Program Specific Welcome",
    "desc": "Meet your classmates, program staff, and faculty, and learn about your program and the support available to you.",
-   "where": "",
+   "where": "Zoom",
    "when": "TBD",
    "host": "",
    "cost": "",
@@ -7876,8 +7864,7 @@
    "open_to_all": false,
    "flags": [
     "no-date",
-    "no-time",
-    "no-venue"
+    "no-time"
    ]
   },
   {
@@ -7901,7 +7888,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -7941,7 +7927,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -7976,7 +7961,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -8011,7 +7995,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -8046,7 +8029,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -8081,7 +8063,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -8116,7 +8097,6 @@
    "stream": null,
    "source_file": "graduate__winter.html",
    "section_info": {
-    "Location": "TBD",
     "Registration": "Registration will open in October 2026"
    },
    "section_links": [],
@@ -8355,6 +8335,44 @@
    ]
   },
   {
+   "title": "Set Yourself Up for Success at University",
+   "desc": "",
+   "where": "",
+   "when": "1:30 to 3 p.m.",
+   "host": "",
+   "cost": "",
+   "audience": null,
+   "links": [],
+   "date": "2026-09-09",
+   "section": "Brantford Campus SEEDs Orientation Day",
+   "anchor": "brantford",
+   "level": "all",
+   "campus": "Brantford",
+   "campuses": [
+    "Brantford",
+    "Virtual"
+   ],
+   "term": "Fall 2026",
+   "stream": "Indigenous",
+   "source_file": "indigenous.html",
+   "section_info": {},
+   "section_links": [],
+   "page_links": [
+    {
+     "text": "Register Now For SEEDs Orientation!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#brantford",
+   "tags": [
+    "Indigenous"
+   ],
+   "open_to_all": false,
+   "flags": [
+    "no-venue"
+   ]
+  },
+  {
    "title": "Early Move-in (Students Living in Residence Only)",
    "desc": "If you're living in residence and registered for SEEDs Orientation, you can move in early. Move-in begins in the morning, so plan enough time to settle in before orientation starts. Details about the early move-in process will be shared in mid-August.",
    "where": "Your Residence Building",
@@ -8391,8 +8409,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
    "tags": [
-    "Indigenous",
-    "Residence"
+    "Indigenous"
    ],
    "open_to_all": false,
    "flags": []
@@ -8570,6 +8587,94 @@
    "flags": []
   },
   {
+   "title": "University 101 Session (Students)",
+   "desc": "",
+   "where": "",
+   "when": "4 to 5 p.m.",
+   "host": "",
+   "cost": "",
+   "audience": null,
+   "links": [],
+   "date": "2026-09-03",
+   "section": "Waterloo Campus SEEDs Orientation",
+   "anchor": "waterloo",
+   "level": "all",
+   "campus": "Waterloo",
+   "campuses": [
+    "Milton",
+    "Virtual",
+    "Waterloo"
+   ],
+   "term": "Fall 2026",
+   "stream": "Indigenous",
+   "source_file": "indigenous.html",
+   "section_info": {},
+   "section_links": [
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
+   "page_links": [
+    {
+     "text": "Register Now For SEEDs Orientation!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
+   "tags": [
+    "Indigenous"
+   ],
+   "open_to_all": false,
+   "flags": [
+    "no-venue"
+   ]
+  },
+  {
+   "title": "Your Time!",
+   "desc": "",
+   "where": "",
+   "when": "6:30 p.m. onwards",
+   "host": "",
+   "cost": "",
+   "audience": null,
+   "links": [],
+   "date": "2026-09-03",
+   "section": "Waterloo Campus SEEDs Orientation",
+   "anchor": "waterloo",
+   "level": "all",
+   "campus": "Waterloo",
+   "campuses": [
+    "Milton",
+    "Virtual",
+    "Waterloo"
+   ],
+   "term": "Fall 2026",
+   "stream": "Indigenous",
+   "source_file": "indigenous.html",
+   "section_info": {},
+   "section_links": [
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
+   "page_links": [
+    {
+     "text": "Register Now For SEEDs Orientation!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
+   "tags": [
+    "Indigenous"
+   ],
+   "open_to_all": false,
+   "flags": [
+    "no-venue"
+   ]
+  },
+  {
    "title": "Breakfast",
    "desc": "Start your day with breakfast at the ISC and get ready for a jam-packed day ahead!",
    "where": "Indigenous Student Centre",
@@ -8580,10 +8685,12 @@
    "links": [],
    "date": "2026-09-04",
    "section": "Friday, Sept. 4 Overview of the Day",
-   "anchor": null,
+   "anchor": "waterloo",
    "level": "all",
    "campus": "Waterloo",
    "campuses": [
+    "Milton",
+    "Virtual",
     "Waterloo"
    ],
    "term": "Fall 2026",
@@ -8597,7 +8704,7 @@
      "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
     }
    ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html",
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
    "tags": [
     "Indigenous"
    ],
@@ -8615,10 +8722,12 @@
    "links": [],
    "date": "2026-09-04",
    "section": "Friday, Sept. 4 Overview of the Day",
-   "anchor": null,
+   "anchor": "waterloo",
    "level": "all",
    "campus": "Waterloo",
    "campuses": [
+    "Milton",
+    "Virtual",
     "Waterloo"
    ],
    "term": "Fall 2026",
@@ -8632,7 +8741,7 @@
      "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
     }
    ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html",
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
    "tags": [
     "Indigenous"
    ],
@@ -8652,10 +8761,12 @@
    "links": [],
    "date": "2026-09-04",
    "section": "Friday, Sept. 4 Overview of the Day",
-   "anchor": null,
+   "anchor": "waterloo",
    "level": "all",
    "campus": "Waterloo",
    "campuses": [
+    "Milton",
+    "Virtual",
     "Waterloo"
    ],
    "term": "Fall 2026",
@@ -8669,7 +8780,7 @@
      "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
     }
    ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html",
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
    "tags": [
     "Indigenous"
    ],
@@ -8689,10 +8800,12 @@
    "links": [],
    "date": "2026-09-04",
    "section": "Friday, Sept. 4 Overview of the Day",
-   "anchor": null,
+   "anchor": "waterloo",
    "level": "all",
    "campus": "Waterloo",
    "campuses": [
+    "Milton",
+    "Virtual",
     "Waterloo"
    ],
    "term": "Fall 2026",
@@ -8706,7 +8819,7 @@
      "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
     }
    ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html",
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
    "tags": [
     "Indigenous"
    ],
@@ -8726,10 +8839,12 @@
    "links": [],
    "date": "2026-09-04",
    "section": "Friday, Sept. 4 Overview of the Day",
-   "anchor": null,
+   "anchor": "waterloo",
    "level": "all",
    "campus": "Waterloo",
    "campuses": [
+    "Milton",
+    "Virtual",
     "Waterloo"
    ],
    "term": "Fall 2026",
@@ -8743,7 +8858,7 @@
      "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
     }
    ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html",
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
    "tags": [
     "Indigenous"
    ],
@@ -8761,10 +8876,12 @@
    "links": [],
    "date": "2026-09-04",
    "section": "Friday, Sept. 4 Overview of the Day",
-   "anchor": null,
+   "anchor": "waterloo",
    "level": "all",
    "campus": "Waterloo",
    "campuses": [
+    "Milton",
+    "Virtual",
     "Waterloo"
    ],
    "term": "Fall 2026",
@@ -8778,7 +8895,7 @@
      "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
     }
    ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html",
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
    "tags": [
     "Indigenous"
    ],
@@ -8798,10 +8915,12 @@
    "links": [],
    "date": "2026-09-04",
    "section": "Friday, Sept. 4 Overview of the Day",
-   "anchor": null,
+   "anchor": "waterloo",
    "level": "all",
    "campus": "Waterloo",
    "campuses": [
+    "Milton",
+    "Virtual",
     "Waterloo"
    ],
    "term": "Fall 2026",
@@ -8815,7 +8934,7 @@
      "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
     }
    ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html",
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
    "tags": [
     "Indigenous"
    ],
@@ -8833,10 +8952,12 @@
    "links": [],
    "date": "2026-09-04",
    "section": "Friday, Sept. 4 Overview of the Day",
-   "anchor": null,
+   "anchor": "waterloo",
    "level": "all",
    "campus": "Waterloo",
    "campuses": [
+    "Milton",
+    "Virtual",
     "Waterloo"
    ],
    "term": "Fall 2026",
@@ -8850,7 +8971,7 @@
      "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
     }
    ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html",
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
    "tags": [
     "Indigenous"
    ],
@@ -9230,6 +9351,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
+    "Exchange",
     "International"
    ],
    "open_to_all": false,
@@ -9269,6 +9391,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
+    "Exchange",
     "International"
    ],
    "open_to_all": false,
@@ -9308,6 +9431,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
+    "Exchange",
     "International"
    ],
    "open_to_all": false,
@@ -9347,6 +9471,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
+    "Exchange",
     "International"
    ],
    "open_to_all": false,
@@ -9386,6 +9511,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
+    "Exchange",
     "International"
    ],
    "open_to_all": false,
@@ -9425,6 +9551,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
+    "Exchange",
     "International"
    ],
    "open_to_all": false,
@@ -9464,6 +9591,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
+    "Exchange",
     "International"
    ],
    "open_to_all": false,
@@ -11514,8 +11642,8 @@
    "title": "Scavenger Hunt: Get to Know Your Campus",
    "desc": "Ready to explore your new campus? Join your Icebreakers for a fun scavenger hunt across the Brantford Campus. Follow clues to find key academic buildings, important student spaces, and popular campus spots. Along the way, you'll learn your way around, meet new people, and build confidence in locating your classes so you're ready for your first day! Residence Students can meet their Icebreakers in their Residence Building Off-campus (LOCUS) students can meet their OCA at the LOCUS Hub (OM207) As this is a drop-in event, students can also make their own way to the RAC Courtyard to connect and participate in the Scavenger Hunt.",
    "where": "Research and Academic Centre (RAC) Courtyard",
-   "when": "",
-   "host": "",
+   "when": "10 a.m. to 1 p.m.",
+   "host": "Your Students' Union",
    "cost": "",
    "audience": null,
    "links": [],
@@ -11547,9 +11675,7 @@
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-7",
    "tags": [],
    "open_to_all": false,
-   "flags": [
-    "no-time"
-   ]
+   "flags": []
   },
   {
    "title": "Tie Dye and Totes",
@@ -12088,7 +12214,7 @@
   },
   {
    "title": "Ask Me Anything Session",
-   "desc": "Calling all Mature and Transfer Students! We know that, as students with unique paths and experiences, finding your place can look a little different. That’s why we've created Mature and Transfer Student (MTS) events designed just for you – to unwind, meet fellow students, and help you feel at home at Laurier. - Session 1 Join us for a session designed specifically for mature and transfer students. Meet fellow students, connect with staff, and take part in an open Q&A where you can ask questions, learn what to expect, and get the information you need to start your Laurier journey with confidence.",
+   "desc": "- Session 1 Join us for a session designed specifically for mature and transfer students. Meet fellow students, connect with staff, and take part in an open Q&A where you can ask questions, learn what to expect, and get the information you need to start your Laurier journey with confidence.",
    "where": "OM207-3 | One Market",
    "when": "9:30 to 10:30 a.m.",
    "host": "Student Experience",
@@ -12566,7 +12692,7 @@
    "when": "4 to 6 p.m.",
    "host": "LOCUS",
    "cost": "",
-   "audience": null,
+   "audience": "First-Year Off-Campus Students Only",
    "links": [
     {
      "text": "LOCUS",
@@ -12599,7 +12725,9 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-8",
-   "tags": [],
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -12696,8 +12824,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "General Gaming with the Golden Hawk Gaming Club! Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
+   "title": "General Gaming with the Golden Hawk Gaming Club!",
+   "desc": "Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -12744,8 +12872,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "Character Creation in Dungeons and Dragons! Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
+   "title": "Character Creation in Dungeons and Dragons!",
+   "desc": "Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -13110,7 +13238,7 @@
    "when": "5 to 6:30 p.m.",
    "host": "International Student Support",
    "cost": "",
-   "audience": null,
+   "audience": "International and Exchange Students Only",
    "links": [
     {
      "text": "International Student Support",
@@ -13143,7 +13271,10 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-9",
-   "tags": [],
+   "tags": [
+    "Exchange",
+    "International"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -13192,8 +13323,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "General Gaming with the Golden Hawk Gaming Club! Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
+   "title": "General Gaming with the Golden Hawk Gaming Club!",
+   "desc": "Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -13240,8 +13371,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "Character Creation in Dungeons and Dragons! Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
+   "title": "Character Creation in Dungeons and Dragons!",
+   "desc": "Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -13288,8 +13419,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "Valorant Esports Tournament! GHG is hosting our very own Valorant tournament! Students can enter and be randomly assigned a team to compete with! There will be 4 teams of 5 total competing for 1st! Each member of the winning team will receive a $20 gift card of their choice!",
+   "title": "Valorant Esports Tournament!",
+   "desc": "GHG is hosting our very own Valorant tournament! Students can enter and be randomly assigned a team to compete with! There will be 4 teams of 5 total competing for 1st! Each member of the winning team will receive a $20 gift card of their choice!",
    "where": "GHG Discord Server | Team Registration is Required",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -16911,8 +17042,8 @@
    "flags": []
   },
   {
-   "title": "Athletics and Recreation - Fitness Programming",
-   "desc": "Group Exercise: Outdoor Yoga Class! Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere on Ansley Alumni Field. Bring your own yoga mat, or mats will also be provided.",
+   "title": "Group Exercise: Outdoor Yoga Class!",
+   "desc": "Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere on Ansley Alumni Field. Bring your own yoga mat, or mats will also be provided.",
    "where": "Ansley Alumni Field",
    "when": "1 to 1:45 p.m.",
    "host": "",
@@ -17307,49 +17438,8 @@
   },
   {
    "title": "Live Fire Safety Demonstration with Waterloo Fire Rescue",
-   "desc": "Join us for a live fire demonstration during Orientation Week and learn essential fire safety skills for campus life. Watch a controlled grease fire scenario in a specialized training trailer and see why water should never be used on a grease fire. Fire safety experts from Laurier and Waterloo Fire Rescue will be available to share safety information, answer questions, and help you stay fire safe both on and off campus.",
+   "desc": "Join us for a live fire demonstration during Orientation Week and learn essential fire safety skills for campus life. Watch a controlled grease fire scenario in a specialized training trailer and see why water should never be used on a grease fire. Fire safety experts from Laurier and Waterloo Fire Rescue will be available to share safety information, answer questions, and help you stay fire safe both on and off campus. Who Attends What Session 3:30 to 4 p.m Session — 4:30 to 5 p.m. Session — 3:30 to 4 p.m Session — 4:30 to 5 p.m. Session; Bricker Residence (44 Bricker Ave.) — Bouckaert Hall; Euler Residence — COnrad Hall; Leupold Residence — King St. Residence; Little House — LOCUS Students; Marshall St. Apartments — Willison Hall; Waterloo College Hall — 53 Bricker St. Apartments; 32 University Ave. Apartments — 201 Lester St. Apartments; 181 Lester St. Apartments — 308 King St. Apartments; 260 Regina St. Apartments Host: Safety, Health, Environment, and Risk Management (SHERM)",
    "where": "Parking Lot 20 - Across from Willison Hall",
-   "when": "",
-   "host": "",
-   "cost": "",
-   "audience": null,
-   "links": [],
-   "date": "2026-09-08",
-   "section": "Tuesday, Sept. 8 Events",
-   "anchor": "sept-8",
-   "level": "undergraduate",
-   "campus": "Waterloo",
-   "campuses": [
-    "Waterloo"
-   ],
-   "term": "Fall 2026",
-   "stream": null,
-   "source_file": "undergraduate__fall-waterloo.html",
-   "section_info": {
-    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
-   },
-   "section_links": [],
-   "page_links": [
-    {
-     "text": "campus map",
-     "href": "https://map.concept3d.com/?id=638#!ct/6784,21459,6789,6779,6787,6781,6785,6783,13903,11451?lvl/0?mc/43.471981304351694,-80.52772310661601?z/17"
-    },
-    {
-     "text": "Register Now!",
-     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_dmTKuCt50hmm4LA"
-    }
-   ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-8",
-   "tags": [],
-   "open_to_all": false,
-   "flags": [
-    "no-time"
-   ]
-  },
-  {
-   "title": "Live Fire Safety Demonstration with Waterloo Fire Rescue",
-   "desc": "Locations — 3:30 to 4 p.m Session — 4:30 to 5 p.m. Session; Bricker Residence (44 Bricker Ave.) — Bouckaert Hall; Euler Residence — COnrad Hall; Leupold Residence — King St. Residence; Little House — LOCUS Students; Marshall St. Apartments — Willison Hall; Waterloo College Hall — 53 Bricker St. Apartments; 32 University Ave. Apartments — 201 Lester St. Apartments; 181 Lester St. Apartments — 308 King St. Apartments; 260 Regina St. Apartments Host: Safety, Health, Environment, and Risk Management (SHERM)",
-   "where": "See building list in the details",
    "when": "3:30 to 4 p.m. and 4:30 to 5 p.m.",
    "host": "Safety, Health, Environment, and Risk Management (SHERM)",
    "cost": "",
@@ -17485,7 +17575,7 @@
    "when": "5 to 6:30 p.m.",
    "host": "International Student Support",
    "cost": "",
-   "audience": null,
+   "audience": "International and Exchange Students Only",
    "links": [
     {
      "text": "International Student Support",
@@ -17518,7 +17608,10 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-8",
-   "tags": [],
+   "tags": [
+    "Exchange",
+    "International"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -17573,7 +17666,7 @@
    "when": "5 to 7 p.m.",
    "host": "LOCUS",
    "cost": "",
-   "audience": null,
+   "audience": "First-Year Off-Campus Students Only",
    "links": [
     {
      "text": "LOCUS",
@@ -17606,7 +17699,9 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-8",
-   "tags": [],
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -17659,8 +17754,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "General Gaming with the Golden Hawk Gaming Club! Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
+   "title": "General Gaming with the Golden Hawk Gaming Club!",
+   "desc": "Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -17707,8 +17802,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "Character Creation in Dungeons and Dragons! Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
+   "title": "Character Creation in Dungeons and Dragons!",
+   "desc": "Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -18168,7 +18263,7 @@
   },
   {
    "title": "Ask Me Anything Session",
-   "desc": "Calling all Mature and Transfer Students! We know that, as students with unique paths and experiences, finding your place can look a little different. That’s why we've created Mature and Transfer Student (MTS) events designed just for you – to unwind, meet fellow students, and help you feel at home at Laurier. Join us for a session designed specifically for mature and transfer students. Meet fellow students, connect with staff, and take part in an open Q&A where you can ask questions, learn what to expect, and get the information you need to start your Laurier journey with confidence.",
+   "desc": "Join us for a session designed specifically for mature and transfer students. Meet fellow students, connect with staff, and take part in an open Q&A where you can ask questions, learn what to expect, and get the information you need to start your Laurier journey with confidence.",
    "where": "P111 | First Floor Peters Building",
    "when": "9:30 to 10:30 a.m.",
    "host": "Student Experience",
@@ -18581,7 +18676,7 @@
    "when": "4 to 5:30 p.m.",
    "host": "International Student Support",
    "cost": "",
-   "audience": null,
+   "audience": "International and Exchange Students Only",
    "links": [
     {
      "text": "International Student Support",
@@ -18614,7 +18709,10 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-9",
-   "tags": [],
+   "tags": [
+    "Exchange",
+    "International"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -18669,7 +18767,7 @@
    "when": "5:30 to 7 p.m.",
    "host": "LOCUS",
    "cost": "",
-   "audience": null,
+   "audience": "First-Year Off-Campus Students Only",
    "links": [
     {
      "text": "LOCUS",
@@ -18702,13 +18800,15 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-9",
-   "tags": [],
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
    "open_to_all": false,
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "General Gaming with the Golden Hawk Gaming Club! Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
+   "title": "General Gaming with the Golden Hawk Gaming Club!",
+   "desc": "Golden Hawk Gaming (GHG) hosts regular game nights on both Friday and Sunday. Club members are able to vote on which games are played through a poll! During our programming block, we will be showcasing the games that are usually played at this event (Among Us, Gartic Phone, Jackbox, and more). All of the games played are free and accessible, making it easy for you to join in on the fun!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -18755,8 +18855,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "Character Creation in Dungeons and Dragons! Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
+   "title": "Character Creation in Dungeons and Dragons!",
+   "desc": "Dungeons and Dragons (D&D) is a major part of our club. During the school year, members can interview for DM positions or sign up to join the available campaigns! In our programming block, we hope to introduce students to D&D by running a character creation workshop with the help of our experienced executives! Additionally, we hope to test out the characters by running scenarios that are often seen in campaigns to learn some of the dice-rolling mechanics D&D offers!",
    "where": "GHG Discord Server",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -18803,8 +18903,8 @@
    "flags": []
   },
   {
-   "title": "Community and Connection Programming",
-   "desc": "Valorant Esports Tournament! GHG is hosting our very own Valorant tournament! Students can enter and be randomly assigned a team to compete with! There will be 4 teams of 5 total competing for 1st! Each member of the winning team will receive a $20 gift card of their choice!",
+   "title": "Valorant Esports Tournament!",
+   "desc": "GHG is hosting our very own Valorant tournament! Students can enter and be randomly assigned a team to compete with! There will be 4 teams of 5 total competing for 1st! Each member of the winning team will receive a $20 gift card of their choice!",
    "where": "GHG Discord Server | Team Registration is Required",
    "when": "5 to 7 p.m.",
    "host": "Golden Hawk Gaming Club",
@@ -19060,8 +19160,8 @@
    "flags": []
   },
   {
-   "title": "Athletics and Recreation - Fitness Programming",
-   "desc": "Group Exercise: Outdoor Barre/Lower Sculpt Class! Enjoy a low-impact workout that combines barre-inspired movements with sculpting exercises. Strengthen and tone your legs, glutes, core, and arms while improving balance, posture, and muscular endurance in a supportive and motivating atmosphere at the Quad.",
+   "title": "Group Exercise: Outdoor Barre/Lower Sculpt Class!",
+   "desc": "Enjoy a low-impact workout that combines barre-inspired movements with sculpting exercises. Strengthen and tone your legs, glutes, core, and arms while improving balance, posture, and muscular endurance in a supportive and motivating atmosphere at the Quad.",
    "where": "The Quad",
    "when": "1 to 1:45 p.m.",
    "host": "",
@@ -19099,8 +19199,8 @@
    "flags": []
   },
   {
-   "title": "Athletics and Recreation - Fitness Programming",
-   "desc": "Group Exercise: Outdoor Yoga Class! Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere at the Quad. No mats are needed as this is standing yoga.",
+   "title": "Group Exercise: Outdoor Yoga Class!",
+   "desc": "Enjoy a class for relaxation, stretching, and meditation. Strengthen postural and stability muscles while de-stressing in a calm atmosphere at the Quad. No mats are needed as this is standing yoga.",
    "where": "The Quad",
    "when": "4 to 4:45 p.m.",
    "host": "",

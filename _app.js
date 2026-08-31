@@ -9,6 +9,12 @@ var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","D
 var DOW = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
 var ALL_STREAMS = GATES.slice();
+// Laurier leaked a CMS authoring URL into their published page; the host does not resolve.
+// Reproduced faithfully, but flagged so nobody wastes time clicking it.
+var DEAD_HOSTS = ["cms03.wlu.ca"];
+function isDead(href) {
+  return DEAD_HOSTS.some(function (h) { return href.indexOf("//" + h) >= 0; });
+}
 var sel = null, showFit = "mine", hidePast = false, Q = "";
 
 function gatesOf(e) {
@@ -77,6 +83,10 @@ function card(e) {
   });
   var linkHtml = links.length
     ? links.map(function (l) {
+        if (isDead(l.href)) {
+          return '<span class="reglink dead" title="' + esc(l.href) +
+                 '">' + esc(l.text) + " — link broken on Laurier's site</span>";
+        }
         return '<a class="reglink" href="' + esc(l.href) + '" target="_blank" rel="noopener">' + esc(l.text) + " &rarr;</a>";
       }).join(" ")
     : "";
@@ -135,7 +145,7 @@ function render() {
       (past ? '<div class="dtag">Passed</div>' : "") +
       '</div></div><div class="events">' + seen[k].map(card).join("") + "</div></div>";
   }).join("")
-    : '<p class="empty">No events match. Try “Everything”, or widen the filters.</p>';
+    : '<p class="empty">No events match. Try “Everything”, or tick a stream above.</p>';
 
   document.getElementById("count").textContent = list.length + " shown";
 }
