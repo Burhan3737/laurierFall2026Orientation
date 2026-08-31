@@ -50,7 +50,8 @@ Checked across **all 503 events**, not a sample:
 - 379/379 accordion panels processed; **no fabricated values** anywhere
 - 487/487 citation anchors resolve *and* point at the section the event actually came from
 - 147/149 links resolve (1 `mailto:`, 1 the dead Laurier link above)
-- All 13 live pages **character-identical** to the `_src/` snapshots — no drift
+- All 13 live pages matched the `_src/` snapshots *at the time of that review*
+  (Laurier has since edited four pages — see round 3)
 - Zero date/weekday errors; zero console errors across 14 chooser states
 - Source errors reproduced rather than silently corrected
 
@@ -65,3 +66,33 @@ Checked across **all 503 events**, not a sample:
 - **Spring graduate schedule** lists January dates. Reproduced exactly and flagged in a
   data note; confirm with `aspire@wlu.ca` before relying on it.
 - **Winter 2027** is a placeholder: all 20 events undated, TBD time and venue.
+
+
+---
+
+## Round 3 findings and resolution
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | Laurier published new events after the snapshot: Suicide Prevention Day Awareness (Waterloo UG + grad), World Suicide Awareness Day (Brantford UG + grad, two sub-events each) and **Math Grad Orientation** — 7 event instances missing | **fixed** — re-scraped; 503 → 510 events |
+| 2 | The "Mature & Transfer" stream gated zero events; the 7 MTS sub-events showed to every undergraduate as "For you" with no audience shown | **fixed** — now gates 7 |
+| 3 | "Welcome Meeting" and "Social" told the student to attend only their own programme's welcome but never named the programme | **fixed** — cards show the parent accordion |
+
+The auditor reported four pages each gaining one panel. Verifying independently found
+**five** new panels: `graduate/fall-waterloo.html` gained two, the second being
+Math Grad Orientation.
+
+**Root cause of 2 and 3 was the same.** A sub-event knew nothing about the accordion it
+came from. Laurier puts the audience there ("Mature and Transfer Student Events") and the
+programme name there ("Master of Applied Politics, Political Science"). Recording the
+parent panel fixes both, and is more robust than widening the phrase-matching regex —
+widening it is what caused the round-2 regressions.
+
+While fixing this, two regexes were found to contain literal backspace characters (0x08)
+where `` was intended, introduced by shell here-doc escaping in an earlier round. One
+silently disabled a Zoom venue fallback (`no-venue` 43 → 37 once repaired). The files are
+now checked for stray control characters.
+
+`check_drift.py` was added: it re-fetches all 13 pages and reports added or removed
+accordion panels against the snapshots, so staleness fails loudly instead of silently.
+Run `python check_drift.py` before trusting the board.

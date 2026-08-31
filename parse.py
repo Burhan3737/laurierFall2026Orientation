@@ -168,6 +168,7 @@ def parse_panel(panel, fallback_title):
                 "host": grab(lns, "Host"),   "cost": grab(lns, "Cost"),
                 "audience": audience,
                 "links": pend_links + links_in(p),
+                "parent": fallback_title,
                 "_bold_title": pend_title,
             })
             pend_title, pend_desc, pend_links, audience = None, [], [], None
@@ -249,7 +250,8 @@ def parse_panel(panel, fallback_title):
     if not events:
         events.append({"title": fallback_title, "desc": " ".join(pend_desc).strip(),
                        "where": "", "when": "", "host": "", "cost": "",
-                       "audience": audience, "links": pend_links})
+                       "audience": audience, "links": pend_links,
+                       "parent": fallback_title})
     return events
 
 def section_prose(cont):
@@ -372,7 +374,7 @@ def parse_page(fname):
             for ev in parse_panel(panel, title):
                 if not ev["where"] or clean(ev["where"]).upper() in ("TBD", "TBA", "N/A"):
                     ev["where"] = sect_info.get("Location", "") or ev["where"]
-                    if not ev["where"] and re.search(r'zoom', " ".join(prose_txt), re.I):
+                    if not ev["where"] and re.search(r'\bzoom\b', " ".join(prose_txt), re.I):
                         ev["where"] = "Zoom"
                 dd = date_from_text(ev["when"], year) or d if ev["when"] else d
                 ev.update({"date": dd, "section": sect, "anchor": anchor,
@@ -472,11 +474,20 @@ def enrich(e):
     sm = SECT_STREAM.search(e.get("section") or "")
     if sm:
         hay += " " + sm.group(1)
+    # Laurier phrases some restrictions as "designed specifically for ...", which no
+    # "... Only" rule catches. The parent accordion names the audience instead:
+    # "Mature and Transfer Student Events" governs its sub-events.
+    parent = e.get("parent") or ""
+    if parent != e.get("title") and re.search(r'\bstudents?\b', parent, re.I):
+        hay += " " + parent
     tags = [name for name, pat in TAG_RULES if re.search(pat, hay, re.I)]
     if e["stream"] and e["stream"] not in tags:
         tags.append(e["stream"])
     e["tags"] = sorted(set(tags))
     e["open_to_all"] = bool(OPEN_TO_ALL.search((e.get("audience") or "") + " " + e.get("desc", "")))
+
+    if e.get("parent") == e.get("title"):
+        e.pop("parent", None)
 
     def missing(v):
         return (not v) or clean(v).upper() in ("TBD", "TBA", "N/A")

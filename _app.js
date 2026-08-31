@@ -67,6 +67,7 @@ function card(e) {
   function row(k, v) { if (v) facts += "<dt>" + k + "</dt><dd>" + v + "</dd>"; }
   row("When", when);
   row("Where", esc(e.w) || "Not published by Laurier");
+  row("Part of", esc(e.pt));
   row("Host", esc(e.h));
   row("Audience", esc(e.a));
   row("Cost", esc(e.c));
@@ -101,6 +102,7 @@ function card(e) {
     "<summary>" +
       '<div class="time">' + (e.n ? esc(e.n) : "Time TBA") + "</div>" +
       "<h3>" + esc(e.t) + "</h3>" +
+      (e.pt ? '<div class="parent">' + esc(e.pt) + "</div>" : "") +
       '<div class="metaline">' + badge +
         '<span class="where">' + esc(e.w || e.s || "") + "</span>" +
         '<span class="exp">details</span>' +

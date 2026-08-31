@@ -9,7 +9,7 @@ TODAY = "2026-08-31"
 K = {"date":"d","title":"t","desc":"x","where":"w","when":"n","host":"h","cost":"c",
      "audience":"a","links":"l","level":"lv","campuses":"cp","term":"tm","tags":"tg",
      "open_to_all":"oa","url":"u","section":"s","flags":"f",
-     "section_info":"si","section_links":"sl","page_links":"pl"}
+     "section_info":"si","section_links":"sl","page_links":"pl","parent":"pt"}
 def pack(e):
     o = {}
     for long, short in K.items():
