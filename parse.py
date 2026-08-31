@@ -21,9 +21,9 @@ META = {
  "graduate__fall-waterloo.html":        ("graduate", "Waterloo",  "Fall 2026", None),
  "graduate__fall-brantford.html":       ("graduate", "Brantford", "Fall 2026", None),
  "graduate__fall-virtual.html":         ("graduate", "Virtual",   "Fall 2026", None),
- "graduate__winter.html":               ("graduate", "All",       "Winter 2027", None),
- "graduate__spring.html":               ("graduate", "All",       "Spring 2026", None),
- "bachelor-of-education.html":          ("bachelor-of-education", "All", "Fall 2026", None),
+ "graduate__winter.html":               ("graduate", "split",     "Winter 2027", None),
+ "graduate__spring.html":               ("graduate", "split",     "Spring 2026", None),
+ "bachelor-of-education.html":          ("bachelor-of-education", "split", "Fall 2026", None),
  "international.html":                  ("all", "split", "Fall 2026", "International"),
  "indigenous.html":                     ("all", "split", "Fall 2026", "Indigenous"),
  "locus.html":                          ("undergraduate", "split", "Fall 2026", "Off-campus (LOCUS)"),
@@ -185,7 +185,7 @@ def parse_page(fname):
     for cont in soup.find_all('div', id=re.compile(r'^multicomponent_')):
         anchor = slug_anchor(cont)
         head = cont.find(['h2', 'h3'])
-        sect = clean(head.get_text()) if head else ""
+        sect = re.sub(r'(\d)([A-Z])', r' ', clean(head.get_text(' '))) if head else ""
         sect_date = date_from_slug(anchor, year) or date_from_text(sect, year)
         if not sect_date:
             cands = []
@@ -202,10 +202,18 @@ def parse_page(fname):
         # campus for split pages (international / indigenous / locus)
         c = campus
         if campus == "split":
-            hay = (anchor or "") + " " + sect
-            c = ("Brantford" if re.search(r'brantford', hay, re.I) else
-                 "Milton"    if re.search(r'milton', hay, re.I) else
-                 "Waterloo"  if re.search(r'waterloo', hay, re.I) else "All")
+            def campus_of(hay):
+                if not hay: return None
+                if re.search(r'brantford', hay, re.I): return "Brantford"
+                if re.search(r'milton', hay, re.I):    return "Milton"
+                if re.search(r'virtual', hay, re.I):   return "Virtual"
+                if re.search(r'waterloo|kitchener', hay, re.I): return "Waterloo"
+                return None
+            up = cont.find_previous('h2')
+            # the container's OWN heading/anchor wins; only fall back to the enclosing h2
+            c = (campus_of((anchor or "") + " " + sect)
+                 or campus_of(clean(up.get_text(' ')) if up else "")
+                 or "All")
         for btn in cont.find_all('button', class_='accordion-trigger'):
             title = clean(btn.get_text())
             pid = btn.get('id', '').replace('accordion_id_', 'accordion_panel_')
