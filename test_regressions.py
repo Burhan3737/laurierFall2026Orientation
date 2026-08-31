@@ -154,6 +154,25 @@ check("program note reflects that filtering now exists",
       "Program welcomes are not filtered by program" not in app
       and "Program or faculty" in app)
 
+
+# --- audit round 5 -------------------------------------------------------
+fm = by_title('French Montana')
+check("concert keeps its published ticket price",
+      bool(fm) and '$30' in (fm[0]['cost'] or ''), repr(fm[0]['cost']) if fm else 'missing')
+check("bold blocks that are not sub-event titles are kept, not discarded",
+      bool(fm) and all(k in fm[0]['desc'].lower() for k in ('re-entry', '19+')))
+
+check("data notes emit real punctuation, not escape sequences",
+      '\\u201' not in app and '\\u2014' not in app)
+
+check("stream ticks survive a level switch through an invalid combination",
+      'keepStreams' in app and 'keepStreams.indexOf(i.value) >= 0' in app)
+
+intl = [e for e in E if e['source_file'] == 'international.html']
+labels = [l['text'] for l in (intl[0].get('page_links') or [])] if intl else []
+check("page-level CTAs sharing a label are disambiguated",
+      len(labels) == len(set(labels)), str(labels))
+
 print()
 if fails:
     print("%d FAILED" % len(fails))

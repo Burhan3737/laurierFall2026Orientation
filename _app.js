@@ -215,9 +215,9 @@ function buildNotes() {
   if (prog) {
     notes.push(["Program and faculty welcomes carry no audience on Laurier's page",
       prog + " events are specific to one program or faculty, but Laurier states no audience " +
-      "restriction on them, so by default they all show. Use the \\u201cProgram or faculty\\u201d " +
-      "dropdown to narrow to your own, or choose \\u201cMy program is not listed\\u201d to hide " +
-      "them all \\u2014 Laurier does not publish a welcome for every program."]);
+      "restriction on them, so by default they all show. Use the \“Program or faculty\” " +
+      "dropdown to narrow to your own, or choose \“My program is not listed\” to hide " +
+      "them all \— Laurier does not publish a welcome for every program."]);
   }
 
   var list = document.getElementById("noteslist");
@@ -330,6 +330,10 @@ function refreshConditional(s) {
 function refreshAvailability() {
   var s = readChooser();
   if (!s.level) return;
+  // The first pass runs against a selection that may still be invalid, and unticks any
+  // stream it finds empty. Remember the ticks so the settled pass can restore them.
+  var keepStreams = [].slice.call(document.querySelectorAll('input[name="stream"]:checked'))
+                      .map(function (i) { return i.value; });
   refreshConditional(s);
   s = readChooser();
   [].slice.call(document.querySelectorAll('input[name="campus"]')).forEach(function (i) {
@@ -379,6 +383,9 @@ function refreshAvailability() {
   // meant that switching level while an invalid campus/term was still selected computed
   // the pool against a combination with no events, hiding every stream and program.
   refreshConditional(s2);
+  [].slice.call(document.querySelectorAll('input[name="stream"]')).forEach(function (i) {
+    if (!i.parentNode.hidden && keepStreams.indexOf(i.value) >= 0) i.checked = true;
+  });
   s2 = readChooser();
 
   var upper = countFor(s2.level, s2.campus, s2.term);

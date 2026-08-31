@@ -124,6 +124,7 @@ def looks_like_title(s):
 def parse_panel(panel, fallback_title):
     """-> list of sub-event dicts"""
     events, pend_title, pend_desc, pend_links, audience = [], None, [], [], None
+    spare = []          # bold blocks displaced by a later lead-in; kept if the panel is single
 
     blocks = [p for p in panel.find_all(['p', 'ul', 'ol', 'table', 'h3', 'h4', 'h5'], recursive=True)
               if not (p.name == 'p' and p.find_parent(['ul', 'ol', 'table']))]
@@ -182,6 +183,7 @@ def parse_panel(panel, fallback_title):
         lt = clean(lead.get_text()) if lead else ""
         if lt and txt.startswith(lt[:12]) and looks_like_title(lt):
             if pend_title and pend_desc:
+                spare.append(clean(pend_title + ". " + " ".join(pend_desc)))
                 pend_desc, pend_links = [], []
             pend_title = lt.rstrip(':').strip()
             rest = clean(txt[len(lt):])
@@ -225,7 +227,14 @@ def parse_panel(panel, fallback_title):
 
     # a lone sub-event never takes a bold lead-in as its name: the accordion title is better
     if len(events) == 1 and events[0].get("_bold_title") and events[0]["title"] == events[0]["_bold_title"]:
+        bt = events[0]["_bold_title"]
         events[0]["title"] = fallback_title
+        if bt and bt not in events[0]["desc"]:
+            events[0]["desc"] = clean(bt + ". " + events[0]["desc"])
+    if len(events) == 1 and spare:
+        keep = [t for t in spare if t not in events[0]["desc"]]
+        if keep:
+            events[0]["desc"] = clean(events[0]["desc"] + " " + " ".join(keep))
     for e in events:
         e.pop("_bold_title", None)
 
@@ -275,6 +284,24 @@ def parse_page(fname):
 
     # Page-level "Register Now!" calls-to-action live in top-level text blocks that sit
     # OUTSIDE any multicomponent container, so the section walk below never sees them.
+    def disambiguate(links):
+        """Laurier labels several page CTAs identically ("Register Now!") and relies on the
+        sentence above each button. Qualify duplicates from their target so a graduate
+        student cannot land on the undergraduate registration page by accident."""
+        seen = {}
+        for l in links:
+            seen.setdefault(l["text"], []).append(l)
+        for text, group in seen.items():
+            if len(group) < 2:
+                continue
+            for l in group:
+                for key, lb in (("/undergraduate", "undergraduate"), ("/graduate", "graduate"),
+                                ("indigenous", "Indigenous"), ("international", "international")):
+                    if key in l["href"].lower():
+                        l["text"] = text + " (" + lb + ")"
+                        break
+        return links
+
     page_links = []
     for blk in soup.find_all(attrs={"id": re.compile(r'^text_block_')}):
         if blk.find_parent('div', id=re.compile(r'^multicomponent_')):
@@ -369,6 +396,7 @@ def parse_page(fname):
         triggers = cont.find_all('button', class_='accordion-trigger')
         # A section that yields no events still carries page-wide registration links
         # ("Have You Registered For Orientation?"); promote them so they are not lost.
+        page_links[:] = disambiguate(page_links)
         if not triggers and sect_links:
             for l in sect_links:
                 if l not in page_links:
@@ -535,6 +563,17 @@ def enrich(e):
 
     if e.get("parent") == e.get("title"):
         e.pop("parent", None)
+
+    if not e.get("cost"):
+        d = e.get("desc", "")
+        m = re.search(r'(?:Tickets?|Admission|Entry|Cost)[^.$]{0,40}?(\$\s?\d[\d,]*(?:\.\d{2})?)', d, re.I)
+        if m:
+            cost = m.group(1)
+            # the fee is a separate parenthetical and can sit anywhere in the block
+            fee = re.search(r'\(\s*\+\s*(\$\s?\d[\d,]*(?:\.\d{2})?[^)]{0,30})\)', d)
+            if fee:
+                cost += " (+ " + clean(fee.group(1)) + ")"
+            e["cost"] = clean(cost)
 
     def missing(v):
         return (not v) or clean(v).upper() in ("TBD", "TBA", "N/A")

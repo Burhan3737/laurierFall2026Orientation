@@ -122,3 +122,24 @@ links resolving (the exception being the known Laurier-authored dead link); 504/
 citation fragments resolving to the originating section; zero console errors across 74
 headless renders; and the Virtual change confirmed correct in all four respects, including
 SEEDs correctly not being treated as online.
+
+
+---
+
+## Round 5 findings and resolution
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | The concert's published ticket price was dropped. A bold lead-in that never became a sub-event title was discarded with its block, so the card showed only "(+ $1.50 processing fee)" for a $31.50 ticket, and lost the re-entry, bussing, weather and 19+ policies | **fixed** — `cost` now reads "$30 (+ $1.50 processing fee)" |
+| 2 | Data note 5 printed literal `“` escape sequences, from a doubled backslash | **fixed** |
+| 3 | Residual half of round 4 #1: filter *groups* were rebuilt correctly, but a ticked stream was still silently cleared when switching level through an invalid campus/term | **fixed** — ticks are captured before the first pass and restored after the settled one |
+| 4 | All 21 international cards showed two links both labelled "Register Now!" pointing at different pages, so a graduate student could land on undergraduate registration | **fixed** — duplicates qualified from their target |
+
+Finding 1 was the only published fact missing anywhere on the board, out of a sweep of
+every monetary amount in all 384 source panels.
+
+Verified sound across all 508 events: no fabricated, truncated or mis-attributed field;
+384/384 accordion panels producing events; 87 outbound links with 86 resolving (the
+exception being the known Laurier-authored dead link); 502/502 citation fragments
+resolving to the originating section; rendered count matching an independent model in all
+147 board states; zero console errors.
