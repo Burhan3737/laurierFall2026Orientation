@@ -1,6 +1,11 @@
+# scraped copies of Laurier's pages (regenerate by re-running the fetch)
 _src/
-*.pyc
-__pycache__/
+# throwaway verification harnesses and screenshots
+_check.js
+_harness.js
+_t.js
+_urls.txt
 _*.png
-_*.js
-_*.html
+_open.html
+__pycache__/
+*.pyc
