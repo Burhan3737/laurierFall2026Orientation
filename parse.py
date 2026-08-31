@@ -492,6 +492,9 @@ def enrich(e):
     tags = [name for name, pat in TAG_RULES if re.search(pat, hay, re.I)]
     if e["stream"] and e["stream"] not in tags:
         tags.append(e["stream"])
+    # Online events are gated behind the Virtual filter rather than belonging to a campus.
+    if e.get("virtual"):
+        tags.append("Virtual")
     e["tags"] = sorted(set(tags))
     e["open_to_all"] = bool(OPEN_TO_ALL.search((e.get("audience") or "") + " " + e.get("desc", "")))
 

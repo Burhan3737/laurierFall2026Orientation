@@ -25,7 +25,7 @@ LEVEL_LB = {"undergraduate":"Undergraduate","graduate":"Graduate","bachelor-of-e
 CAMPUSES = ["Waterloo", "Brantford", "Milton"]
 TERMS    = sorted({e['term'] for e in EV}, key=lambda t: ("Fall" not in t, t))
 STREAMS  = ["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence",
-            "Mature & Transfer","Accessible Learning"]
+            "Mature & Transfer","Accessible Learning","Virtual"]
 
 SOURCES = sorted({(e['source_file'], e['url'].split('#')[0]) for e in EV})
 PAGE_TITLES = d['page_titles']

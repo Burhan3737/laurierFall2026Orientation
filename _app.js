@@ -4,7 +4,7 @@
    AND every identity gate it sits behind is one the user claimed.
 ------------------------------------------------------------------------- */
 var GATES = ["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence",
-             "Mature & Transfer","Accessible Learning"];
+             "Mature & Transfer","Accessible Learning","Virtual"];
 var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"];
 var DOW = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
@@ -37,7 +37,11 @@ function assess(e) {
   var g = gatesOf(e);
   if (g.length) {
     var claimed = g.filter(function (t) { return sel.streams.indexOf(t) >= 0; });
-    if (!claimed.length) return { ok: false, reason: g.join(" / ") + " students only" };
+    if (!claimed.length) {
+      return { ok: false, reason: g.indexOf("Virtual") >= 0 && g.length === 1
+        ? "Online — tick Virtual to show"
+        : g.join(" / ") + " students only" };
+    }
   }
   return { ok: true, reason: e.oa && e.lv !== sel.level ? "Open to all Laurier students" : "" };
 }
@@ -281,6 +285,13 @@ function refreshAvailability() {
       if (ok) ok.checked = true;
     }
   });
+  function countExact(pick) {
+    var prev = sel;
+    sel = pick;
+    var n = EV.filter(function (e) { return assess(e).ok; }).length;
+    sel = prev;
+    return n;
+  }
   var s2 = readChooser();
   if (s2.campus !== s.campus || s2.term !== s.term) {
     [].slice.call(document.querySelectorAll('input[name="term"]')).forEach(function (i) {
@@ -295,11 +306,15 @@ function refreshAvailability() {
     });
     s2 = readChooser();
   }
-  var total = countFor(s2.level, s2.campus, s2.term);
-  // countFor() ignores stream gating, so this is an UPPER bound: say so.
-  document.getElementById("go").textContent =
-    total ? "Show my events (up to " + total + ")" : "No schedule published";
-  document.getElementById("go").disabled = !total;
+  // upper bound decides whether the combination exists at all; the exact count
+  // reflects the streams actually ticked, so the number moves as you tick them.
+  var upper = countFor(s2.level, s2.campus, s2.term);
+  var exact = countExact(s2);
+  var go = document.getElementById("go");
+  go.disabled = !upper;
+  go.textContent = !upper ? "No schedule published"
+    : exact ? "Show my events (" + exact + ")"
+            : "No events yet — tick a filter below";
 }
 [].slice.call(document.querySelectorAll('.chooser input')).forEach(function (i) {
   i.addEventListener("change", refreshAvailability);
