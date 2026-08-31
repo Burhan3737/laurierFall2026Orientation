@@ -9,6 +9,12 @@ var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","D
 var DOW = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
 var ALL_STREAMS = GATES.slice();
+// Laurier publishes a welcome for only some programs, so a student must be able to say
+// "mine is not here" rather than being shown two dozen other programs' sessions.
+var NO_PROGRAM = "__none__";
+function programLabel(v) {
+  return v === NO_PROGRAM ? "No program welcome listed" : v;
+}
 // Laurier leaked a CMS authoring URL into their published page; the host does not resolve.
 // Reproduced faithfully, but flagged so nobody wastes time clicking it.
 var DEAD_HOSTS = ["cms03.wlu.ca"];
@@ -44,8 +50,12 @@ function assess(e) {
     }
   }
   // A program/faculty welcome belongs to one program. Naming yours hides the rest;
-  // leaving it on "All programs" keeps the current behaviour of showing them all.
-  if (sel.program && e.pg && e.pg !== sel.program) {
+  // "All programs" shows them all; NO_PROGRAM hides every one, for the many graduate
+  // programs Laurier publishes no welcome for.
+  if (sel.program === NO_PROGRAM && e.pg) {
+    return { ok: false, reason: "Program-specific welcome" };
+  }
+  if (sel.program && sel.program !== NO_PROGRAM && e.pg && e.pg !== sel.program) {
     return { ok: false, reason: "For " + e.pg };
   }
   return { ok: true, reason: e.oa && e.lv !== sel.level ? "Open to all Laurier students" : "" };
@@ -224,7 +234,7 @@ function readChooser() {
 document.getElementById("go").onclick = function () {
   sel = readChooser();
   var bits = [sel.level.replace(/-/g, " "), sel.campus, sel.term];
-  if (sel.program) bits.push(sel.program);
+  if (sel.program) bits.push(programLabel(sel.program));
   if (sel.streams.length) bits.push(sel.streams.join(" + "));
   document.getElementById("who").textContent = bits.join("  ·  ");
   writeHash();
@@ -300,11 +310,13 @@ function refreshConditional(s) {
   names.sort();
   var box = document.getElementById("qprogram"), sel2 = document.getElementById("program");
   var keep = sel2.value;
-  sel2.innerHTML = '<option value="">All programs</option>' +
+  sel2.innerHTML =
+    '<option value="">All programs — show every welcome</option>' +
+    '<option value="' + NO_PROGRAM + '">My program is not listed — hide them all</option>' +
     names.map(function (n) {
       return '<option value="' + esc(n) + '">' + esc(n) + "</option>";
     }).join("");
-  if (names.indexOf(keep) >= 0) sel2.value = keep;
+  if (keep === NO_PROGRAM || names.indexOf(keep) >= 0) sel2.value = keep;
   box.hidden = (names.length === 0);
   sel2.disabled = (names.length === 0);
 }

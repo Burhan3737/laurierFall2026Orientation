@@ -95,7 +95,7 @@ HTML = f"""<!DOCTYPE html>
   </div>
   <div class="q" id="qprogram" hidden>
     <div class="qlabel">Program or faculty <span class="hint">optional — hides other programs' welcomes</span></div>
-    <select id="program"><option value="">All programs</option></select>
+    <select id="program"><option value="">All programs &mdash; show every welcome</option></select>
   </div>
   <div class="q" id="qstream">
     <div class="qlabel">Also applies to me <span class="hint">optional — unlocks stream-specific events</span></div>

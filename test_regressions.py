@@ -124,6 +124,14 @@ mac = [e for e in progs if 'Applied Computing' in e['program']]
 check("Master of Applied Computing welcome present", bool(mac),
       "Laurier publishes it on the Brantford graduate page")
 
+
+# the chooser must offer a way out for programs Laurier publishes no welcome for
+app = open('_app.js', encoding='utf-8').read()
+check("chooser offers 'my program is not listed'",
+      'NO_PROGRAM' in app and 'My program is not listed' in app)
+check("that option hides every program welcome",
+      'sel.program === NO_PROGRAM && e.pg' in app)
+
 print()
 if fails:
     print("%d FAILED" % len(fails))
