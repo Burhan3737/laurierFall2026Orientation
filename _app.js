@@ -74,7 +74,9 @@ function card(e) {
   row("Stream", (e.tg || []).length ? esc((e.tg || []).join(", ")) : "");
   if (e.s && /Program and Faculty Welcomes/i.test(e.s))
     row("Note", "This is a welcome for one specific program. Attend only the one matching your own.");
-  row("Schedule", esc(e.lv === "all" ? "All levels" : e.lv) + " &middot; " + esc((e.cp || []).join(", ")) + " &middot; " + esc(e.tm));
+  row("Schedule", esc(e.lv === "all" ? "All levels" : e.lv) + " &middot; " +
+      (e.vr ? "Online — open to all campuses" : esc((e.cp || []).join(", "))) +
+      " &middot; " + esc(e.tm));
 
   Object.keys(e.si || {}).forEach(function (k) { row(k, esc(e.si[k])); });
 
@@ -104,6 +106,7 @@ function card(e) {
       "<h3>" + esc(e.t) + "</h3>" +
       (e.pt ? '<div class="parent">' + esc(e.pt) + "</div>" : "") +
       '<div class="metaline">' + badge +
+        (e.vr ? '<span class="badge b-online">Online</span>' : "") +
         '<span class="where">' + esc(e.w || e.s || "") + "</span>" +
         '<span class="exp">details</span>' +
       "</div>" +

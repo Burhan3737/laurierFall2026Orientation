@@ -61,6 +61,8 @@ Checked across **all 503 events**, not a sample:
   Laurier's page, so they appear for every graduate student on that campus. Each card is
   marked programme-specific and a data note explains it. Filtering properly would need a
   taxonomy of ~28 programme names.
+- **Virtual** is treated as a delivery mode, not a campus. It is not offered as a campus
+  choice; the 31 online events appear under every campus, marked "Online".
 - **Kitchener** folds into Waterloo, matching Laurier's own grouping
   ("Waterloo and Kitchener Student Orientation"), but the word does not appear in the UI.
 - **Spring graduate schedule** lists January dates. Reproduced exactly and flagged in a

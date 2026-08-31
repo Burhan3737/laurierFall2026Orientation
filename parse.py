@@ -41,6 +41,10 @@ SKIP_ID = re.compile(r'^(accordion|text_block|multicomponent|full_width_banner|b
 FIELD_RE = r'(?:Where|When|Host|Cost|Intended Audience|Who Should Attend|Registration|Location)'
 FIELD = re.compile(FIELD_RE + r'\s*:', re.I)
 ALL_CAMPUSES = ["Waterloo", "Brantford", "Milton", "Virtual"]
+# Virtual is a delivery mode, not a place: online events are open to students at every
+# campus, so it is not offered as a campus choice. Virtual-only events fan out to all
+# physical campuses and are marked `virtual` so the card can say they are online.
+PHYSICAL = ["Waterloo", "Brantford", "Milton"]
 
 def clean(t):
     return re.sub(r'\s+', ' ', (t or "").replace('\xa0', ' ')).strip()
@@ -317,7 +321,9 @@ def parse_page(fname):
                  or campus_of(clean(up.get_text(' ')) if up else "") or "All")
         else:
             c = campus
-        campuses = [c] if c != "All" else list(ALL_CAMPUSES)
+        campuses = [c] if c != "All" else list(PHYSICAL)
+        is_virtual = (c == "Virtual")
+        campuses = [x for x in campuses if x != "Virtual"] or list(PHYSICAL)
         # A continuation subsection (only an <h3>, no anchor of its own) is still governed
         # by the preceding section: SEEDs day 2 otherwise loses its campus scope and anchor.
         if anchor is None and head is not None and head.name == 'h3' and prev_anchor:
@@ -331,6 +337,9 @@ def parse_page(fname):
                 named = [x for x in ALL_CAMPUSES if re.search(r'\b' + x + r'\b', m.group(1), re.I)]
                 if named:
                     campuses = sorted(set(campuses) | set(named))
+                    # "…Virtual…Campuses are welcome" names an audience, not a place;
+                    # Virtual is not selectable, so drop it after the union too.
+                    campuses = [x for x in campuses if x != "Virtual"] or list(PHYSICAL)
 
         # section-level facts and registration calls-to-action
         sect_info, sect_links = {}, []
@@ -378,7 +387,7 @@ def parse_page(fname):
                         ev["where"] = "Zoom"
                 dd = date_from_text(ev["when"], year) or d if ev["when"] else d
                 ev.update({"date": dd, "section": sect, "anchor": anchor,
-                           "level": level, "campus": c, "campuses": campuses, "term": term,
+                           "level": level, "campus": c, "campuses": campuses, "virtual": is_virtual, "term": term,
                            "stream": stream, "source_file": fname,
                            "section_info": sect_info, "section_links": sect_links, "page_links": page_links,
                            "url": URL[fname] + ("#" + anchor if anchor else "")})
@@ -407,7 +416,7 @@ def parse_page(fname):
                     "when": rest, "host": "", "cost": sect_info.get("Cost", ""),
                     "audience": None, "links": [],
                     "date": sect_date, "section": sect, "anchor": anchor,
-                    "level": level, "campus": c, "campuses": campuses, "term": term,
+                    "level": level, "campus": c, "campuses": campuses, "virtual": is_virtual, "term": term,
                     "stream": stream, "source_file": fname,
                     "section_info": sect_info, "section_links": sect_links,
                     "page_links": page_links,
@@ -431,7 +440,7 @@ def parse_page(fname):
                 "when": when, "host": "", "cost": sect_info.get("Cost", ""),
                 "audience": None, "links": sect_links or [l for p in prose for l in links_in(p)],
                 "date": sect_date, "section": sect, "anchor": anchor,
-                "level": level, "campus": c, "campuses": campuses, "term": term,
+                "level": level, "campus": c, "campuses": campuses, "virtual": is_virtual, "term": term,
                 "stream": stream, "source_file": fname,
                 "section_info": sect_info, "section_links": sect_links, "page_links": page_links,
                 "url": URL[fname] + ("#" + anchor if anchor else ""),

@@ -9,7 +9,7 @@ TODAY = "2026-08-31"
 K = {"date":"d","title":"t","desc":"x","where":"w","when":"n","host":"h","cost":"c",
      "audience":"a","links":"l","level":"lv","campuses":"cp","term":"tm","tags":"tg",
      "open_to_all":"oa","url":"u","section":"s","flags":"f",
-     "section_info":"si","section_links":"sl","page_links":"pl","parent":"pt"}
+     "section_info":"si","section_links":"sl","page_links":"pl","parent":"pt","virtual":"vr"}
 def pack(e):
     o = {}
     for long, short in K.items():
@@ -21,7 +21,8 @@ PAYLOAD = json.dumps([pack(e) for e in EV], separators=(',', ':'), ensure_ascii=
 
 LEVELS   = ["undergraduate", "graduate", "bachelor-of-education"]
 LEVEL_LB = {"undergraduate":"Undergraduate","graduate":"Graduate","bachelor-of-education":"Bachelor of Education"}
-CAMPUSES = ["Waterloo", "Brantford", "Milton", "Virtual"]
+# Virtual is a delivery mode, not a campus: online events show under every campus.
+CAMPUSES = ["Waterloo", "Brantford", "Milton"]
 TERMS    = sorted({e['term'] for e in EV}, key=lambda t: ("Fall" not in t, t))
 STREAMS  = ["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence",
             "Mature & Transfer","Accessible Learning"]
@@ -69,7 +70,7 @@ HTML = f"""<!DOCTYPE html>
   <div class="wrap">
     <div class="kicker">Wilfrid Laurier University &middot; Orientation</div>
     <h1>Orientation <em>Event Finder</em></h1>
-    <p class="sub">Every event Laurier publishes across all {len(SOURCES)} orientation schedules — undergraduate, graduate and Bachelor of Education, on all four campuses, plus the international, Indigenous and off-campus streams. Choose who you are and the board filters itself.</p>
+    <p class="sub">Every event Laurier publishes across all {len(SOURCES)} orientation schedules — undergraduate, graduate and Bachelor of Education, on all three campuses, plus the international, Indigenous and off-campus streams. Choose who you are and the board filters itself.</p>
   </div>
 </header>
 
