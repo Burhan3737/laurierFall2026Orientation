@@ -1878,7 +1878,7 @@
   },
   {
    "title": "Intro to Origami",
-   "desc": "Learn how to make origami with the Laurier Origami Club! There will be origami models of all levels, so come fold with us:)",
+   "desc": "Community and Connection Programming. invites you to choose your own Orientation experience. Running alongside each other, these smaller-scale programs, hosted by campus partners and student groups, will offer a range of opportunities to connect and engage in ways that matter most to you. Whether you’re looking to meet people who share your interests, explore your identity, or join engaging conversations, this programming is designed to help you find your place. Each program will create a welcoming space to build connections with like-minded peers and communities across campus. Follow what sparks your curiosity, find your people, and start building your Laurier community, your way! Learn how to make origami with the Laurier Origami Club! There will be origami models of all levels, so come fold with us:)",
    "where": "SB106 | Schlegel Building",
    "when": "5 to 6 p.m.",
    "host": "Laurier Origami Club",
@@ -2703,7 +2703,7 @@
   },
   {
    "title": "Group Exercise: Club Hits Cycle Class",
-   "desc": "Enjoy a high-energy indoor cycling class that blends rhythm riding, choreography, and outdoor-style drills. Vibe out to your favourite club hits in our low-lit cycle studio!",
+   "desc": "Community and Connection Programming. invites you to choose your own Orientation experience. Running alongside each other, these smaller-scale programs, hosted by campus partners and student groups, will offer a range of opportunities to connect and engage in ways that matter most to you. Whether you’re looking to meet people who share your interests, explore your identity, or join engaging conversations, this programming is designed to help you find your place. Each program will create a welcoming space to build connections with like-minded peers and communities across campus. Follow what sparks your curiosity, find your people, and start building your Laurier community, your way! Enjoy a high-energy indoor cycling class that blends rhythm riding, choreography, and outdoor-style drills. Vibe out to your favourite club hits in our low-lit cycle studio!",
    "where": "Cycle Studio | Athletic Complex",
    "when": "4 to 4:45 p.m.",
    "host": "Athletics and Recreation",
@@ -6323,7 +6323,7 @@
   },
   {
    "title": "Saturday, Sept. 12 - Golden Hawks Football vs. Ottawa Gee-Gees in support of Shinerama",
-   "desc": "Get ready to cheer on the Golden Hawks as they take on the Ottawa Gee-Gees in an exciting matchup you won't want to miss! BONUS: New Laurier Graduate students get into the game free of charge by showing their Graduate Student OneCard at the East Gate. So come on out, wear your purple and gold, and be part of the electric atmosphere at University Stadium. Join fellow students, alumni, and community members as we fill the stands and celebrate what it means to be a Golden Hawk. Whether you're a dedicated football fan or simply looking for a fun way to connect with friends and classmates, this game is a great opportunity to experience one of Laurier's favourite traditions. While you're at the game, be sure to visit the Shinerama table! The Laurier Students' Union will be at the University Stadium with a donation booth and free airbrush art, all in support of Shinerama and Cystic Fibrosis Canada, Canada's largest post-secondary fundraising movement for CF research and care. Stop by to learn more, donate, and get free airbrush art while showing your support for a cause that makes a difference. Bring your friends and family, your energy, and your Golden Hawk spirit as we cheer on the home team and support Shinerama together! Additional Tickets can be purchased from the Laurier Athletics ticket site. New Laurier graduate students get free entry to the game by showing their grad student OneCard. Entry with your graduate student OneCard is only permitted through the East Gate. The East Gate is located towards the end zone closest to Albert St. The East Gate is located towards the end zone closest to Albert St.",
+   "desc": "Get ready to cheer on the Golden Hawks as they take on the Ottawa Gee-Gees in an exciting matchup you won't want to miss! BONUS: New Laurier Graduate students get into the game free of charge by showing their Graduate Student OneCard at the East Gate. So come on out, wear your purple and gold, and be part of the electric atmosphere at University Stadium. Join fellow students, alumni, and community members as we fill the stands and celebrate what it means to be a Golden Hawk. Whether you're a dedicated football fan or simply looking for a fun way to connect with friends and classmates, this game is a great opportunity to experience one of Laurier's favourite traditions. While you're at the game, be sure to visit the Shinerama table! The Laurier Students' Union will be at the University Stadium with a donation booth and free airbrush art, all in support of Shinerama and Cystic Fibrosis Canada, Canada's largest post-secondary fundraising movement for CF research and care. Stop by to learn more, donate, and get free airbrush art while showing your support for a cause that makes a difference. Bring your friends and family, your energy, and your Golden Hawk spirit as we cheer on the home team and support Shinerama together! Additional Tickets can be purchased from the Laurier Athletics ticket site. ENTRANCE DETAILS. New Laurier graduate students get free entry to the game by showing their grad student OneCard. Entry with your graduate student OneCard is only permitted through the East Gate. The East Gate is located towards the end zone closest to Albert St.",
    "where": "University Stadium",
    "when": "1 p.m. Kickoff",
    "host": "Athletics and Recreation",
@@ -6394,7 +6394,7 @@
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-waterloo.html#program-welcomes",
    "tags": [],
    "open_to_all": false,
-   "program": "PhD Religious Studies - Faculty Meet and Greet",
+   "program": "PhD Religious Studies",
    "flags": []
   },
   {
@@ -11145,7 +11145,11 @@
    "audience": null,
    "links": [
     {
-     "text": "LOCUS Linkslearn more about each link by clicking here",
+     "text": "LOCUS Links",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html#:~:text=of%20Programming%20Offered-,Join%20a%20LOCUS%20Link!,-A%20LOCUS%20Link"
+    },
+    {
+     "text": "learn more about each link by clicking here",
      "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html#:~:text=of%20Programming%20Offered-,Join%20a%20LOCUS%20Link!,-A%20LOCUS%20Link"
     },
     {
@@ -12738,7 +12742,7 @@
   },
   {
    "title": "Ask Me Anything Session",
-   "desc": "- Session 1 Join us for a session designed specifically for mature and transfer students. Meet fellow students, connect with staff, and take part in an open Q&A where you can ask questions, learn what to expect, and get the information you need to start your Laurier journey with confidence.",
+   "desc": "Calling all Mature and Transfer Students!. We know that, as students with unique paths and experiences, finding your place can look a little different. That’s why we've created Mature and Transfer Student (MTS) events designed just for you – to unwind, meet fellow students, and help you feel at home at Laurier. - Session 1 Join us for a session designed specifically for mature and transfer students. Meet fellow students, connect with staff, and take part in an open Q&A where you can ask questions, learn what to expect, and get the information you need to start your Laurier journey with confidence.",
    "where": "OM207-3 | One Market",
    "when": "9:30 to 10:30 a.m.",
    "host": "Student Experience",
@@ -13188,7 +13192,7 @@
   },
   {
    "title": "Free Store Pop-up",
-   "desc": "Just arrived on campus and need some essentials? We've got you! Come by the Free Store, take what you need, and support campus sustainability! Items can go fast, so plan to be here early!",
+   "desc": "Community and Connection Programming. invites you to choose your own Orientation experience. Running alongside each other, these smaller-scale programs, hosted by campus partners and student groups, will offer a range of opportunities to connect and engage in ways that matter most to you. Whether you’re looking to meet people who share your interests, explore your identity, or join engaging conversations, this programming is designed to help you find your place. Each program will create a welcoming space to build connections with like-minded peers and communities across campus. Follow what sparks your curiosity, find your people, and start building your Laurier community, your way Just arrived on campus and need some essentials? We've got you! Come by the Free Store, take what you need, and support campus sustainability! Items can go fast, so plan to be here early!",
    "where": "Level 1 Lounge | One Market",
    "when": "4 to 5 p.m.",
    "host": "International Student Support and Student Experience",
@@ -13711,7 +13715,7 @@
   },
   {
    "title": "Intro to Origami",
-   "desc": "Learn how to make origami with the Laurier Origami Club! There will be origami models of all levels, so come fold with us:)",
+   "desc": "Community and Connection Programming. invites you to choose your own Orientation experience. Running alongside each other, these smaller-scale programs, hosted by campus partners and student groups, will offer a range of opportunities to connect and engage in ways that matter most to you. Whether you’re looking to meet people who share your interests, explore your identity, or join engaging conversations, this programming is designed to help you find your place. Each program will create a welcoming space to build connections with like-minded peers and communities across campus. Follow what sparks your curiosity, find your people, and start building your Laurier community, your way! Learn how to make origami with the Laurier Origami Club! There will be origami models of all levels, so come fold with us:)",
    "where": "OM207-1 | One Market",
    "when": "5 to 6 p.m.",
    "host": "Laurier Origami Club",
@@ -18307,7 +18311,7 @@
   },
   {
    "title": "Intro to Origami",
-   "desc": "Learn how to make origami with the Laurier Origami Club! There will be origami models of all levels, so come fold with us:)",
+   "desc": "Community and Connection Programming. invites you to choose your own Orientation experience. Running alongside each other, these smaller-scale programs, hosted by campus partners and student groups, will offer a range of opportunities to connect and engage in ways that matter most to you. Whether you’re looking to meet people who share your interests, explore your identity, or join engaging conversations, this programming is designed to help you find your place. Each program will create a welcoming space to build connections with like-minded peers and communities across campus. Follow what sparks your curiosity, find your people, and start building your Laurier community, your way! Learn how to make origami with the Laurier Origami Club! There will be origami models of all levels, so come fold with us:)",
    "where": "SB106 | Schlegel Building",
    "when": "5 to 6 p.m.",
    "host": "Laurier Origami Club",
@@ -19121,7 +19125,7 @@
   },
   {
    "title": "Ask Me Anything Session",
-   "desc": "Join us for a session designed specifically for mature and transfer students. Meet fellow students, connect with staff, and take part in an open Q&A where you can ask questions, learn what to expect, and get the information you need to start your Laurier journey with confidence.",
+   "desc": "Calling all Mature and Transfer Students!. We know that, as students with unique paths and experiences, finding your place can look a little different. That’s why we've created Mature and Transfer Student (MTS) events designed just for you – to unwind, meet fellow students, and help you feel at home at Laurier. Join us for a session designed specifically for mature and transfer students. Meet fellow students, connect with staff, and take part in an open Q&A where you can ask questions, learn what to expect, and get the information you need to start your Laurier journey with confidence.",
    "where": "P111 | First Floor Peters Building",
    "when": "9:30 to 10:30 a.m.",
    "host": "Student Experience",
@@ -19502,7 +19506,7 @@
   },
   {
    "title": "Group Exercise: Club Hits Cycle Class",
-   "desc": "Enjoy a high-energy indoor cycling class that blends rhythm riding, choreography, and outdoor-style drills. Vibe out to your favourite club hits in our low-lit cycle studio!",
+   "desc": "Community and Connection Programming. invites you to choose your own Orientation experience. Running alongside each other, these smaller-scale programs, hosted by campus partners and student groups, will offer a range of opportunities to connect and engage in ways that matter most to you. Whether you’re looking to meet people who share your interests, explore your identity, or join engaging conversations, this programming is designed to help you find your place. Each program will create a welcoming space to build connections with like-minded peers and communities across campus. Follow what sparks your curiosity, find your people, and start building your Laurier community, your way! Enjoy a high-energy indoor cycling class that blends rhythm riding, choreography, and outdoor-style drills. Vibe out to your favourite club hits in our low-lit cycle studio!",
    "where": "Cycle Studio | Athletic Complex",
    "when": "4 to 4:45 p.m.",
    "host": "Athletics and Recreation",
@@ -20361,7 +20365,7 @@
   },
   {
    "title": "French Montana: Welcome Back Concert",
-   "desc": "Tickets are only $30!!!. Get ready for an unforgettable night at Laurier Orientation 2026! Join us outdoors at Bingemans in Kitchener for an evening of live music, DJs, entertainment, and brand activations featuring: Daniel Monte DJ Order 66 Headliner: French Montana (+ $1.50 processing fee) Come early to explore the brand activations, grab food and drinks, and get ready for a full night of entertainment. This is an outdoor event, so please plan accordingly and come prepared for the weather. Get Your Ticket Now! For the safety and security of all attendees, all bags and personal items are subject to inspection upon entry. Small clutches and wristlets up to approximately 6\"\" x 9\"\" are permitted. Clear plastic, vinyl, or PVC bags up to approximately 12\"\" x 6\"\" x 12\"\" are permitted and recommended. Large backpacks, oversized bags, and large non-clear bags are not permitted. Weapons, illegal substances, glass containers, and other prohibited or dangerous items are not permitted. Professional cameras, recording equipment, and other large photography equipment are not permitted. Items that could disrupt the event or pose a safety concern may be refused entry at the discretion of venue or event security. Please leave prohibited items at home, as there is no bag or item check available at the venue. CONCERT POLICIES AND NOTES. Attendees are expected to follow all venue and event policies, as well as the direction of event staff and security. Venue Entrance & Re-Entry. All attendees are subject to security screening upon entry. The concert entrance is located along the walkway to the left of the Boston Pizza/Kingpin building. Please do not enter through the building to access the concert. Concert attendees are welcome to enter the Boston Pizza/Kingpin building to use the arcade and bowling facilities. These activities are not included with your concert ticket and will be at your own expense. Please bring your Laurier student ID with you to the event. It may be required for entry or access to student-only and 19+ areas. Please note: There are no re-entry privileges for the concert. Once you leave the concert area, you will not be permitted to re-enter. Transportation. Bussing will be available to and from Laurier's Waterloo campus and Bingemans. Additional information about pickup locations and schedules will be provided closer to the event. Parking is available at the venue. Weather Policy. The concert is an outdoor event and will take place rain or shine unless severe or inclement weather makes the event unsafe. In the event of cancellation due to weather, every effort will be made to reschedule the concert for a later date. Food and Beverage. Food and beverages will be available for purchase on site. No external food or beverages will be permitted A designated beer garden will be available for attendees who are 19+. Anyone wishing to access the beer garden or other 19+ areas must provide both a valid Laurier student ID and government-issued photo ID. Smoking. A designated smoking area will be available for attendees who are 19+.",
+   "desc": "Tickets are only $30!!!. Get ready for an unforgettable night at Laurier Orientation 2026! Join us outdoors at Bingemans in Kitchener for an evening of live music, DJs, entertainment, and brand activations featuring: Daniel Monte DJ Order 66 Headliner: French Montana (+ $1.50 processing fee) Come early to explore the brand activations, grab food and drinks, and get ready for a full night of entertainment. This is an outdoor event, so please plan accordingly and come prepared for the weather. Get Your Ticket Now! Bag & Item Policy. Smoking. Food and Beverage. Weather Policy. Transportation. Venue Entrance & Re-Entry. CONCERT POLICIES AND NOTES. Attendees are expected to follow all venue and event policies, as well as the direction of event staff and security. All attendees are subject to security screening upon entry. The concert entrance is located along the walkway to the left of the Boston Pizza/Kingpin building. Please do not enter through the building to access the concert. Concert attendees are welcome to enter the Boston Pizza/Kingpin building to use the arcade and bowling facilities. These activities are not included with your concert ticket and will be at your own expense. Please bring your Laurier student ID with you to the event. It may be required for entry or access to student-only and 19+ areas. Please note: There are no re-entry privileges for the concert. Once you leave the concert area, you will not be permitted to re-enter. Bussing will be available to and from Laurier's Waterloo campus and Bingemans. Additional information about pickup locations and schedules will be provided closer to the event. Parking is available at the venue. The concert is an outdoor event and will take place rain or shine unless severe or inclement weather makes the event unsafe. In the event of cancellation due to weather, every effort will be made to reschedule the concert for a later date. Food and beverages will be available for purchase on site. No external food or beverages will be permitted A designated beer garden will be available for attendees who are 19+. Anyone wishing to access the beer garden or other 19+ areas must provide both a valid Laurier student ID and government-issued photo ID. A designated smoking area will be available for attendees who are 19+. For the safety and security of all attendees, all bags and personal items are subject to inspection upon entry. Small clutches and wristlets up to approximately 6\"\" x 9\"\" are permitted. Clear plastic, vinyl, or PVC bags up to approximately 12\"\" x 6\"\" x 12\"\" are permitted and recommended. Large backpacks, oversized bags, and large non-clear bags are not permitted. Weapons, illegal substances, glass containers, and other prohibited or dangerous items are not permitted. Professional cameras, recording equipment, and other large photography equipment are not permitted. Items that could disrupt the event or pose a safety concern may be refused entry at the discretion of venue or event security. Please leave prohibited items at home, as there is no bag or item check available at the venue.",
    "where": "Bingemans | 425 Bingemans Centre Dr., Kitchener, ON",
    "when": "Doors open at 5 p.m. | Concert begins at 7 p.m.",
    "host": "Your Students' Union",
@@ -20926,7 +20930,7 @@
   },
   {
    "title": "Golden Hawks Football vs. Ottawa Gee-Gees in support of Shinerama",
-   "desc": "Get ready to cheer on the Golden Hawks as they take on the Ottawa Gee-Gees in an exciting matchup you won't want to miss! BONUS: New Laurier students get into the game free of charge by showing their Orientation Wristband at the East Gate! So come on out, wear your purple and gold, and be part of the electric atmosphere at University Stadium. Join fellow students, alumni, and community members as we fill the stands and celebrate what it means to be a Golden Hawk. Whether you're a dedicated football fan or simply looking for a fun way to connect with friends and classmates, this game is a great opportunity to experience one of Laurier's favourite traditions. While you're at the game, be sure to visit the Shinerama table! The Laurier Students' Union will be at the University Stadium with a donation booth and free airbrush art, all in support of Cystic Fibrosis Canada, Canada's largest post-secondary fundraising movement for CF research and care. Stop by to learn more, donate, and get free airbrush art while showing your support for a cause that makes a difference. Bring your friends, your energy, and your Golden Hawk spirit as we cheer on the home team and support Shinerama together! New Laurier undergraduate students get free entry to the game by showing their Orientation Wristband. Entry with an Orientation Wristband is only permitted through the East Gate. The East Gate is located towards the end zone closest to Albert St. The East Gate is located towards the end zone closest to Albert St.",
+   "desc": "Get ready to cheer on the Golden Hawks as they take on the Ottawa Gee-Gees in an exciting matchup you won't want to miss! BONUS: New Laurier students get into the game free of charge by showing their Orientation Wristband at the East Gate! So come on out, wear your purple and gold, and be part of the electric atmosphere at University Stadium. Join fellow students, alumni, and community members as we fill the stands and celebrate what it means to be a Golden Hawk. Whether you're a dedicated football fan or simply looking for a fun way to connect with friends and classmates, this game is a great opportunity to experience one of Laurier's favourite traditions. While you're at the game, be sure to visit the Shinerama table! The Laurier Students' Union will be at the University Stadium with a donation booth and free airbrush art, all in support of Cystic Fibrosis Canada, Canada's largest post-secondary fundraising movement for CF research and care. Stop by to learn more, donate, and get free airbrush art while showing your support for a cause that makes a difference. Bring your friends, your energy, and your Golden Hawk spirit as we cheer on the home team and support Shinerama together! ENTRANCE DETAILS. New Laurier undergraduate students get free entry to the game by showing their Orientation Wristband. Entry with an Orientation Wristband is only permitted through the East Gate. The East Gate is located towards the end zone closest to Albert St.",
    "where": "University Stadium",
    "when": "1 p.m. Kickoff",
    "host": "Athletics and Recreation",

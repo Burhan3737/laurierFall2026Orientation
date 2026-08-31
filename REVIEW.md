@@ -143,3 +143,27 @@ Verified sound across all 508 events: no fabricated, truncated or mis-attributed
 exception being the known Laurier-authored dead link); 502/502 citation fragments
 resolving to the originating section; rendered count matching an independent model in all
 147 board states; zero console errors.
+
+
+---
+
+## Round 6 findings and resolution
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | Laurier publishes two accordions for one cohort, one titled as a suffix of the other ("PhD Religious Studies" and "PhD Religious Studies - Faculty Meet and Greet"). They became two dropdown values, so picking either hid the student's other event and labelled it as another program's | **fixed** — a suffixed name folds into the bare one when both exist |
+| 2 | Round 5's fix restored the concert's policy blocks but appended them after the trailing prose, so the bag rules appeared un-headed before the heading that introduces them; the "Bag & Item Policy" heading was dropped entirely, as was "ENTRANCE DETAILS:" on both football cards | **fixed** — displaced blocks are folded in at the position they appear, and a still-pending heading is emitted with the tail it introduces |
+| 3 | The mid-word anchor rejoin glued together two genuinely different labels sharing one href, producing "LOCUS Linkslearn more about each link by clicking here" | **fixed** — only DOM-adjacent anchors are merged |
+| 4 | A nested `<ul>` was emitted twice, duplicating a sentence on both football cards | **fixed** — nested lists are skipped the way nested paragraphs already were |
+
+Findings 2 and 4 were residue from the round-5 description fix. Finding 3 had been latent
+since the original scraper: the merge rule written for Laurier's mid-word anchor splits
+also matched two unrelated labels in one sentence.
+
+Verified sound across all 508 events: no fabricated or truncated field; 384/384 accordion
+panels producing events; 148/149 HTTP URLs resolving (the exception being the known
+Laurier-authored dead link); 502/502 citation fragments resolving to the originating
+section; rendered counts matching an independent model in all 135 click-driven chooser
+states; zero console errors. The round-5 fixes were confirmed not to have caused damage
+elsewhere: `cost` is extracted only from the one real price, and the stream-tick restore
+is correctly guarded so a hidden stream is never re-ticked.

@@ -87,23 +87,36 @@ def date_from_slug(slug, default_year):
     m = re.match(r'^(jan|feb|mar|apr|may|jun|jul|aug|sept|sep|oct|nov|dec)-(\d{1,2})', slug)
     return "%04d-%02d-%02d" % (default_year, MONTHS[m.group(1)], int(m.group(2))) if m else None
 
+def adjacent(prev_a, a):
+    """True when nothing but whitespace separates two anchors. Laurier splits a single
+    label across two <a> tags mid-word; it also uses the same href twice in one sentence
+    for genuinely different labels, and those must not be glued together."""
+    node = prev_a.next_sibling
+    while node is not None and node is not a:
+        if isinstance(node, NavigableString):
+            if str(node).strip():
+                return False
+        else:
+            return False
+        node = node.next_sibling
+    return node is a
+
 def links_in(node):
-    out = []
+    out, prev = [], None
     for a in node.find_all('a', href=True):
         t = clean(a.get_text())
         h = a['href']
         if not t or h.startswith('#'):
+            prev = a
             continue
         if h.startswith('/'):
             h = "https://students.wlu.ca" + h
-        out.append({"text": t, "href": h})
-    merged = []
-    for l in out:
-        if merged and merged[-1]["href"] == l["href"]:
-            merged[-1]["text"] += l["text"]       # Laurier splits anchors mid-word
+        if out and prev is not None and out[-1]["href"] == h and adjacent(prev, a):
+            out[-1]["text"] += t              # mid-word split, rejoin
         else:
-            merged.append(dict(l))
-    return merged
+            out.append({"text": t, "href": h})
+        prev = a
+    return out
 
 def grab(lines, label):
     """value of 'Label:' from a list of lines, stopping at the next field label"""
@@ -124,10 +137,9 @@ def looks_like_title(s):
 def parse_panel(panel, fallback_title):
     """-> list of sub-event dicts"""
     events, pend_title, pend_desc, pend_links, audience = [], None, [], [], None
-    spare = []          # bold blocks displaced by a later lead-in; kept if the panel is single
 
     blocks = [p for p in panel.find_all(['p', 'ul', 'ol', 'table', 'h3', 'h4', 'h5'], recursive=True)
-              if not (p.name == 'p' and p.find_parent(['ul', 'ol', 'table']))]
+              if not (p.name in ('p', 'ul', 'ol') and p.find_parent(['ul', 'ol', 'table']))]
     if not blocks:                                  # some panels wrap everything in <span>
         blocks = [panel]
 
@@ -183,8 +195,9 @@ def parse_panel(panel, fallback_title):
         lt = clean(lead.get_text()) if lead else ""
         if lt and txt.startswith(lt[:12]) and looks_like_title(lt):
             if pend_title and pend_desc:
-                spare.append(clean(pend_title + ". " + " ".join(pend_desc)))
-                pend_desc, pend_links = [], []
+                # a bold block that never got a Where/When is prose, not a sub-event:
+                # fold it in at the position it appears so the order matches the page
+                pend_desc = [clean(pend_title + ". " + " ".join(pend_desc))]
             pend_title = lt.rstrip(':').strip()
             rest = clean(txt[len(lt):])
             if rest:
@@ -217,8 +230,8 @@ def parse_panel(panel, fallback_title):
                     events[-1][key] = v
 
     # trailing prose after the last Where/When belongs to the last event
-    if events and (pend_desc or pend_links):
-        tail = " ".join(pend_desc).strip()
+    if events and (pend_desc or pend_links or pend_title):
+        tail = clean(" ".join(([pend_title + "."] if pend_title else []) + pend_desc))
         if tail:
             events[-1]["desc"] = (events[-1]["desc"] + " " + tail).strip()
         events[-1]["links"] += [l for l in pend_links if l not in events[-1]["links"]]
@@ -231,10 +244,6 @@ def parse_panel(panel, fallback_title):
         events[0]["title"] = fallback_title
         if bt and bt not in events[0]["desc"]:
             events[0]["desc"] = clean(bt + ". " + events[0]["desc"])
-    if len(events) == 1 and spare:
-        keep = [t for t in spare if t not in events[0]["desc"]]
-        if keep:
-            events[0]["desc"] = clean(events[0]["desc"] + " " + " ".join(keep))
     for e in events:
         e.pop("_bold_title", None)
 
@@ -591,6 +600,24 @@ for f in sorted(META):
     ev = [enrich(x) for x in parse_page(f)]
     print("%-38s %3d events" % (f, len(ev)))
     all_ev += ev
+
+# Laurier sometimes publishes two accordions for one cohort, one titled as a suffix of
+# the other ("PhD Religious Studies" and "PhD Religious Studies - Faculty Meet and Greet").
+# Left alone these become two dropdown values, and picking either hides the student's
+# other event. Fold a suffixed name into the bare one when both exist.
+_names = {e["program"] for e in all_ev if e.get("program")}
+_fold = {}
+for _n in _names:
+    for _sep in (" - ", " – ", ": "):
+        if _sep in _n:
+            _base = _n.split(_sep)[0].strip()
+            if _base in _names and _base != _n:
+                _fold[_n] = _base
+for _e in all_ev:
+    if _e.get("program") in _fold:
+        _e["program"] = _fold[_e["program"]]
+if _fold:
+    print("folded program aliases:", _fold)
 
 # build-time guards: these would silently hide events in the UI
 assert all(e["campuses"] for e in all_ev), "event with no campus would be invisible"

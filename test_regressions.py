@@ -173,6 +173,30 @@ labels = [l['text'] for l in (intl[0].get('page_links') or [])] if intl else []
 check("page-level CTAs sharing a label are disambiguated",
       len(labels) == len(set(labels)), str(labels))
 
+
+# --- audit round 6 -------------------------------------------------------
+rel = [e for e in E if e.get('program') and 'Religious Studies' in e['program']]
+check("a suffixed program name folds into the bare one",
+      len({e['program'] for e in rel}) == 1 and len(rel) == 2,
+      str(sorted({e['program'] for e in rel})))
+
+fm2 = by_title('French Montana')
+check("policy headings survive and stay in source order",
+      bool(fm2) and 'Item Policy' in fm2[0]['desc']
+      and fm2[0]['desc'].find('CONCERT POLICIES') < fm2[0]['desc'].find('backpack'))
+
+check("football keeps its ENTRANCE DETAILS heading",
+      sum(1 for e in E if 'ENTRANCE DETAILS' in e['desc']) == 2)
+
+check("nested lists are not emitted twice",
+      not any(e['desc'].count('end zone closest to Albert') > 1 for e in E))
+
+bad_join = [l['text'] for e in E for l in e.get('links', [])
+            if 'clicking here' in l['text'] and 'LOCUS Links' in l['text']]
+check("non-adjacent anchors sharing an href are not glued together", not bad_join, str(bad_join))
+check("mid-word split anchors are still rejoined",
+      any(l['text'] == "Your Students' Union" for e in E for l in e.get('links', [])))
+
 print()
 if fails:
     print("%d FAILED" % len(fails))
