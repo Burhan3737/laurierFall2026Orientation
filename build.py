@@ -9,7 +9,7 @@ TODAY = "2026-08-31"
 K = {"date":"d","title":"t","desc":"x","where":"w","when":"n","host":"h","cost":"c",
      "audience":"a","links":"l","level":"lv","campuses":"cp","term":"tm","tags":"tg",
      "open_to_all":"oa","url":"u","section":"s","flags":"f",
-     "section_info":"si","section_links":"sl","page_links":"pl","parent":"pt","virtual":"vr"}
+     "section_info":"si","section_links":"sl","page_links":"pl","parent":"pt","virtual":"vr","program":"pg"}
 def pack(e):
     o = {}
     for long, short in K.items():
@@ -93,7 +93,11 @@ HTML = f"""<!DOCTYPE html>
         {opts("term", TERMS)}
     </div>
   </div>
-  <div class="q">
+  <div class="q" id="qprogram" hidden>
+    <div class="qlabel">Program or faculty <span class="hint">optional — hides other programs' welcomes</span></div>
+    <select id="program"><option value="">All programs</option></select>
+  </div>
+  <div class="q" id="qstream">
     <div class="qlabel">Also applies to me <span class="hint">optional — unlocks stream-specific events</span></div>
     <div class="qopts">
         {opts("stream", STREAMS, kind="checkbox")}

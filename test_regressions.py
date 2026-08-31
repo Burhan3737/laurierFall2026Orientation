@@ -105,6 +105,25 @@ dupes = collections.Counter((e['source_file'], e['title'], e['date'], e['when'],
 extra = {k: v for k, v in dupes.items() if v > 1 and 'Inner Tube Water Polo' not in k[1]}
 check("no unexplained duplicate cards", not extra, str(list(extra)[:2]))
 
+
+# --- program / faculty filtering ------------------------------------------
+progs = [e for e in E if e.get('program')]
+check("program/faculty extracted at both levels",
+      len({e['level'] for e in progs}) >= 2 and len(progs) > 20,
+      "%d events, levels=%s" % (len(progs), sorted({e['level'] for e in progs})))
+
+check("every graduate 'Program and Faculty Welcomes' event names its program",
+      all(e.get('program') for e in E
+          if e['section'] and 'Program and Faculty Welcomes' in e['section']))
+
+check("undergraduate faculty receptions name their faculty",
+      all(e.get('program') for e in E
+          if e['audience'] and 'undergraduate program' in e['audience']))
+
+mac = [e for e in progs if 'Applied Computing' in e['program']]
+check("Master of Applied Computing welcome present", bool(mac),
+      "Laurier publishes it on the Brantford graduate page")
+
 print()
 if fails:
     print("%d FAILED" % len(fails))

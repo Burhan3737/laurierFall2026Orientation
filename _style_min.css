@@ -246,3 +246,10 @@ footer{
 .reglink.dead{border-bottom-style:dotted;color:var(--ink-35);cursor:not-allowed}
 .parent{font-family:var(--mono);font-size:var(--s);font-weight:400;letter-spacing:.05em;color:var(--ink-50);margin-top:3px}
 .b-online{color:var(--ink-50)}
+#program{
+  font-family:var(--mono);font-size:var(--s);font-weight:400;letter-spacing:.05em;
+  padding:7px 10px;border:1px solid var(--ink-18);background:var(--paper);color:var(--ink);
+  border-radius:0;max-width:520px;width:100%;
+}
+#program:focus{outline:none;border-color:var(--ink)}
+.opt[hidden]{display:none}

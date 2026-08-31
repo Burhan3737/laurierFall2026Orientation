@@ -469,6 +469,25 @@ ONLY_PHRASE = re.compile(r'([A-Za-z&\-\' ]{3,60}?)\s+Students\s+Only\b', re.I)
 SECT_STREAM = re.compile(r'\b(Exchange|International|Indigenous)\s+Student', re.I)
 OPEN_TO_ALL = re.compile(r'open to all laurier students|undergraduate and graduate', re.I)
 
+# Program- or faculty-specific welcomes. Graduate: everything under Laurier's
+# "Program and Faculty Welcomes" heading. Undergraduate: faculty receptions, which state
+# their audience as "...enrolled in a Faculty of X undergraduate program".
+ENROLLED = re.compile(r'enrolled in (?:an?\s+)?(.+?)\s+undergraduate program', re.I)
+FACULTY_TITLE = re.compile(r"^(Faculty of [A-Za-z& ]+?|Lazaridis School|Martin Luther University College)"
+                           r"\s+(?:New Student|Undergraduate)", re.I)
+
+def program_of(e):
+    if e.get("section") and re.search(r'Program and Faculty Welcomes', e["section"], re.I):
+        return clean(e.get("parent") or e.get("title"))
+    if e.get("audience"):
+        m = ENROLLED.search(e["audience"])
+        if m:
+            return clean(m.group(1))
+    m = FACULTY_TITLE.match(e.get("title", ""))
+    if m:
+        return clean(m.group(1))
+    return None
+
 def enrich(e):
     hay = e.get("audience") or ""
     m = ONLY_PHRASE.search(e.get("title", "") + " " + (e.get("section") or "")
@@ -497,6 +516,10 @@ def enrich(e):
         tags.append("Virtual")
     e["tags"] = sorted(set(tags))
     e["open_to_all"] = bool(OPEN_TO_ALL.search((e.get("audience") or "") + " " + e.get("desc", "")))
+
+    pg = program_of(e)
+    if pg:
+        e["program"] = pg
 
     if e.get("parent") == e.get("title"):
         e.pop("parent", None)

@@ -43,6 +43,11 @@ function assess(e) {
         : g.join(" / ") + " students only" };
     }
   }
+  // A program/faculty welcome belongs to one program. Naming yours hides the rest;
+  // leaving it on "All programs" keeps the current behaviour of showing them all.
+  if (sel.program && e.pg && e.pg !== sel.program) {
+    return { ok: false, reason: "For " + e.pg };
+  }
   return { ok: true, reason: e.oa && e.lv !== sel.level ? "Open to all Laurier students" : "" };
 }
 
@@ -211,12 +216,15 @@ function buildNotes() {
 function readChooser() {
   function one(n) { var el = document.querySelector('input[name="' + n + '"]:checked'); return el ? el.value : null; }
   var streams = [].slice.call(document.querySelectorAll('input[name="stream"]:checked')).map(function (i) { return i.value; });
-  return { level: one("level"), campus: one("campus"), term: one("term"), streams: streams };
+  var prog = document.getElementById("program");
+  return { level: one("level"), campus: one("campus"), term: one("term"),
+           streams: streams, program: (prog && !prog.disabled) ? prog.value : "" };
 }
 
 document.getElementById("go").onclick = function () {
   sel = readChooser();
   var bits = [sel.level.replace(/-/g, " "), sel.campus, sel.term];
+  if (sel.program) bits.push(sel.program);
   if (sel.streams.length) bits.push(sel.streams.join(" + "));
   document.getElementById("who").textContent = bits.join("  ·  ");
   writeHash();
@@ -262,9 +270,50 @@ function countFor(level, campus, term) {
     return (e.lv === level) || (e.lv === "all") || e.oa;
   }).length;
 }
+/* Only offer a filter that can actually change this selection's results:
+   Residence and LOCUS are undergraduate concepts, the programme list differs per
+   level and campus, and an empty filter group is just noise. */
+function baseMatch(e, s) {
+  return e.tm === s.term &&
+         (e.cp || []).indexOf(s.campus) >= 0 &&
+         ((e.lv === s.level) || (e.lv === "all") || e.oa);
+}
+
+function refreshConditional(s) {
+  var pool = EV.filter(function (e) { return baseMatch(e, s); });
+
+  // streams: hide any that gate nothing here
+  var live = {};
+  pool.forEach(function (e) { gatesOf(e).forEach(function (t) { live[t] = (live[t] || 0) + 1; }); });
+  [].slice.call(document.querySelectorAll('input[name="stream"]')).forEach(function (i) {
+    var n = live[i.value] || 0;
+    i.parentNode.hidden = (n === 0);
+    if (n === 0) i.checked = false;
+    else i.parentNode.title = n + " event" + (n === 1 ? "" : "s");
+  });
+  document.getElementById("qstream").hidden =
+    ![].slice.call(document.querySelectorAll('input[name="stream"]')).some(function (i) { return !i.parentNode.hidden; });
+
+  // programmes / faculties available to this level and campus
+  var names = [];
+  pool.forEach(function (e) { if (e.pg && names.indexOf(e.pg) === -1) names.push(e.pg); });
+  names.sort();
+  var box = document.getElementById("qprogram"), sel2 = document.getElementById("program");
+  var keep = sel2.value;
+  sel2.innerHTML = '<option value="">All programs</option>' +
+    names.map(function (n) {
+      return '<option value="' + esc(n) + '">' + esc(n) + "</option>";
+    }).join("");
+  if (names.indexOf(keep) >= 0) sel2.value = keep;
+  box.hidden = (names.length === 0);
+  sel2.disabled = (names.length === 0);
+}
+
 function refreshAvailability() {
   var s = readChooser();
   if (!s.level) return;
+  refreshConditional(s);
+  s = readChooser();
   [].slice.call(document.querySelectorAll('input[name="campus"]')).forEach(function (i) {
     var n = countFor(s.level, i.value, s.term);
     i.disabled = (n === 0);
@@ -316,7 +365,7 @@ function refreshAvailability() {
     : exact ? "Show my events (" + exact + ")"
             : "No events yet — tick a filter below";
 }
-[].slice.call(document.querySelectorAll('.chooser input')).forEach(function (i) {
+[].slice.call(document.querySelectorAll('.chooser input, .chooser select')).forEach(function (i) {
   i.addEventListener("change", refreshAvailability);
 });
 refreshAvailability();
@@ -328,6 +377,7 @@ function writeHash() {
           "&campus=" + encodeURIComponent(s.campus) +
           "&term=" + encodeURIComponent(s.term);
   if (s.streams.length) p += "&streams=" + encodeURIComponent(s.streams.join("|"));
+  if (s.program) p += "&program=" + encodeURIComponent(s.program);
   history.replaceState(null, "", "#" + p);
 }
 function applyHash() {
@@ -345,8 +395,14 @@ function applyHash() {
     return false;
   }
   var ok = pick("level", p.level) && pick("campus", p.campus) && pick("term", p.term);
+  refreshConditional(readChooser());
   if (p.streams) {
     p.streams.split("|").forEach(function (s) { pick("stream", s); });
+  }
+  if (p.program) {
+    var psel = document.getElementById("program");
+    refreshConditional(readChooser());
+    psel.value = p.program;
   }
   refreshAvailability();
   return ok;
