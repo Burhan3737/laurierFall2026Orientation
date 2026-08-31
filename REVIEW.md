@@ -99,3 +99,26 @@ now checked for stray control characters.
 `check_drift.py` was added: it re-fetches all 13 pages and reports added or removed
 accordion panels against the snapshots, so staleness fails loudly instead of silently.
 Run `python check_drift.py` before trusting the board.
+
+
+---
+
+## Round 4 findings and resolution
+
+Audited by the new `orientation-auditor` agent against HEAD, after it re-ran the pipeline.
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | Switching level while an invalid campus/term was selected hid every filter group, stranding 80 events for an undergraduate. The filter pool was computed before the campus/term fallback and never recomputed | **fixed** |
+| 2 | Two near-duplicate SEEDs cards. Laurier publishes each session twice, worded differently ("Setting Yourself Up..." vs "Set Yourself Up..."), and the substring dedup missed it. The duplicate also lost the "(Students Only)" restriction, which matters because a parents' session runs in the same slot | **fixed** — 510 → 508 events |
+| 3 | Two data notes contradicted the board: the Winter note claimed all 20 events lack a venue (6 state Zoom), and the program note said filtering by program was not possible after the dropdown had been added | **fixed** |
+
+Finding 1 was a regression introduced by the conditional-rendering change in the same
+session. It is the reason `refreshConditional` is now called with the settled selection.
+
+Verified sound across 510 events at the time of audit: no fabricated, truncated or
+mis-attributed field anywhere; 384/384 accordion panels producing events; 85/86 outbound
+links resolving (the exception being the known Laurier-authored dead link); 504/510
+citation fragments resolving to the originating section; zero console errors across 74
+headless renders; and the Virtual change confirmed correct in all four respects, including
+SEEDs correctly not being treated as online.

@@ -8850,44 +8850,6 @@
    ]
   },
   {
-   "title": "Set Yourself Up for Success at University",
-   "desc": "",
-   "where": "",
-   "when": "1:30 to 3 p.m.",
-   "host": "",
-   "cost": "",
-   "audience": null,
-   "links": [],
-   "date": "2026-09-09",
-   "section": "Brantford Campus SEEDs Orientation Day",
-   "anchor": "brantford",
-   "level": "all",
-   "campus": "Brantford",
-   "campuses": [
-    "Brantford"
-   ],
-   "virtual": false,
-   "term": "Fall 2026",
-   "stream": "Indigenous",
-   "source_file": "indigenous.html",
-   "section_info": {},
-   "section_links": [],
-   "page_links": [
-    {
-     "text": "Register Now For SEEDs Orientation!",
-     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
-    }
-   ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#brantford",
-   "tags": [
-    "Indigenous"
-   ],
-   "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
-  },
-  {
    "title": "Early Move-in (Students Living in Residence Only)",
    "desc": "If you're living in residence and registered for SEEDs Orientation, you can move in early. Move-in begins in the morning, so plan enough time to settle in before orientation starts. Details about the early move-in process will be shared in mid-August.",
    "where": "Your Residence Building",
@@ -9100,50 +9062,6 @@
    ],
    "open_to_all": false,
    "flags": []
-  },
-  {
-   "title": "University 101 Session (Students)",
-   "desc": "",
-   "where": "",
-   "when": "4 to 5 p.m.",
-   "host": "",
-   "cost": "",
-   "audience": null,
-   "links": [],
-   "date": "2026-09-03",
-   "section": "Waterloo Campus SEEDs Orientation",
-   "anchor": "waterloo",
-   "level": "all",
-   "campus": "Waterloo",
-   "campuses": [
-    "Milton",
-    "Waterloo"
-   ],
-   "virtual": false,
-   "term": "Fall 2026",
-   "stream": "Indigenous",
-   "source_file": "indigenous.html",
-   "section_info": {},
-   "section_links": [
-    {
-     "text": "Register Now!",
-     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
-    }
-   ],
-   "page_links": [
-    {
-     "text": "Register Now For SEEDs Orientation!",
-     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
-    }
-   ],
-   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html#waterloo",
-   "tags": [
-    "Indigenous"
-   ],
-   "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
   },
   {
    "title": "Your Time!",

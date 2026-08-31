@@ -132,6 +132,28 @@ check("chooser offers 'my program is not listed'",
 check("that option hides every program welcome",
       'sel.program === NO_PROGRAM && e.pg' in app)
 
+
+# --- audit round 4 -------------------------------------------------------
+ind = [e for e in E if e['source_file'] == 'indigenous.html']
+check("no near-duplicate SEEDs cards from the overview sweep", len(ind) == 20,
+      "%d events (Laurier publishes 20)" % len(ind))
+
+for t in ["Setting Yourself Up for Success at University", "University 101 Session (Students Only)"]:
+    hits = by_title(t)
+    check("SEEDs keeps the detailed accordion copy: %s" % t[:34],
+          len(hits) == 1 and len(hits[0]['desc']) > 100)
+
+# the filter groups must be built from the settled selection, not a transient one
+check("conditional filters rebuilt after the campus/term fallback",
+      "refreshConditional(s2)" in app)
+
+# data notes must describe the board as it actually behaves
+check("Winter note does not overstate missing venues",
+      "are TBD" in app and "no date and TBD for time and venue" not in app)
+check("program note reflects that filtering now exists",
+      "Program welcomes are not filtered by program" not in app
+      and "Program or faculty" in app)
+
 print()
 if fails:
     print("%d FAILED" % len(fails))

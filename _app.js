@@ -202,16 +202,22 @@ function buildNotes() {
   }
   var winter = EV.filter(function (e) { return e.tm === "Winter 2027"; });
   if (winter.length && winter.every(function (e) { return !e.d; })) {
-    notes.push(["The entire Winter 2027 schedule is a placeholder",
-      "All " + winter.length + " Winter 2027 events are published with no date and TBD for time and venue. " +
-      "Laurier states registration opens in October 2026."]);
+    var wVenue = winter.filter(function (e) { return (e.f || []).indexOf("no-venue") === -1; }).length;
+    var wTime = winter.filter(function (e) { return (e.f || []).indexOf("no-time") === -1; }).length;
+    notes.push(["The Winter 2027 schedule is mostly a placeholder",
+      "All " + winter.length + " Winter 2027 events are published without a date, and Laurier states " +
+      "registration opens in October 2026. " +
+      (wVenue ? wVenue + " of them do give a venue (the Virtual sessions state Zoom); the other " +
+                (winter.length - wVenue) + " are TBD. " : "None gives a venue. ") +
+      (wTime ? wTime + " give a time." : "None gives a time.")]);
   }
-  var prog = EV.filter(function (e) { return e.s && /Program and Faculty Welcomes/i.test(e.s); }).length;
+  var prog = EV.filter(function (e) { return e.pg; }).length;
   if (prog) {
-    notes.push(["Program welcomes are not filtered by program",
-      prog + " graduate program and faculty welcomes carry no audience restriction on Laurier's page, so they " +
-      "all appear for every graduate student on that campus. Only the one matching your own program is yours — " +
-      "each card is marked accordingly."]);
+    notes.push(["Program and faculty welcomes carry no audience on Laurier's page",
+      prog + " events are specific to one program or faculty, but Laurier states no audience " +
+      "restriction on them, so by default they all show. Use the \\u201cProgram or faculty\\u201d " +
+      "dropdown to narrow to your own, or choose \\u201cMy program is not listed\\u201d to hide " +
+      "them all \\u2014 Laurier does not publish a welcome for every program."]);
   }
 
   var list = document.getElementById("noteslist");
@@ -369,6 +375,12 @@ function refreshAvailability() {
   }
   // upper bound decides whether the combination exists at all; the exact count
   // reflects the streams actually ticked, so the number moves as you tick them.
+  // The filter groups must be built from the SETTLED selection. Building them earlier
+  // meant that switching level while an invalid campus/term was still selected computed
+  // the pool against a combination with no events, hiding every stream and program.
+  refreshConditional(s2);
+  s2 = readChooser();
+
   var upper = countFor(s2.level, s2.campus, s2.term);
   var exact = countExact(s2);
   var go = document.getElementById("go");

@@ -10,7 +10,7 @@ Field text is read via para_text(), which joins text nodes with NO separator and
 on <br>. Laurier splits anchors mid-word ("<a>Y</a><a>our Students' Union</a>"), so any
 whitespace-joining extraction truncates the value at the tag seam.
 """
-import json, re, os
+import json, re, os, difflib
 from bs4 import BeautifulSoup, NavigableString
 
 BASE = "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/"
@@ -409,7 +409,19 @@ def parse_page(fname):
                 rest = clean(" ".join(lns[1:]))
                 if not re.match(r'^\d{1,2}(:\d\d)?\s*(a\.m\.|p\.m\.|onwards|-|to)', rest, re.I):
                     continue
-                if any(nm.lower() in k or k in nm.lower() for k in known):
+                def norm(t):
+                    return re.sub(r'[^a-z0-9 ]', '', t.lower()).strip()
+                nn = norm(nm)
+                if any(nn in norm(k) or norm(k) in nn or
+                       difflib.SequenceMatcher(None, nn, norm(k)).ratio() > 0.72
+                       for k in known):
+                    continue
+                start = re.match(r'\s*(\d{1,2}(?::\d\d)?)', rest)
+                if start and any(
+                        ex.get('section') == sect and ex.get('when') and
+                        re.match(r'\s*(\d{1,2}(?::\d\d)?)', ex['when']) and
+                        re.match(r'\s*(\d{1,2}(?::\d\d)?)', ex['when']).group(1) == start.group(1)
+                        for ex in out):
                     continue
                 out.append({
                     "title": nm, "desc": "", "where": sect_info.get("Location", ""),
