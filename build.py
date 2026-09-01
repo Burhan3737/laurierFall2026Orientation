@@ -1,5 +1,17 @@
-"""Generate orientation.html (self-contained) from events.json."""
-import json, io, re, datetime, subprocess, sys
+"""Generate a self-contained orientation page from events.json.
+
+    python build.py                                  -> orientation.html   (_style_min.css)
+    python build.py --css _style_a.css --out orientation-a.html
+
+The no-argument invocation is the canonical build and its output is byte-for-byte
+stable; --css/--out only swap the stylesheet and the destination.
+"""
+import json, io, re, datetime, subprocess, sys, argparse
+
+_ap = argparse.ArgumentParser(description=__doc__)
+_ap.add_argument('--css', default='_style_min.css', help='stylesheet to inline')
+_ap.add_argument('--out', default='orientation.html', help='page to write')
+ARGS = _ap.parse_args()
 
 d = json.load(open('events.json', encoding='utf-8'))
 EV = d['events']
@@ -49,7 +61,15 @@ for f in ('_app.js',):
     if r.returncode:
         sys.exit('SYNTAX ERROR in %s\n%s' % (f, r.stderr))
 
-CSS = open('_style_min.css', encoding='utf-8').read()
+CSS = open(ARGS.css, encoding='utf-8').read()
+
+# A stylesheet may name its own webfonts with a first-line directive:
+#     /* @fonts https://fonts.googleapis.com/css2?... */
+# so that a variant can bring its own typography without editing this template.
+DEFAULT_FONTS = ("https://fonts.googleapis.com/css2?"
+                 "family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400&display=swap")
+_m = re.search(r'/\*\s*@fonts\s+(\S+)\s*\*/', CSS)
+FONTS = _m.group(1) if _m else DEFAULT_FONTS
 
 HTML = f"""<!DOCTYPE html>
 <html lang="en">
@@ -59,7 +79,7 @@ HTML = f"""<!DOCTYPE html>
 <title>Laurier Orientation — Event Finder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+<link href="{FONTS}" rel="stylesheet">
 <style>
 {CSS}
 </style>
@@ -156,5 +176,5 @@ const TODAY = "{TODAY}";
 </html>
 """
 
-io.open('orientation.html', 'w', encoding='utf-8').write(HTML)
-print("orientation.html written: %d KB, %d events" % (len(HTML)//1024, len(EV)))
+io.open(ARGS.out, 'w', encoding='utf-8').write(HTML)
+print("%s written: %d KB, %d events (%s)" % (ARGS.out, len(HTML)//1024, len(EV), ARGS.css))
