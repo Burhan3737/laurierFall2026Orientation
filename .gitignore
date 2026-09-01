@@ -9,3 +9,5 @@ _*.png
 _open.html
 __pycache__/
 *.pyc
+_fonts/
+_runlogs/

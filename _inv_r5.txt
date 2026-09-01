@@ -1,0 +1,4 @@
+Rendered invariants
+  ok    orientation-a.html keeps its promises across 5 states: no title repeats its own day, no sticky element hides another, no rule colour used as text
+  ok    orientation-b.html keeps its promises across 4 states: no title repeats its own day, no sticky element hides another, no rule colour used as text
+  ok    orientation-c.html keeps its promises across 4 states: no title repeats its own day, no sticky element hides another, no rule colour used as text

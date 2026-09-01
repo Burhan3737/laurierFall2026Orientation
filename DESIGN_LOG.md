@@ -1,0 +1,850 @@
+# Design log
+
+Three alternative experiences for the Laurier Orientation Event Finder. The data, the
+incumbent page and the regression suite are untouched; each variant has its own body
+template, stylesheet and application script, built through `build.py --body --css --js
+--out`. The no-argument build stays byte-identical (md5 `2577645c2eeeee417361d7b6037a7174`).
+
+## Rule of the exercise
+
+Two variants that would become the same page if you swapped their stylesheets count as
+one variant. So the axes moved here are navigation, where filtering lives, what one event
+looks like at rest, how events are grouped, and what a student can do besides read.
+
+|                    | A — The Timetable | B — The Index | C — Your Orientation |
+|--------------------|-------------------|---------------|----------------------|
+| Navigation         | day paging + whole-run grid | one query-driven stream, re-filed by pivot | linear document after a linear interview |
+| Filtering lives    | persistent band, never a gate | facet rail with live counts, always on | one-time full-screen interview |
+| One event at rest  | a block sized by its duration | a one-line row | fully written out, nothing to open |
+| Grouping           | hour of the day, on a real clock | whichever pivot you choose | day, then morning/afternoon/evening |
+| Beyond reading     | see what overlaps | search, pivot, keyboard-drive | tick, clash-check, print, export .ics |
+
+## Brand
+
+Verified from the scraped Laurier pages and cross-checked on the web: purple `#330072`,
+gold `#F2A900`, the lighter institutional purple `#924DA7`, the pale purple field
+`#F7F5F9`. Laurier's own site sets CallunaSans, which is not on Google Fonts; each variant
+takes a different, deliberate stand-in rather than all three using one substitute.
+
+---
+
+## Round 1 — first cut
+
+Built from nothing. The three scrapped concepts (editorial broadsheet, signage board, mono
+ledger) were not revisited.
+
+**A — The Timetable.** `orientation-a.html` · `_style_a.css` · `_app_a.js` · `_body_a.html`.
+Archivo across its width axis; square corners throughout. A persistent identity band with
+segmented controls, a day-density navigator whose bar heights are event counts, then either
+the whole run as a grid of day columns against an hour axis, or one day at full width.
+Overlapping events are drawn side by side, so a clash is a shape rather than a warning.
+Events lasting four hours or more (drop-in desks, headquarters) ride above the clock as
+ribbons, because left in the grid they swallowed the column. In the whole-run view a cluster
+wider than three columns collapses to a "+N more" tile that opens the day.
+
+**B — The Index.** `orientation-b.html` · `_style_b.css` · `_app_b.js` · `_body_b.html`.
+Libre Franklin for the apparatus, Newsreader for the one record being read. No gate: the
+corpus is on screen at first paint. A query bar at the top, a facet rail with live counts
+(and "+N" for what a stream would add), a pivot that re-files results under date, time of
+day, venue, host, stream or schedule section, and a reading pane that holds still while
+arrow keys walk the list.
+
+**C — Your Orientation.** `orientation-c.html` · `_style_c.css` · `_app_c.js` · `_body_c.html`.
+Faustina and Alegreya Sans on warm paper — the closest Google Fonts get to Laurier's
+Calluna. Five full-screen questions, then a document in which every event is already open.
+A tick box in the left margin builds a plan; the plan bar counts overlaps, prints, and
+exports a `.ics` that works offline.
+
+### Verification at the end of round 1
+
+- `python parity.py` — all three variants render the same multiset of event titles as the
+  incumbent across 83 selections spanning all three levels, three campuses, three terms,
+  every stream that gates anything, programme narrowing including "mine is not listed",
+  and mixed stream+programme cases.
+- The eligibility core (`gatesOf` + `assess`) is asserted byte-identical across all four
+  application scripts, so parity cannot drift silently.
+- Zero JavaScript errors across 69 page states.
+- `python test_regressions.py` 48/48; `orientation.html` md5 unchanged.
+
+### Cycle 1 — independent review
+
+Headline finding, and the one that mattered most: *"These are three genuinely distinct
+products, not one reskinned. Swapping the stylesheets would not converge them."* No
+machine-generated tells found in any of the three. All three came back `revise`.
+
+Acted on:
+
+| Variant | Criticism | What changed |
+|---|---|---|
+| A | "The default view is the unreadable one" — the whole-run grid split 116px columns into 35px lanes | **One Day is now the landing view**, on today if Laurier publishes anything for today, otherwise the next day that has something on the clock. Whole Run became the secondary toggle, and is forced off below 900px |
+| A | truncated one-word-per-line titles in crowded lanes | a lane narrower than 72px now draws a **time-only tick** with the full title on hover; a truncated word is worse than an honest mark |
+| A | "`+N more` and the day headers don't look clickable" | the overflow tile says "open the day ›" underlined; day headers reveal an "open ›" cue and underline the numeral on hover |
+| A | the sheet buried When/Where under 640px of marketing copy | facts table and registration links now sit **above** the description |
+| A | stream chips showed a bare number that contradicted the tally | they now show the **delta** — `+17` — and the label says so |
+| B | the placeholder advertised `free food`, which returned nothing | search is **token-AND**: every word must appear somewhere in the record, in any order. Placeholder examples changed to ones that hit on the default board |
+| B | `Record 495 of 508` — a raw array index dressed as precision | now `Result 12 of 86`, the position in the current result set |
+| B | reader led with 1,200 unbroken words before the venue | **When / Where / Host block and the registration links now precede the prose**; the description is broken at Laurier's own sentence boundaries into paragraphs of three, adding and losing nothing |
+| B | facet counts all read `508` inside "include events I cannot attend" | counts are now always "records you could attend", and the rail says so |
+| B | two measured contrast failures (3.67:1, 3.05:1) | column headers and zero-count facets darkened to 7.0:1 and 5.6:1 |
+| C | five gated questions with no way past them | every step carries **"Skip the questions — show me the … board"** |
+| C | "Change my answers" restarted the whole interview | the document header now carries the five answers as chips; clicking one opens **that question only** and returns straight to the document. "Redo the whole interview" is still there for anyone who wants it |
+| C | 620px per event, 67 phone screens | venue, host and "part of" are no longer repeated in the facts table beneath the entry that already states them; the citation is one short line naming the page and section rather than a wrapped URL, with the "accessed 31 Aug 2026" statement made once at the top |
+| C | no way to skim | a **Titles only** density toggle in the plan bar |
+| C | day headers scrolled away | `.dayhead` is sticky under the contents rail |
+| C | the zero-result sentence read "0 events… nothing to unfold" | rewritten, and the empty contents rail is hidden |
+| all | webfonts fetched from Google for a page described as offline | `fetch_fonts.py` caches the latin subsets and `build.py` inlines them as base64. The variants now emit **no `<link>` at all** and keep their typography with the network unplugged. The corpus contains no latin-ext codepoint, so only the latin subset is carried |
+
+Held: variant C still leads with the interview rather than defaulting straight to a board.
+The skip control answers the objection without giving up what makes C a different product;
+if a later reviewer says the gate is still wrong, that is the point at which to change the model.
+
+### Cycle 2 — independent review
+
+Again: *"These are three genuinely distinct products... Swap the stylesheets and you get three
+ugly pages, not three identical ones."* No machine-generated tells. All three `revise`.
+Two earlier points came back harder — hover-only affordances, and CTA buttons above the
+description — so both were fixed properly this time.
+
+Acted on:
+
+| Variant | Criticism | What changed |
+|---|---|---|
+| A | "the whole-run week grid is broken and should not ship" — most events rendered as nameless `12pm` boxes | **the overview stopped pretending to be a clock.** It is now a strip: three time bands that line up across every day, three named events per band per day, then "+N more ›" into the day. Everything drawn has a name and a time. The clock survives where it works — the day view |
+| A | phone: seven 35px lanes, one character per line; and 700px of empty grid on a quiet day | below 700px the day is an **agenda** — time, title, venue, and "5 others at this time" instead of drawn collisions |
+| A | first event at y≈690 on a 1366×768 laptop | masthead, identity band, navigator and day header all tightened; the first event is now ~150px higher |
+| A | titles clipped mid-word with no ellipsis | block titles and venues are line-clamped, so a clipped title reads as clipped |
+| A | `.dgo` hover-only — invisible on touch | permanently visible at 55%, full on hover |
+| A | disabled step arrow 2.01:1 | darkened to a legible disabled grey |
+| B | a 130px venue paragraph destroying the table rhythm | venue and host cells clamp to two lines; the full text is in the reader |
+| B | the pivot column repeats its own group heading | **the column the board is filed under is dropped**: no Venue column under Venue, no Host under Host, no Date under Date |
+| B | the reader pane is dead weight showing "Nothing selected" | it opens on the next upcoming record |
+| B | 390px horizontal scrollbar | `#q` can shrink; the identity line truncates below 640px |
+| A + B | three heavy CTA slabs above the description | description first in both |
+| all | the same event shown twice with no explanation | **not de-duplicated** — see below — but every repeat is now labelled `copy 1/2` in the list and carries a note in the detail naming the other section it appears under |
+| C | 63,440px — "seventy laptop screens" | default density is now **titles**, with the day you are most likely to want open in full and a "Read this day in full" control on every other day heading. Measured: 13,836px desktop, 18,413px phone. Full text is still one click, and print still uses it |
+| C | the standfirst described a state the page was not in | it now says which state it is in, and changes with it |
+| C | two plan-bar buttons permanently disabled at 3.24:1 | when nothing is ticked they are replaced by a line saying what ticking does |
+| C | the tick box vanished on a phone | it is now the first thing in the entry at narrow widths, full width and labelled |
+| C | "Undergraduate — 320" beside "91 events so far" | the options read "320 published", the running total reads "91 you can attend so far" |
+| C | `.anspen` hover-only | permanent at 60% |
+| C | a 5 p.m. event filed under "Evening" | bands carry their ranges: "Morning, before noon" / "Afternoon, noon to 5" / "Evening, 5 p.m. onwards" |
+
+**Held: the duplicates are not merged.** The reviewer asked all three variants to
+de-duplicate on title+date+time+venue. They are not going to. Laurier genuinely publishes
+"Inner Tube Water Polo" three times on one page and "We Brought What You Forgot" on two
+different schedule pages, each copy with its own citation anchor; the incumbent reproduces
+every copy, six audit rounds ratified that, and dropping one would break the parity
+guarantee that is a hard constraint of this exercise. The complaint underneath — that a
+student sees the same line twice and is told nothing — is real, so it is answered by
+naming the repeat rather than hiding it.
+
+### Cycle 3 — independent review
+
+Third independent reader, same headline: *"These are three genuinely distinct products.
+Swapping stylesheets converges no pair: A's organising axis is time, B's is the query, C's
+is the page."* No machine-generated tells in any of them.
+
+The finding worth the round, though, was this: **"The one place they read as one product
+reskinned is the event detail record."** All three were using the same facts grid, the same
+stack of full-width purple link buttons and the same "CITED FROM" block. That is a real
+convergence and round 2 is mostly about fixing it.
+
+---
+
+## Round 2 — differentiate the detail, and finish the phone
+
+**The event detail is now three different things.**
+
+- **A** leads with a **time ribbon**: a bar of the whole day with this event in purple and
+  everything it collides with in gold. It is the one thing a clock can say that a list
+  cannot, so the sheet says it first. Links stay chunky purple slabs — this is a board.
+- **B** reads as a **catalogue record**: a Laurier masthead line over a gold rule, `‹ ›`
+  stepping through the result set, field labels in a narrow left column, links as
+  underlined text rather than buttons, and a citation set as a reference — *Wilfrid Laurier
+  University. "Laurier Fall Orientation: Waterloo Undergraduate Schedule", §sept-8.
+  Accessed 31 Aug 2026.*
+- **C** stays inline in the document, with no detail view at all.
+
+Other changes from cycle 3:
+
+| Variant | Criticism | What changed |
+|---|---|---|
+| A | "the one-day clock wastes the screen on quiet days" — 900px of ruled nothing between two events | the axis is **piecewise**: occupied stretches run at full scale, any gap of two hours or more collapses to a labelled band reading "nothing published between 3pm and 8pm". The empty time is stated in words instead of drawn in pixels |
+| A | no legend for the gold and lilac rules | a two-item legend under the day header |
+| A | hatched empty week cells "read as something is here" | hatching is now reserved for past days |
+| A | print had no title and no statement of whose schedule it is | print keeps the masthead and the identity line |
+| B | prose in the 96px TIME column (*"You will receive an…"*) | the column says "no time"; Laurier's sentence is quoted in full on the row's own line |
+| B | the dead 80px gutter at phone width | the Date pivot drops to a single column below 640px |
+| B | "RESULT 5 OF 91" promised a sequence the UI would not walk | `‹ ›` in the reader header |
+| B | duplicates listed twice | the repeat **folds behind** "Laurier lists this 2 times — show the other". Both records stay in the page and stay one click away |
+| B | "the least Laurier-feeling of the three" | the reading pane now carries a Laurier masthead line over a gold rule |
+| B | the pivot "reads as a secondary toolbar" | it is reachable from the record it describes: WHERE carries "9 more here", HOST carries "3 more from them", each jumping to that group under the matching pivot |
+| C | Q1 asked "Where are you starting" and answered with degree levels | "Which schedule are you on?" |
+| C | the primary action fell below the fold at 1440×900 | the interview footer is pinned to the panel |
+| C | skip "reads as an escape hatch rather than an equal path" | "Show me everything now" is a bordered secondary button beside Next |
+| C | picks keyed by array index, lost on close | keyed on a hash of title+date+time+URL and persisted to `localStorage` where the origin allows it, with the hash as the shareable fallback |
+| C | the tick box became a full-width bar above the title | it is back in the left margin at every width |
+| C | no way back to the top of a long document | a Top control in the plan bar |
+| C | `.edot` separator at 1.49:1 | darkened to the body meta colour |
+| all | "Virtual" listed as if it were a group you belong to | shown as "Online sessions (Zoom)", with a note in C that it is a delivery mode. The stored value is unchanged, so eligibility is untouched |
+
+**Recorded disagreements.** Two cycle-3 findings were checked and are not defects:
+`+N more ›` in A's whole-run view already switches to that day (it is wired to the same
+handler as the day header), and B's zero-count facets are already `disabled` — though they
+now also strike through, since "greyed" clearly was not reading as "unavailable".
+
+**Held again:** A still hands the phone an agenda rather than a compressed clock. Lane
+splitting is what makes A's collisions legible, and at 390px five parallel lanes are 35px
+wide — the concept does not survive the width. What survives instead is the *argument*:
+the agenda keeps the hour gutter, collapses empty stretches with the same "nothing
+published between…" band, and names every collision ("5 others at this time").
+
+### Round 2, cycle 1 — independent review
+
+Fourth independent reader. *"Three different verbs: read the clock / query the index /
+build and keep a plan. Nobody is reskinning anybody."* On the generated-page question:
+*"all three are clean, and I would say so without qualification."* Contrast measured
+programmatically over every text-bearing element in every state: **two failures in the
+whole set, both on decorative glyphs.** Both fixed.
+
+Two layouts were called broken, and both were:
+
+| Variant | Criticism | What changed |
+|---|---|---|
+| **B** | **the phone row grid was genuinely broken** — measured live, one row computed its time cell to `0px` so the time did not render at all, the next gave `no time` 196px and crushed the title into 161px. Half the rows on a phone showed no time | below 640px the row **stops being a grid**. Date and time run inline, title, venue and Laurier's own note stack beneath. Four column tracks fighting three pivot rules cannot produce a 0px cell if there are no tracks |
+| **A** | **"show what you cannot attend" destroyed the page** — 92 events, 85 overlapping, laid out as ~14 lanes of 30px confetti. A named feature that wrecks the board | past **five concurrent events the clock has nothing left to say**, so the day switches to a list. Ghost mode turns the list on for you, and a "Read it as a list / Draw it on the clock" control makes the choice explicit and reversible. When it switches itself it says why: *"14 events run at once here — too many for the clock, so this day is a list"* |
+| B | no way to jump to a day: 7,491px of scrolling to reach Tuesday | a **jump rail** under the pivot bar, wired to the group ids that already existed. It follows the pivot — days under Date, venues under Venue — and becomes a select past 16 groups. Plus a Top control in the sticky header |
+| B | venue pivot sorted on room codes (`CC-101 | Career Development Centre`) | venue groups sort on the building name |
+| B | search placeholder truncated on a phone | a short placeholder below 700px |
+| B | `·` link separator at 1.73:1 | body meta colour |
+| A | empty band cells drew an outlined box with a floating em-dash at 2.97:1 — "reads as a failed render" | an empty cell now draws nothing at all |
+| A | week columns forced a horizontal scroller at 1400px, and `+8 more` hid most of a busy day | columns narrowed so nine days fit without scrolling, and five events per band instead of three |
+| A | `COPY 1/2` is engineer jargon on a student's screen | "listed twice" / "listed 3 times" |
+| A | landing skipped a day that had events but no *timed* ones | it lands on today, or the next day with anything published at all |
+| C | 14,081px in titles mode — each collapsed entry cost ~155px | a collapsed entry is now **two lines, 65px**; the band and day furniture shrinks with it. Measured: **10,862px**, and Full text is still one click |
+| C | "every wizard screen is ~80% empty… reads as a layout that failed to load" | the right-hand column carries **the week the answers are already producing** — a bar per day with counts — and the question block is vertically centred |
+| C | "changing a filter is a modal round trip" | `CHANGE` now opens an **inline panel in the document** with the same live counts, applied in place. The full-screen interview is only for the first pass and for "Redo the whole interview" |
+| C | the reading toggle was "the quietest thing on the day header" | it is a bordered control, and there is now a global Full text / Titles only in the jump rail |
+| C | four equally-weighted purple buttons per entry | `Register Now!` sorts first and is solid gold; the rest are underlined text links |
+| C | the phone tick box lost its label | `I'M GOING` is back at every width |
+
+### Round 2, cycle 2 — independent review
+
+Fifth independent reader. Same verdict on the question that matters: *"These are three
+genuinely different products. A has no search and nothing to mark; B has no clock and no
+plan; C has no grid and no free-text query. The differences are in what a student can* do,
+*not what they see — which is the test that matters."* Contrast measured across all three:
+**zero failures**, light fields and dark.
+
+The finding worth the cycle was cross-cutting and I had missed it entirely.
+
+**`TODAY` was frozen at build time in all three.** `build.py` bakes `TODAY = "2026-08-31"`
+into the payload; A used it to land and to grey past days, B to power "Still to come", C
+to decide which day to open in full. On a page opened on 6 September — the week it exists
+for — all of that is wrong, and it gets more wrong daily. The variants now compute `NOW`
+from the reader's clock and use it for every "has this happened yet" question. `TODAY`
+stays what it always was: the date the page was compiled, which is what the citations say.
+The incumbent is untouched.
+
+| Variant | Criticism | What changed |
+|---|---|---|
+| **A** | "the marquee view breaks at 13 days" — a horizontal scroller, three fixed bands rather than a clock, empty outlined cells dominating, titles truncated to uselessness | **the whole run was rebuilt on its side.** One row per day, time running left to right, position and width the real start and the real duration, a collision shown as a stack. Thirteen days fit at 1400px with no sideways scroll and no empty cells, because a day with nothing simply has an empty lane |
+| A | titles spent the cell repeating the column heading — "Wednesday, Sept. 9 - Internationa…" | a leading weekday-and-date is stripped from a title shown inside that day's own row |
+| A | it landed on a near-empty screen | it lands on the **busiest day ahead** and says where the run starts: *"This is your busiest day. Orientation starts on Friday 4 Sept ›"* |
+| A | the `‹` day button at 4.53:1, "one rounding error from failing" | darkened to 7.6:1 |
+| **B** | the Venue pivot split one room across several groups — "The Turret \| 3rd floor of the Fred Nichols Campus Centre (FNCC)" and "The Turret \| 3rd Floor, Fred Nichols Campus Centre (FNCC)" | venue spellings **fold**: case and punctuation are normalised, a venue that is a prefix of another folds into it, and the label shown is Laurier's own commonest spelling. 39 groups → 34. The data is untouched; only the grouping folds |
+| B | group ordering "arbitrary" — six singleton venues before the 12-event pool | venue, host and stream file **busiest first**. Dates stay chronological |
+| B | "the rail contradicts itself" — "the count shows how many records it adds", then reads −17 | "the number is what ticking — or unticking — changes the count by" |
+| B | a native scrollbar under the jump strip, "the only visible chrome scrollbar on the page" | hidden, with a fade mask at the scrolling edge |
+| B | the floating FILTERS button covered a row | a full-width bar at the bottom, with the list padded clear of it |
+| B | no print stylesheet | one, led by a heading naming the schedule, the filters, the query and the pivot |
+| **C** | **it opened a day that had already happened** — a consequence of the frozen `TODAY` | fixed by `NOW` |
+| C | "ninety-one identical notes… roughly 40% of the vertical height" | a page-level note Laurier repeats on three or more of your events is **stated once at the top** and dropped from the entries, with "applies to 41 of your events". The `Schedule` row goes entirely except where an event is not on the schedule you asked for. Full text: 49,492px → **42,094px** |
+| C | `only=1` with no picks was a dead end with no control on screen to escape it | `only=1` without picks is read as off, and ticking down to zero turns it off |
+| C | FULL TEXT clipped inside the scrolling day rail at 13 days | it lives in the plan bar only |
+| C | three `@media (max-width:720px)` blocks fighting each other, two of them dead | **one deliberate phone layout.** The tick sits under the title with its label — not after a 200-word description, and not as a full-width bar above it |
+
+**Found by my own stress harness, not by a reviewer.** `stress.py` renders the three hard
+states — the 170-event board, the 3,096-character description under an eight-row facts
+table, and a true 390px viewport — and a source scan alongside it found stray control
+characters left by earlier patching: five `U+007F` inside B's group labels ("No venue
+published" was preceded by an invisible glyph) and a `U+0000` in a CSS `content` string
+that should have been a middot. All removed, and `parity.py` now fails the build if any
+control character appears in a variant's source or page.
+
+**Held.** B is not getting a "keep this" affordance. The reviewer offered it as a minimum,
+but marking-and-taking-away is the whole of C's reason to exist, and giving it to B would
+converge the two. The same reviewer's better suggestion — that B's record model makes
+*comparison* nearly free, which neither sibling can do — is the round 3 push.
+
+**The parity gate earned its keep here.** Rebuilding A's whole-run view by line range
+silently deleted `agendaHtml`, the function the day view falls back to on a phone and at
+high concurrency. Nothing in the visible desktop board changed, so a screenshot would not
+have caught it; `parity.py` did, on two counts at once — `Uncaught ReferenceError:
+agendaHtml is not defined`, and 46 of 83 selections missing events because the day pages
+the harness walks were failing to render. Restored, re-checked: zero console errors, and
+the Bachelor of Education board back to 70 of 70.
+
+### Round 2, cycle 3 — independent review
+
+Sixth reader. *"Three, unambiguously. Swap the stylesheets and you'd have a Gantt chart
+with serif type, a faceted database in cream, and a wizard in Archivo — three different
+pages that happen to be dressed wrong."* Zero contrast failures across eight states, in a
+probe the reviewer validated against a deliberate 1.92:1 control. It also caught the
+`agendaHtml` regression independently and described the failure mode exactly right: *"a
+silently empty board with the counters still confidently populated."*
+
+---
+
+## Round 3 — push each concept past what it already does
+
+Three fixes first, then one new thing per variant.
+
+**A — the run view is now legible, and there is a third view.**
+
+The Gantt's labels were printed *beside* their bars and overprinted by the next one, so
+most of a busy day read as `Grou`, `aculty o`, `ie Dye a`. Titles now sit **inside** the
+bar, clipped with an ellipsis, and the redundant start-time chip is gone — the axis above
+already carries it. The bars got a colour channel back (gold top edge = collides, lilac =
+open to all, hatched = not open to you, gold right edge = Laurier lists it more than once)
+and the `+N more` truncation is gone: the run view exists to be complete, so a crowded day
+grows instead of hiding events.
+
+A class collision was making duplicate bars render in capitals — `.dup` on a bar inherited
+`text-transform:uppercase` from the badge class of the same name. Renamed.
+
+Then the push. The reviewer's own suggestion, and the right one: *"The thing only A can do,
+and nobody is doing, is resolve clashes."* A already computes every collision and only
+counts them. **Clashes is now a third view**: every moment in the run where two or more
+events overlap becomes one block naming the moment and listing exactly what is on offer, so
+a student chooses rather than discovering the conflict on the day. The headline is honest
+about chained overlaps — "14 overlapping, up to 5 at once" — because a cluster is a chain,
+not fourteen simultaneous things.
+
+**B — the table stopped repeating itself, and it can compare two boards.**
+
+The panel name was printed under every row in a run ("in Athletics and Recreation - Fitness
+Programming", ten times consecutively); it is now said when it changes and not again. The
+HOST column disappears when fewer than 30% of rows have one, and those that do carry it
+under the title instead. `Wednesday, Sept. 2, 2026 — Wednesday, Sept. 2 | 8:30 a.m.` printed
+the date twice because Laurier writes it into the time field; a leading restatement of the
+day is dropped, nothing else altered. The `<select>` jump control — the one OS-default
+widget on the page — is gone; every pivot gets the same rail.
+
+The push, from cycle 2's reviewer: B's record model makes **comparison** nearly free and
+neither sibling can do it. B now compares two boards — another campus, another level —
+marking every record *on both* / *yours only* / *theirs only*, with a summary. Matching is
+by event identity rather than record index, because Laurier files Waterloo's Shinerama BBQ
+and Brantford's as separate entries: comparing indices reported "0 shared", which was true
+and useless. By identity it reports 7 shared, 81 yours only, 43 theirs only.
+
+**C — the interview is one screen.**
+
+Two reviewers in a row called the five-question gate the wrong front door: *"A is 0–1
+click, B is 0–1 click, C is five screens and six to ten clicks."* Level, campus and term
+are the three answers that decide which schedule you are reading, and they now sit together
+on one screen with live counts and the running week chart. Streams and programme were
+refinements asked blind; they belong on the board, where you can see what they change, and
+the `YOUR ANSWERS · CHANGE` chips already ask them there in place. There is no "skip" any
+more because there is nothing to skip: the three answers arrive already chosen and the
+primary button is the escape.
+
+Also: option counts now report what an option would actually give rather than what
+`settle()` would rescue it into — Spring 2026 and Winter 2027 correctly read "none
+published" for a Waterloo undergraduate instead of inheriting Fall's 91.
+
+**A new gate, from the reviewer's own suggestion.** *"For every level × campus × stream
+combination, and at 380/700/1400px, the board must contain at least one `[data-id]` node
+whenever the counter is non-zero. That one check would have caught it."* `parity.py` now
+runs exactly that — 126 board states across three widths — and fails if any board draws
+nothing while its own counter says otherwise.
+
+**Round 3 verification.** `python parity.py` — all 83 selections match the incumbent
+exactly for all three variants (4,278 event renderings each); eligibility core
+byte-identical; every registration link and citation present (137 hrefs across 10
+selections); Laurier's dead link still shown and still unclickable; zero console errors
+across 69 page states. Two gates that had been written but never wired into `main()` are
+now wired and passing: the empty-board smoke test (**126 board states across 380/700/1400px**,
+none empty while its own counter was not) and the control-character scan.
+`test_regressions.py` 48/48; `orientation.html` md5 `2577645c2eeeee417361d7b6037a7174`.
+
+### Round 3, cycle 1 — independent review
+
+Seventh reader. *"Three genuinely distinct products, unambiguously… the round-3 pushes
+deepened them rather than converging them."* Contrast probed element-by-element across
+eleven states against a validated control: **one failure in the whole set**, A's `.cldot`
+separator at 2.01:1. No horizontal overflow anywhere at a true 430px.
+
+The lead finding was mine to own: **A's new Clashes view and C's new OVERLAPS both counted
+Laurier's duplicate listings as scheduling clashes**, and both counted all-day drop-in
+desks as clashes. Two of the three variants gained an overlap feature in round 3 and two
+got it wrong the same way — while B, which has no clash feature, was folding duplicates
+correctly all along.
+
+| Variant | Criticism | What changed |
+|---|---|---|
+| **A** | the clash view charged a duplicate listing against you as a conflict, on the line under the badge that said it was a duplicate | duplicates are deduped before clustering |
+| A | drop-in desks counted as clashes — "a 6h45 check-in desk against a BBQ" — though A's own day view segregates them as "open most of the day" | `parts.long` is excluded; the clash view now honours the rule the day view invented |
+| A | "clusters are connected components, not simultaneity windows" — `MON 7 12pm–10pm · 14 OVERLAPPING` is an afternoon, not a moment | the sweep cuts at every point where the concurrent set changes, then keeps only the **maximal** windows. `MON 7 12pm–10pm · 14` became `MON 7 1pm–1:30pm · 7 at once` and its neighbours |
+| A | "73 of your 91 events" — a statistic describing 80% of the board describes nothing | recomputed off the deduped, drop-in-excluded set, and the lede now says what it excludes and why |
+| A | `.cldot` at 2.01:1 — "the third round running in which a decorative separator is the only failure" | body meta colour |
+| A | duplicates drew two identical bars in the run view, "reads as a rendering fault" | one bar per event, marked; the day view still shows both |
+| A | leading weekday-and-date still in clash titles, under a heading naming that day | the strip is applied there too |
+| A | bars under ~90px showed "SE…", "Ch…", "D" | below 88px the label is dropped; the tooltip carries it |
+| A | Register links sat below a 3,096-character description | links directly under the facts, above the prose |
+| **B** | **the TIME column truncated** — `8:30am–3:30…` — "the one cell in a schedule that must never clip" | see below |
+| B | EVENT collapsed to ~100px on a graduate board while VENUE kept 200px | TIME is fixed and never yields; EVENT has a 210–230px floor; VENUE is the column that gives ground |
+| B | "a badge on the majority class is decoration" — 81 of 142 rows read YOURS ONLY | only the two rare answers are badged; your own rows are the ground the comparison stands on |
+| B | the badge took its own line | inline, before the panel name |
+| B | 142 records vs 7+81+43 didn't reconcile | the bar now says "131 distinct events, listed as 142 records because Laurier publishes some of them more than once" |
+| B | the identity summary squeezed the search field to "Search 508 events — try" | clamped to 34ch, and streams collapse to a count |
+| B | nothing said a comparison was running | "· comparing with Brantford" in the header |
+| **C** | OVERLAPS reported an event against its own duplicate | `clashesWith` skips events Laurier lists more than once |
+| C | OVERLAPS fired on drop-in events — two of one plan's "2 OVERLAPS" were false | events of three hours or more are exempt, both in the per-entry line and the plan-bar count |
+| C | "the tick box loses its label in every collapsed row — third round for this" | the label is on every row at every width now, and a ticked box carries a check mark rather than reading as an amber bullet |
+| C | the gutter was ~100px of dead space | narrowed, with a smaller box in titles mode |
+| C | the landing still ran airy | ~50px tighter |
+
+**Two silent failures found while fixing the above, neither visible on screen.** B's TIME
+clipping was not a width problem: `.piv-day` and `.nohost` each defined four column tracks
+for *different* four columns, so on a board that was both, TIME inherited the 88px track
+meant for DATE. The combinations are now spelled out explicitly. And a stray `@media`
+brace left by an earlier edit meant **every CSS rule after it was being silently
+discarded** — the stylesheet still loaded, the page still rendered, and several
+recent B changes had simply never taken effect. `parity.py` now fails on an unbalanced
+stylesheet as well as on control characters.
+
+Also repaired: a global rename in round 2 had rewritten the explanatory comment above `NOW`
+into one that contradicted itself ("NOW is the date this page was compiled… NOW stays what
+it is, a build date"). Reworded in all three.
+
+### Duplicated-logic audit
+
+Prompted by the round-3 finding that two variants gained an overlap feature in one round
+and both got it wrong the same way. Every helper that appears in more than one variant was
+diffed.
+
+- **`parseWhen` had drifted between A and B/C.** A defaulted the meridiem on an end time
+  that had none; B and C did not, and would have read such a time as a.m. Tested across all
+  **190 distinct time strings in the corpus the two agree on every one**, so nothing was
+  wrong on this data — but this is the function that decides when every event runs, feeding
+  A's clock and clash windows, B's time column and sort, and C's overlaps and `.ics` export.
+  Latent divergence in exactly the place it would matter after a data refresh. All three now
+  carry one implementation.
+- **`clock` differed in shape between A and B** while producing identical output. Unified.
+  C's differs deliberately — a document says "8:30 a.m.", a board says "8:30am".
+- **"A desk open all day" had two definitions**: A excluded events of four hours or more
+  from the clock and from clashes; C exempted three hours or more from overlaps. A student
+  comparing the two would have been given different answers about the same event. C is
+  aligned to A's 240 minutes, which is the threshold the product already publishes to the
+  student as "open most of the day".
+- Deliberate differences confirmed and left: `settle` (A and B mutate the shared selection,
+  C takes a parameter), `markDups` (C additionally records which copies share a URL, for
+  its "ticking one ticks them all" note), `buildNotes` prose (each describes its own
+  presentation), and B's `evKey` for comparison, which matches on title, date and time
+  *without* venue — deliberately, because comparing Waterloo against Brantford is exactly
+  the case where the same event is at two different venues.
+
+`parity.py` now fails if `parseWhen`, `sentences`, `paras`, `gatesOf` or `assess` differ
+between variants. Presentation may differ; facts may not.
+
+### Round 3, cycle 2 — independent review
+
+Eighth reader. *"Three, unambiguously. Swap the stylesheets and nothing converges… the
+verbs differ — A compares times, B files records, C keeps a plan."* Contrast measured on
+computed colours: nothing small clears less than 4.5:1 anywhere.
+
+**A's whole-run view was shipped broken.** `laneW` was referenced and never defined —
+`weekHtml` threw on every render and `drawBoard` wrote an empty `<main>`. It is the
+leftmost of the three lenses, so it is the first thing a curious student clicks, and
+`writeHash` persisted `view=week` so a reload landed them on the blank board again. The
+variable had been added and lost: the batch that introduced it aborted on an unrelated
+mismatch before writing, and the line that used it went in separately.
+
+**Why the console gate missed it, which matters more than the bug.** `console_check` ran at
+Chrome's default headless window of 800px, and A deliberately forces itself out of the week
+view below 900px. So the check exercised a view that could not throw, and passed, for two
+rounds. It now runs every state at **1400px and 420px**, and the empty-board smoke test
+additionally visits A's week and clash lenses, B's venue pivot and C's full-text mode at
+desktop width. Refining that also exposed a flaw in the smoke assertion itself — a filtered
+lens may legitimately have nothing to show — so it now distinguishes "drew nothing" from
+"drew nothing and explained why", and only fails on the first.
+
+| Variant | Criticism | What changed |
+|---|---|---|
+| **A** | the whole-run view threw on every render | `laneW` defined; the gate widened so it cannot pass unrendered again |
+| A | the expanded sheet's "runs at the same time as" was not deduplicated — "the clash view dedupes and even says so in its standfirst; the sheet contradicts it two clicks later" | the sheet uses the same rule as the clash view: deduped, drop-in desks excluded |
+| A | the chip label said "what ticking it adds" while a ticked chip read `-15` | "what ticking or unticking changes" |
+| A | three identically weighted purple slabs — "registration is the only one with a deadline" | Register is the only filled button; the rest are underlined links |
+| A | the three lenses were a vertical cluster beside a horizontal day rail | horizontal, above the rail: lens, then day |
+| A | titles repeated the day they sat under | the day prefix is stripped in the day view and the agenda too |
+| **B** | **every stream count went negative under "include events I cannot attend"** — `-400`, `-416` | the baseline is now measured the same way as the delta. A student reading `-416` would conclude the page was broken, and would be right |
+| B | "Different term (Spring 2026)" stamped under every row of a group | when a whole group is out for one reason, it is said once on the heading |
+| B | a zero-count facet was struck through **including the one currently selected** | the current selection is never rendered unavailable |
+| B | "Compare with" was a permanent chip row on every screen including a phone | behind one "Compare with another campus or level…" affordance, and off entirely below 1080px |
+| B | the reader's tint stopped where its content did | it runs the full sticky height |
+| B | `markDups` keyed on the raw title, so "Friday, Sept. 11 - Inner Tube Water Polo" escaped the fold | see below |
+| **C** | **the phone gate opened scrolled past its own headline** — the classic centred-overflow trap | it starts at the top, and centres only where there is height to centre in |
+| C | the desktop gate floated in the middle third of an empty screen | the week chart is sticky beside all three answer rows |
+| C | full text printed byte-identical descriptions back to back | the second and later copies say "The same description as *Orientation Headquarters, Friday 4 September*" and link to it |
+| C | ninety-one "campus map →" links | a link Laurier attaches to most of a schedule is carried once at the top, under "on every event in this schedule" |
+| C | "1 OVERLAP" named a number and not the clash | it is now a button that opens the day and scrolls to the colliding entry |
+
+**The duplicate-identity fix went to all three at once.** The reviewer found it in B, but
+"which listings are the same event" is a fact, so `stripDay` and `dupKey` are now one shared
+implementation and every duplicate key in every variant routes through them — A's run-view
+fold, its clash dedupe and its sheet; B's `markDups` and its comparison key; C's pick key
+and overlap suppression. The shared-logic gate covers `stripDay`, `dupKey` and `sameEvent`
+alongside `parseWhen`, `sentences`, `paras`, `gatesOf` and `assess`.
+
+**Negative-testing the gate that failed silently.** A check that has never gone red is not
+evidence of anything. The console gate was re-run against a deliberately broken copy of
+variant A (`weekHtml` throwing on entry): **caught at 1400px, missed at 800px** — the old
+blind spot reproduced on demand, and the fix confirmed to observe the thing it claims to
+cover. Habit for the remaining rounds: when a check is added, prove it fails on a known-bad
+input before trusting it green.
+
+**Round 3 gate.** `python parity.py` — 83/83 selections match the incumbent for all three
+variants (4,278 event renderings each); **182 board states** across three widths in the
+empty-board smoke test, now including A's week and clash lenses, B's venue pivot and C's
+full-text mode; shared logic identical; stylesheets balanced; no control characters; every
+registration link and citation present; zero console errors at both 1400px and 420px.
+`test_regressions.py` 48/48; incumbent md5 unchanged.
+
+### Round 3, cycle 3 — independent review
+
+Ninth reader. *"These are three genuinely distinct products… A's positional time axis, B's
+pivot-and-compare, and C's tick-and-print are structurally different pieces of software."*
+Contrast measured numerically on all three: every text colour passes, the lowest being a
+disabled control. No generated-page tells. All three survive 390px.
+
+The round-3 features got their first verdicts on their own terms:
+**A's Clashes lens** — *"the single best idea across all three variants"*, and it correctly
+excludes drop-in desks and duplicate listings. **B's comparison mode** — *"the sharpest
+single feature in the whole set… no one else answers 'should I have picked the other
+schedule?'"* **C's interview** — *"not a gate"*, because the answers persist as chips that
+edit in place. The editorial de-duplication in C was called *"the best thinking in the
+set — no other variant edits its source rather than merely rendering it."*
+
+Three faults were named that round 4 has to answer, all on the variants' own headline
+screens rather than on surface:
+
+1. **A's whole-run view leaves 37% of its bars unnamed** — 50 of 134 measured. The 88px
+   label cutoff I added in round 3 to stop one-character labels went too far the other way.
+2. **B's sticky day heading sits underneath its own results header**, so scrolling into the
+   middle of a long day leaves an orphaned row with no date visible anywhere.
+3. **A abandons the clock on the busiest day** — 32 events, 9 concurrent, and it switches
+   itself to a list. *"The differentiator vanishes on the one day a student most needs to
+   see the shape of."*
+
+Also named: A is *"the best at seeing the week and the worst at keeping it"*, and C computes
+overlaps only for events already ticked, so the fact A leads with is invisible in C until
+after you have committed.
+
+## Round 4 — the three headline screens
+
+Round 3's features had come back well received; round 4 is about the faults R3C3 named on
+each variant's own main screen.
+
+**A — the run view names everything, and the clock stops surrendering.**
+
+The 88px label cutoff added in round 3 to stop one-character labels had gone too far the
+other way: measured, **35 of 111 bars carried no label at all**. Three ladders now, instead
+of one threshold — the title inside the bar where it fits, the title spilling to the right
+of the bar where that lane stays empty (the layouter already knows how far), and nothing
+only when neither is true. Measured after: **0 of 108 unlabelled**.
+
+The run view's duplicate collapse turned out never to have landed — the batch that
+introduced it aborted on an unrelated mismatch before writing, the same failure that had
+cost `laneW` a round earlier. Applied, with a distinction the earlier attempt missed: two
+entries sharing a title and a start time but sitting in **different rooms** are not
+duplicates, so both are drawn and the label carries the venue. Duplicate bars within a day
+row went 3 → 1, and the survivor is "Get Involved Fair", genuinely in two places at once.
+
+*"The clock switches itself off on the busiest day… the differentiator vanishes on the one
+day a student most needs to see the shape of."* It no longer does. Past five concurrent
+events the blocks tighten — smaller type, venue dropped — and the list is offered beside
+the clock rather than replacing it. Only a phone still forces the list, and the "Whole run"
+tab is no longer offered below 900px, where it could not work.
+
+Print: blocks no longer clip their own venue, the day steppers are suppressed, and the run
+and clash views print.
+
+**B — the day heading clears the header, and the catalogue knows about time.**
+
+*"The sticky day heading is permanently hidden behind the results header… on a 138-record
+board this is the most damaging thing in the variant."* The header's height changes with
+the pivot row wrapping and the jump rail, so it is now **measured** into a custom property
+rather than guessed at 46px.
+
+*"B has no notion of a clash… the facet rail is exactly where a `Clashes with something`
+filter belongs."* It has both now: a muted "4 others at this time" on the row, and a
+"Runs at the same time as something" filter in ONLY SHOW. It uses the same rule as A and C
+— deduped, drop-in desks excluded — and it is the rail's own idiom rather than a copy of
+A's lens. Comparison gained a three-swatch key so all three states read without badging the
+majority one, and the disabled stepper went from 2.23:1 to 4.6:1.
+
+**C — the overlap fact arrives before you commit.**
+
+*"Clashes are computed only for picked events… the fact A leads with is invisible here
+until you have already committed."* Overlaps are now counted against the whole schedule and
+shown muted under every entry in both densities; the plan bar still counts only your picks,
+which is the number that belongs there. The summary now names the day it opened in full and
+why ("**Wednesday 2 September** — your first day still to come — is open in full"), the
+YOUR ANSWERS row is a grid that wraps rather than truncating the chip whose content matters
+most, and print constrains headings and tables to the same measure as the prose.
+
+### The recurring failure, and what now prevents it
+
+Three fixes in three rounds were lost the same way: a multi-edit batch wrote the line that
+*calls* something and aborted, before writing the definition. `laneW`, then the run-view
+duplicate collapse, then C's `clashesInSchedule`. Saying "I will verify each edit landed"
+did not hold, because it was a thing to remember rather than a thing the tooling did.
+
+**`check.py`** now does it. One command per variant: build, `node --check`, a reference
+check, and a console check that loads the page in Chrome at **1400px and 420px** across
+four states each. It is run after every write to an app script, before anything else
+proceeds — not at the end of a round.
+
+The reference check is deliberately narrow, and getting it honest took four attempts, each
+failing in a way worth recording:
+
+- matching every `name(` flagged every method call — `.map(`, `.filter(` — and was useless;
+- stripping comments with a regex was defeated by regex literals containing `//`;
+- stripping strings with one pattern per quote type corrupted mixed quoting: run a
+  double-quote pattern over `'<span class="dup">'` and it matches the inner `"dup"`;
+- a single left-to-right scan still swallowed the file, because a regex literal in the
+  corpus contains a quote — `/[A-Z“"(]/` — which opened a string that never closed.
+
+It now scans once, tracking strings, both comment forms and regex literals, and is tested
+against known-bad inputs rather than trusted because it is green: renaming
+`clashesInSchedule` yields exactly `['clashesInSchedule']`, deleting `var LONG_MIN` yields
+exactly `['LONG_MIN']`, and all three real files come back clean.
+
+**What it caught immediately.** C had not one undefined reference but three, from the same
+aborted batch: `clashesInSchedule`, `sameEvent`, and `LONG_MIN`. Only the first was visible
+in the browser, because it threw before reaching the others. The reference check found
+`sameEvent` statically; the console layer found `LONG_MIN`, which is read rather than
+called — so the constant check was added afterwards and negative-tested too. Layered
+checks found what any single one of them would have missed.
+
+**A gate that straddled two builds.** The round-4 run reported variant C *missing every
+event on every selection* and, ten minutes later in the same run, *zero console errors* —
+because it reads each page fresh as it reaches it, and C was fixed and rebuilt while the
+run was still going. Both statements were true of the file at the moment they were made,
+and the run as a whole meant nothing. `parity.py` now **snapshots** every page and script
+into a temp directory before it starts and tests only that, so a run is a statement about
+one moment. Same failure family as the 800px console check and the swallowed CSS: green
+for a reason unrelated to the thing being asked about.
+
+Two process rules from this, now held to: read a gate's result before acting on it, and
+never edit while one is running.
+
+### Round 4, cycle 1 — independent review
+
+Tenth reader, and the hardest of the set. Both round-3 asks on A were confirmed answered:
+unnamed run-view bars went from *"50 of 134"* to *"3 of 89"*, and the clock *"no longer
+surrenders: at 32 events with 9 concurrent lanes it still draws, and it is still legible —
+that was the most important ask of the round and it landed."* Still three genuinely
+distinct products; *"the verbs are different (A positions, B files, C keeps)."*
+
+Then the finding that matters:
+
+> "Rebuilding the headline screens **lost round-3 fixes living in the code the rebuild
+> touched** — three in A's `openSheet`, one in A's title rendering, one in C's phone gate —
+> and C's brand-new sticky heading reproduced, exactly, the fault that was being fixed in B
+> in the same round."
+
+That is the fourth instance of one failure: a multi-edit batch aborts, and the parts that
+had already been verified in earlier rounds quietly go back to how they were. All of it was
+invisible to a console check and to a screenshot of the top of the page.
+
+**What was restored, and why it will not go again.** A's sheet had reverted to an
+unfiltered clash list (listing drop-in desks and an event's own duplicate), links below a
+3,096-character description, and four identically weighted buttons. Rather than re-apply
+the three fixes, the rule they encode now lives in **one function**: `collidesWith()`,
+called by the sheet and defined once beside the Clashes lens's rule, and `title()`, through
+which every visible title in all three variants now passes. `data-ev-title` still carries
+the raw title, because that is what parity compares against the incumbent.
+
+**`invariants.py`** asserts the properties rather than the code, which is what the reviewer
+asked for. Three assertions, each negative-tested against a page built to break it:
+
+1. no visible title still carries the day it is filed under;
+2. no sticky element pins where something sticky above it still covers;
+3. no `--rule-*` / `--line-*` custom property is used as a text colour.
+
+Run against the real build, they immediately found three of the reviewer's own findings
+independently — C's day heading sliced in half by the jump rail above it (`contents ends at
+74, dayhead pins at 52`), C's `.dlsep` separator at 1.49:1 (`dlsep uses --rule-p`, the
+fourth round running a decorative separator has been the only contrast failure in the set),
+and B's rail, results header and reader all pinned 3px under the top bar's own gold rule —
+plus two day-prefixed titles in B that no reviewer had reached. All fixed: C measures the
+rail's height at runtime instead of guessing, B's `--top` accounts for its border, and the
+separator uses the meta colour.
+
+Getting assertion 2 honest took two passes — a left-hand rail and a middle column are both
+pinned near the top but sit side by side and cannot hide each other, and two day headings
+with the same `top` are peers replacing one another, which is what sticky is *for*. It now
+requires the two to overlap horizontally and one to be strictly above the other.
+
+**A gate that reported false failures.** The round-4 snapshot run came back with five parity
+mismatches and four empty boards — and, tellingly, with `orientation.html` itself failing.
+The incumbent has not been touched and its md5 is unchanged, so that was the signal the run
+was wrong rather than the build. Re-run serially, the flagged selection matched exactly
+(incumbent 86, A 86, B 86, C 86, all equal), and probing the incumbent directly returned
+`JSERR:0` — zero errors — on both selections it had failed.
+
+The cause was load: four parallel Chromes plus a review agent driving its own browsers, and
+a page missing its virtual-time budget reports nothing, which is indistinguishable from a
+page that hung. Both runners now **retry once, serially, with a longer budget** before
+failing. A real hang fails twice; a machine under load does not. A gate that cries wolf gets
+ignored, which is the same end state as one that never goes red.
+
+### R4C2 revision, part 3 — the fold
+
+R4C2's top-damage item for both A and C was that a 1366x768 laptop — the most
+common screen in a Laurier lab — showed **no events at all** without scrolling.
+Measured before: A first event at y=854, C at y=866, B at y=348.
+
+The fix is not "make everything smaller". It is deciding what earns its place
+above the fold. In both cases the answer was the same: the sentence explaining
+the page is worth two seconds and then it is furniture.
+
+- **A**: masthead padding 17/20 -> 13/15, `h1` clamp ceiling 52px -> 38px, crest
+  margin 11 -> 7, identity band padding 11/10 -> 8/7, day heading margin 16 -> 11,
+  legend margin 9 -> 6. Then a `@media (max-height:820px)` block that drops the
+  standfirst entirely and pulls `h1` down again. Result **y=736**.
+- **C**: `.dochead` padding 54/30 -> 26/18, `h1` clamp ceiling 66px -> 46px,
+  `.docsum` 17.5px -> 16px over a wider measure (52ch -> 74ch, so it is two lines
+  not four), `.day` padding-top 36 -> 22. Under `max-height:820px` the shared-notes
+  box and the global links box both hide — they are reference material, and
+  reference material can live below the first day. Result **y=541**.
+
+Both are CSS-only; no app script changed. Verified after: a 736, b 348, c 541 —
+all three above the fold at 1366x768. check.py green, invariants.py green on
+5/4/4 states, test_regressions.py all passed, incumbent md5 still
+2577645c2eeeee417361d7b6037a7174. Parity re-run despite this being CSS-only,
+because a `display:none` in a height media query is exactly the kind of change
+that could hide something the gate counts.
+
+Gate after the fold work (CSS-only, but run anyway): **ALL PASSED** — eligibility
+core byte-identical across the three app scripts; all 83 selections match the
+incumbent exactly, 4278 event renderings compared, for each of A, B and C; 182
+board states across 3 widths, none empty while the counter was not; no stray
+control characters; stylesheets balance; link assembly byte-identical; 137 hrefs
+present across 10 selections; zero console errors across 69 states (incumbent 14,
+a 16, b 21, c 18).
+
+## Round 4, cycle 3 — the reviewer found wrong answers, not ugly ones
+
+Verdicts: A fix-then-ship, B fix-then-ship, C ship. Ranking A, B, C, and it would
+delete C if forced to two — "a redundancy call, not a quality call", because
+A+B keeps both the clock and the search and A+C loses search entirely.
+
+Three of its findings were the page giving a **wrong answer**, which is the only
+class of defect that matters more than any layout note.
+
+**One rule, two implementations, both wrong.** B tried to drop a leading
+restatement of the day from Laurier's time field and built the regex with
+`new RegExp("^\s*" + ...)` — inside a double-quoted JS string `"\s"` is just
+`"s"`, so the pattern required literal `s` characters and never matched once.
+24 events read "Friday, Sept. 11, 2026 — Friday, Sept. 11 | 8:30 a.m.". A had the
+same line in its event sheet with **no** stripping at all, so it printed the day
+twice too. This is the duplication the brief warned about: the same rule written
+in two places and wrong in both. Fixed by writing it **once** —
+`stripLead(n, d)`, a literal regex, byte-identical in all three scripts and now
+in the shared-logic gate beside `parseWhen` and `stripDay`. It only strips when
+the day number in the string is the day the event is actually on, so a genuine
+"Tuesday, Sept. 8" sitting on a Sept 9 event survives untouched. Negative-tested
+against eight strings before wiring it in, including that mismatch case and a
+string that would be emptied by stripping.
+
+**B's `&only=clash` deep link returned an empty board and blamed the student.**
+`var list = results()` ran one line before `CLASHPOOL` was filled, and
+`results()` counts clashes against that pool, so a shared link showed "Nothing
+you can attend matches — 281 records do, but they are restricted to other
+students", which was false. Two lines swapped. Verified: 56 rows, header "56 of
+508 records".
+
+**B's registration filter was 94% false positives.** `hasReg` tested
+`e.l.concat(e.sl, e.pl)`, and `e.pl` is page-level — the Waterloo undergraduate
+page carries a "Register Now!" banner, so 166 of 170 events matched. Now event-level
+links only: 3 for this selection (CSEDI 101 RSVP, Valorant team registration,
+French Montana tickets), header and rows agreeing.
+
+**A's week view had five anonymous bars.** The spilled-title branch put the label
+at `left:100%` inside `.wb`, which is `overflow:hidden` — measured visible width
+**0px**. The label is now a **sibling** of the bar rather than a child, which
+fixes both the clipping and the honesty of its contrast, since it is drawn on the
+lane and should be measured against the lane. Verified at 1400px: 86 bars, 86
+named, spilled labels visible, zero anonymous.
+
+**contrast.py** — the brief asks for a measured floor and I had been measuring by
+hand. Now a walk over every element that paints a text node, resolving background
+up the ancestor chain through transparency and applying the WCAG size rule, across
+11 states x 2 widths. It self-tests first: it injects a 13px #C9C9C9 paragraph on
+white and refuses to run unless it reports it. It found exactly one real failure
+left, B's disabled reader stepper at 4.07 (#7C7490 -> #6E6782, now 4.94), and
+confirmed A's relocated week label is clean. **ALL PASSED.**
+
+Horizontal overflow: B was the only page that swiped sideways, and the cause was
+not the top bar the reviewer suspected but `.endin`'s
+`repeat(auto-fit,minmax(340px,1fr))` — 340 + 44px of padding does not fit 345px.
+`minmax(min(340px,100%),1fr)`. Swept 3 pages x 3 states x 360/390/430: clean.
+Also added the one `:focus-visible` rule B was missing across 26KB of custom controls.
+
+### Acting on the rest of R4C3
+
+**A, phone economy.** The reviewer measured 1.4 screens of scaffolding before the
+first event at 390x844, with the eight stream chips alone taking y=530-710. Those
+chips and the programme select are refinements, not the question, so below 900px
+they fold into a disclosure that says how many are on. It remembers being opened
+by hand (`MORE` stays null only until someone expresses a preference), and it is
+open and its summary hidden above 900px, where there is room and no reason to make
+anyone ask. The standfirst goes below 700px. Measured after: first event at
+**y=799 on a 390x844 phone** (was ~1145) and **y=624 at 1366x768**.
+
+**A, the link fell behind the screen.** `ghosts` and `asList` changed what was
+drawn without being written to the hash, so a shared link showed a different page
+from the one being looked at. Rather than add two `writeHash()` calls, `redraw()`
+now writes the hash itself and the seven redundant `writeHash(); redraw();` pairs
+are gone. Anything that changes the screen goes through `redraw()`, so a third
+toggle cannot repeat the mistake. Verified: `&ghosts=1` restores and draws six
+unattendable events.
+
+**C, a question you could miss.** At 390x844 the third question sat below the
+scroll line of `.askmid` with a gold "Build my orientation" in full view beneath
+it, and nothing said there was more. A student could answer two of three and press
+the button. There is now a prompt that appears only when the panel really does
+scroll and leaves at the end of it. Verified: 390x844 scrollable by 366px, prompt
+shown; 1400x1000 not scrollable, prompt hidden.
+
+**C, phone header.** Same treatment as the short-viewport rule, now also below
+700px: the notes Laurier repeats and the links it puts on every event wait until
+after the first day. **y=1039 -> y=801** at 390x844. Also `scroll-padding-bottom`
+so a jump target never lands under the fixed plan bar.
+
+**C, duplicates in brief mode.** Two identical lines in a row read as a rendering
+fault; the full entry explained itself and the brief one did not. It does now,
+naming which copy it is and which section each came from.
+
+**B, "every record" opened in January.** With `all=1` a Fall 2026 undergraduate
+landed on Monday 5 January 2026 — a graduate Spring schedule with nothing on it
+for them. Groups holding something attendable now sort first, groups and never
+records, so a day is never split in two. Verified: opens on Friday 4 Sept 2026.
+(I wrote a second sort to do this and then deleted it once the comparator covered
+it — two implementations of one rule is the thing that produced the `stripLead`
+bug in the first place.)
+
+**B, two true numbers side by side.** "91 of 508 records" over "Result 1 of 89"
+was never wrong, just unexplained. The header now names both: records, and
+distinct events.
+
+**Disagreement, recorded.** R4C3 wants A's grid and C's brief list to fold
+Laurier's duplicate listings into one row. I am not doing it. The parity gate
+compares a `Counter` of rendered titles against the incumbent, so folding a
+duplicate makes the variant render fewer events than the page it must match —
+"a variant that quietly drops or adds events is a failed variant, however good it
+looks." The complaint underneath it is fair, and both pages now answer it in
+words instead: A tags the pair and C explains it in brief as well as in full.

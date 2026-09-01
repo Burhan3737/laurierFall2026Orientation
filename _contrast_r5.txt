@@ -1,0 +1,6 @@
+Measured contrast (WCAG 2.x, backgrounds resolved through transparency)
+  ok    self-test: a 13px #C9C9C9 paragraph on white is reported
+  ok    orientation-a.html — every painted text element at or above the floor across 4 states × 2 widths
+  ok    orientation-b.html — every painted text element at or above the floor across 4 states × 2 widths
+  ok    orientation-c.html — every painted text element at or above the floor across 3 states × 2 widths
+ALL PASSED

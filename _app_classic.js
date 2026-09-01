@@ -1,0 +1,443 @@
+/* ---------- model -------------------------------------------------------
+   Each event carries: lv level, cp campus, tm term, tg identity tags,
+   oa open-to-all override. An event is "mine" when level+campus+term line up
+   AND every identity gate it sits behind is one the user claimed.
+------------------------------------------------------------------------- */
+var GATES = ["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence",
+             "Mature & Transfer","Accessible Learning","Virtual"];
+var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"];
+var DOW = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+var ALL_STREAMS = GATES.slice();
+// Laurier publishes a welcome for only some programs, so a student must be able to say
+// "mine is not here" rather than being shown two dozen other programs' sessions.
+var NO_PROGRAM = "__none__";
+function programLabel(v) {
+  return v === NO_PROGRAM ? "No program welcome listed" : v;
+}
+// Laurier leaked a CMS authoring URL into their published page; the host does not resolve.
+// Reproduced faithfully, but flagged so nobody wastes time clicking it.
+var DEAD_HOSTS = ["cms03.wlu.ca"];
+function isDead(href) {
+  return DEAD_HOSTS.some(function (h) { return href.indexOf("//" + h) >= 0; });
+}
+var sel = null, showFit = "mine", hidePast = false, Q = "";
+
+function gatesOf(e) {
+  return (e.tg || []).filter(function (t) { return GATES.indexOf(t) >= 0; });
+}
+
+/* why an event is or isn't yours -> {ok, reason} */
+function assess(e) {
+  if (!sel) return { ok: true, reason: "" };
+  if (e.tm !== sel.term)   return { ok: false, reason: "Different term (" + e.tm + ")" };
+  if ((e.cp || []).indexOf(sel.campus) === -1)
+    return { ok: false, reason: "Different campus (" + (e.cp || []).join("/") + ")" };
+
+  var levelOk = (e.lv === sel.level) || (e.lv === "all") || e.oa;
+  if (!levelOk) {
+    return { ok: false, reason: e.lv === "bachelor-of-education"
+      ? "Bachelor of Education students only"
+      : "For " + e.lv + " students" };
+  }
+  var g = gatesOf(e);
+  if (g.length) {
+    var claimed = g.filter(function (t) { return sel.streams.indexOf(t) >= 0; });
+    if (!claimed.length) {
+      return { ok: false, reason: g.indexOf("Virtual") >= 0 && g.length === 1
+        ? "Online — tick Virtual to show"
+        : g.join(" / ") + " students only" };
+    }
+  }
+  // A program/faculty welcome belongs to one program. Naming yours hides the rest;
+  // "All programs" shows them all; NO_PROGRAM hides every one, for the many graduate
+  // programs Laurier publishes no welcome for.
+  if (sel.program === NO_PROGRAM && e.pg) {
+    return { ok: false, reason: "Program-specific welcome" };
+  }
+  if (sel.program && sel.program !== NO_PROGRAM && e.pg && e.pg !== sel.program) {
+    return { ok: false, reason: "For " + e.pg };
+  }
+  return { ok: true, reason: e.oa && e.lv !== sel.level ? "Open to all Laurier students" : "" };
+}
+
+function dobj(e) { return e.d ? new Date(e.d + "T00:00:00") : null; }
+
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/* ---------- rendering ---------------------------------------------------- */
+function card(e) {
+  var a = assess(e);
+  var dt = dobj(e);
+  var past = dt && e.d < TODAY;
+  var tier = a.ok ? (e.oa ? "open" : "core") : "no";
+  var badge = a.ok
+    ? '<span class="badge ' + (e.oa ? "b-open" : "b-core") + '">' + esc(e.a || (e.oa ? "Open to all students" : "For you")) + "</span>"
+    : '<span class="badge b-no">' + esc(a.reason) + "</span>";
+
+  var when = e.d
+    ? DOW[dt.getDay()] + ", " + MON[dt.getMonth()] + ". " + dt.getDate() + ", " + dt.getFullYear() + (e.n ? " — " + esc(e.n) : "")
+    : (e.n ? esc(e.n) : "Date not published");
+
+  var facts = "";
+  function row(k, v) { if (v) facts += "<dt>" + k + "</dt><dd>" + v + "</dd>"; }
+  row("When", when);
+  row("Where", esc(e.w) || "Not published by Laurier");
+  row("Part of", esc(e.pt));
+  row("Host", esc(e.h));
+  row("Audience", esc(e.a));
+  row("Cost", esc(e.c));
+  row("Stream", (e.tg || []).length ? esc((e.tg || []).join(", ")) : "");
+  if (e.s && /Program and Faculty Welcomes/i.test(e.s))
+    row("Note", "This is a welcome for one specific program. Attend only the one matching your own.");
+  row("Schedule", esc(e.lv === "all" ? "All levels" : e.lv) + " &middot; " +
+      (e.vr ? "Online — open to all campuses" : esc((e.cp || []).join(", "))) +
+      " &middot; " + esc(e.tm));
+
+  Object.keys(e.si || {}).forEach(function (k) { row(k, esc(e.si[k])); });
+
+  var links = (e.l || []).slice();
+  (e.sl || []).concat(e.pl || []).forEach(function (l) {
+    if (!links.some(function (x) { return x.href === l.href; })) links.push(l);
+  });
+  var linkHtml = links.length
+    ? links.map(function (l) {
+        if (isDead(l.href)) {
+          return '<span class="reglink dead" title="' + esc(l.href) +
+                 '">' + esc(l.text) + " — link broken on Laurier's site</span>";
+        }
+        return '<a class="reglink" href="' + esc(l.href) + '" target="_blank" rel="noopener">' + esc(l.text) + " &rarr;</a>";
+      }).join(" ")
+    : "";
+
+  var flagHtml = (e.f || []).length
+    ? '<div class="note">Not published by Laurier: ' + (e.f || []).map(function (f) {
+        return { "no-date": "date", "no-time": "time", "no-venue": "venue" }[f] || f;
+      }).join(", ") + '.</div>'
+    : "";
+
+  return '<details class="ev' + (past ? " past" : "") + '" data-tier="' + tier + '">' +
+    "<summary>" +
+      '<div class="time">' + (e.n ? esc(e.n) : "Time TBA") + "</div>" +
+      "<h3>" + esc(e.t) + "</h3>" +
+      (e.pt ? '<div class="parent">' + esc(e.pt) + "</div>" : "") +
+      '<div class="metaline">' + badge +
+        (e.vr ? '<span class="badge b-online">Online</span>' : "") +
+        '<span class="where">' + esc(e.w || e.s || "") + "</span>" +
+        '<span class="exp">details</span>' +
+      "</div>" +
+    "</summary>" +
+    '<div class="body">' +
+      (e.x ? '<p class="desc">' + esc(e.x) + "</p>" : "") +
+      '<dl class="facts">' + facts + "</dl>" +
+      linkHtml + flagHtml +
+      '<div class="cite"><strong>Cited from:</strong><br>&middot; <a href="' + esc(e.u) +
+        '" target="_blank" rel="noopener">' + esc(e.u) + "</a><br>&middot; Accessed 31 Aug 2026, including the collapsed accordion panels.</div>" +
+    "</div></details>";
+}
+
+function render() {
+  var list = EV.filter(function (e) {
+    var a = assess(e);
+    if (showFit === "mine" && !a.ok) return false;
+    if (hidePast && e.d && e.d < TODAY) return false;
+    if (Q) {
+      var hay = [e.t, e.w, e.h, e.x, e.s, (e.tg || []).join(" ")].join(" ").toLowerCase();
+      if (hay.indexOf(Q) === -1) return false;
+    }
+    return true;
+  });
+
+  list.sort(function (x, y) {
+    var a = x.d || "9999", b = y.d || "9999";
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
+
+  var days = [], seen = {};
+  list.forEach(function (e) { var k = e.d || "TBA"; if (!seen[k]) { seen[k] = []; days.push(k); } seen[k].push(e); });
+
+  document.getElementById("timeline").innerHTML = days.length ? days.map(function (k) {
+    var undated = (k === "TBA"), dt = undated ? null : new Date(k + "T00:00:00");
+    var past = !undated && k < TODAY;
+    return '<div class="daygroup"><div class="daycol"><div class="sticky">' +
+      '<div class="dow">' + (undated ? "Undated" : DOW[dt.getDay()]) + "</div>" +
+      '<div class="dnum">' + (undated ? "&mdash;" : dt.getDate()) + "</div>" +
+      '<div class="dmon">' + (undated ? "TBA" : MON[dt.getMonth()] + " " + dt.getFullYear()) + "</div>" +
+      (past ? '<div class="dtag">Passed</div>' : "") +
+      '</div></div><div class="events">' + seen[k].map(card).join("") + "</div></div>";
+  }).join("")
+    : '<p class="empty">No events match. Try “Everything”, or tick a stream above.</p>';
+
+  document.getElementById("count").textContent = list.length + " shown";
+}
+
+/* ---------- data notes --------------------------------------------------- */
+function buildNotes() {
+  var notes = [];
+  var undated = EV.filter(function (e) { return !e.d; });
+  if (undated.length) {
+    var byTerm = {};
+    undated.forEach(function (e) { byTerm[e.tm] = (byTerm[e.tm] || 0) + 1; });
+    notes.push(["Events published without a date",
+      undated.length + " events carry no date on Laurier's page (" +
+      Object.keys(byTerm).map(function (t) { return byTerm[t] + " in " + t; }).join(", ") +
+      "). They appear at the end of the board under “Undated”."]);
+  }
+  var spring = EV.filter(function (e) { return e.tm === "Spring 2026" && e.d && e.d.slice(5, 7) === "01"; });
+  if (spring.length) {
+    notes.push(["Spring graduate schedule shows January dates",
+      "The page titled “Laurier Spring Orientation: Graduate Schedule” lists its sessions on Jan. 5, 7 and 9, 2026. " +
+      "January is the winter term at Laurier, so this page appears to be either mislabelled or left over from a previous cycle. " +
+      "Dates are reproduced exactly as published — confirm with aspire@wlu.ca before relying on them."]);
+  }
+  var noTime  = EV.filter(function (e) { return (e.f || []).indexOf("no-time") >= 0; }).length;
+  var noVenue = EV.filter(function (e) { return (e.f || []).indexOf("no-venue") >= 0; }).length;
+  if (noTime || noVenue) {
+    notes.push(["Events without a usable time or venue",
+      noTime + " events have no usable time and " + noVenue + " no usable venue. This counts " +
+      "Laurier's own “TBD” placeholders, not just blank fields."]);
+  }
+  var winter = EV.filter(function (e) { return e.tm === "Winter 2027"; });
+  if (winter.length && winter.every(function (e) { return !e.d; })) {
+    var wVenue = winter.filter(function (e) { return (e.f || []).indexOf("no-venue") === -1; }).length;
+    var wTime = winter.filter(function (e) { return (e.f || []).indexOf("no-time") === -1; }).length;
+    notes.push(["The Winter 2027 schedule is mostly a placeholder",
+      "All " + winter.length + " Winter 2027 events are published without a date, and Laurier states " +
+      "registration opens in October 2026. " +
+      (wVenue ? wVenue + " of them do give a venue (the Virtual sessions state Zoom); the other " +
+                (winter.length - wVenue) + " are TBD. " : "None gives a venue. ") +
+      (wTime ? wTime + " give a time." : "None gives a time.")]);
+  }
+  var prog = EV.filter(function (e) { return e.pg; }).length;
+  if (prog) {
+    notes.push(["Program and faculty welcomes carry no audience on Laurier's page",
+      prog + " events are specific to one program or faculty, but Laurier states no audience " +
+      "restriction on them, so by default they all show. Use the \“Program or faculty\” " +
+      "dropdown to narrow to your own, or choose \“My program is not listed\” to hide " +
+      "them all \— Laurier does not publish a welcome for every program."]);
+  }
+
+  var list = document.getElementById("noteslist");
+  if (!notes.length) return;
+  list.innerHTML = notes.map(function (n, i) {
+    return "<li><b>" + String(i + 1).padStart(2, "0") + "</b><div><strong>" + n[0] + "</strong><p>" + n[1] + "</p></div></li>";
+  }).join("");
+  document.getElementById("notes").hidden = false;
+}
+
+/* ---------- chooser ------------------------------------------------------ */
+function readChooser() {
+  function one(n) { var el = document.querySelector('input[name="' + n + '"]:checked'); return el ? el.value : null; }
+  var streams = [].slice.call(document.querySelectorAll('input[name="stream"]:checked')).map(function (i) { return i.value; });
+  var prog = document.getElementById("program");
+  return { level: one("level"), campus: one("campus"), term: one("term"),
+           streams: streams, program: (prog && !prog.disabled) ? prog.value : "" };
+}
+
+document.getElementById("go").onclick = function () {
+  sel = readChooser();
+  var bits = [sel.level.replace(/-/g, " "), sel.campus, sel.term];
+  if (sel.program) bits.push(programLabel(sel.program));
+  if (sel.streams.length) bits.push(sel.streams.join(" + "));
+  document.getElementById("who").textContent = bits.join("  ·  ");
+  writeHash();
+  document.getElementById("chooser").hidden = true;
+  document.getElementById("whobar").hidden = false;
+  document.getElementById("filterbar").hidden = false;
+  buildNotes();
+  render();
+  document.getElementById("whobar").scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
+document.getElementById("change").onclick = function () {
+  document.getElementById("chooser").hidden = false;
+  document.getElementById("whobar").hidden = true;
+  document.getElementById("filterbar").hidden = true;
+  document.getElementById("timeline").innerHTML = "";
+  document.getElementById("notes").hidden = true;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+[].slice.call(document.querySelectorAll('.chip[data-f]')).forEach(function (b) {
+  b.onclick = function () {
+    [].slice.call(document.querySelectorAll('.chip[data-f="' + b.dataset.f + '"]'))
+      .forEach(function (x) { x.classList.remove("on"); });
+    b.classList.add("on");
+    showFit = b.dataset.v;
+    render();
+  };
+});
+document.getElementById("pastbtn").onclick = function () {
+  hidePast = !hidePast;
+  this.classList.toggle("on", hidePast);
+  this.textContent = hidePast ? "Showing upcoming" : "Hide past";
+  render();
+};
+document.getElementById("q").oninput = function () { Q = this.value.toLowerCase().trim(); render(); };
+
+/* ---------- availability: grey out combinations Laurier publishes nothing for --- */
+function countFor(level, campus, term) {
+  return EV.filter(function (e) {
+    if (e.tm !== term) return false;
+    if ((e.cp || []).indexOf(campus) === -1) return false;
+    return (e.lv === level) || (e.lv === "all") || e.oa;
+  }).length;
+}
+/* Only offer a filter that can actually change this selection's results:
+   Residence and LOCUS are undergraduate concepts, the programme list differs per
+   level and campus, and an empty filter group is just noise. */
+function baseMatch(e, s) {
+  return e.tm === s.term &&
+         (e.cp || []).indexOf(s.campus) >= 0 &&
+         ((e.lv === s.level) || (e.lv === "all") || e.oa);
+}
+
+function refreshConditional(s) {
+  var pool = EV.filter(function (e) { return baseMatch(e, s); });
+
+  // streams: hide any that gate nothing here
+  var live = {};
+  pool.forEach(function (e) { gatesOf(e).forEach(function (t) { live[t] = (live[t] || 0) + 1; }); });
+  [].slice.call(document.querySelectorAll('input[name="stream"]')).forEach(function (i) {
+    var n = live[i.value] || 0;
+    i.parentNode.hidden = (n === 0);
+    if (n === 0) i.checked = false;
+    else i.parentNode.title = n + " event" + (n === 1 ? "" : "s");
+  });
+  document.getElementById("qstream").hidden =
+    ![].slice.call(document.querySelectorAll('input[name="stream"]')).some(function (i) { return !i.parentNode.hidden; });
+
+  // programmes / faculties available to this level and campus
+  var names = [];
+  pool.forEach(function (e) { if (e.pg && names.indexOf(e.pg) === -1) names.push(e.pg); });
+  names.sort();
+  var box = document.getElementById("qprogram"), sel2 = document.getElementById("program");
+  var keep = sel2.value;
+  sel2.innerHTML =
+    '<option value="">All programs — show every welcome</option>' +
+    '<option value="' + NO_PROGRAM + '">My program is not listed — hide them all</option>' +
+    names.map(function (n) {
+      return '<option value="' + esc(n) + '">' + esc(n) + "</option>";
+    }).join("");
+  if (keep === NO_PROGRAM || names.indexOf(keep) >= 0) sel2.value = keep;
+  box.hidden = (names.length === 0);
+  sel2.disabled = (names.length === 0);
+}
+
+function refreshAvailability() {
+  var s = readChooser();
+  if (!s.level) return;
+  // The first pass runs against a selection that may still be invalid, and unticks any
+  // stream it finds empty. Remember the ticks so the settled pass can restore them.
+  var keepStreams = [].slice.call(document.querySelectorAll('input[name="stream"]:checked'))
+                      .map(function (i) { return i.value; });
+  refreshConditional(s);
+  s = readChooser();
+  [].slice.call(document.querySelectorAll('input[name="campus"]')).forEach(function (i) {
+    var n = countFor(s.level, i.value, s.term);
+    i.disabled = (n === 0);
+    i.parentNode.classList.toggle("off", n === 0);
+    i.parentNode.title = n === 0 ? "Laurier publishes no schedule for this combination" : n + " events";
+  });
+  [].slice.call(document.querySelectorAll('input[name="term"]')).forEach(function (i) {
+    var n = countFor(s.level, s.campus, i.value);
+    i.disabled = (n === 0);
+    i.parentNode.classList.toggle("off", n === 0);
+    i.parentNode.title = n === 0 ? "Laurier publishes no schedule for this combination" : n + " events";
+  });
+  // if the current pick just became invalid, move to the first valid one
+  ["campus", "term"].forEach(function (name) {
+    var cur = document.querySelector('input[name="' + name + '"]:checked');
+    if (cur && cur.disabled) {
+      var ok = document.querySelector('input[name="' + name + '"]:not(:disabled)');
+      if (ok) ok.checked = true;
+    }
+  });
+  function countExact(pick) {
+    var prev = sel;
+    sel = pick;
+    var n = EV.filter(function (e) { return assess(e).ok; }).length;
+    sel = prev;
+    return n;
+  }
+  var s2 = readChooser();
+  if (s2.campus !== s.campus || s2.term !== s.term) {
+    [].slice.call(document.querySelectorAll('input[name="term"]')).forEach(function (i) {
+      var n = countFor(s2.level, s2.campus, i.value);
+      i.disabled = (n === 0);
+      i.parentNode.classList.toggle("off", n === 0);
+    });
+    [].slice.call(document.querySelectorAll('input[name="campus"]')).forEach(function (i) {
+      var n = countFor(s2.level, i.value, s2.term);
+      i.disabled = (n === 0);
+      i.parentNode.classList.toggle("off", n === 0);
+    });
+    s2 = readChooser();
+  }
+  // upper bound decides whether the combination exists at all; the exact count
+  // reflects the streams actually ticked, so the number moves as you tick them.
+  // The filter groups must be built from the SETTLED selection. Building them earlier
+  // meant that switching level while an invalid campus/term was still selected computed
+  // the pool against a combination with no events, hiding every stream and program.
+  refreshConditional(s2);
+  [].slice.call(document.querySelectorAll('input[name="stream"]')).forEach(function (i) {
+    if (!i.parentNode.hidden && keepStreams.indexOf(i.value) >= 0) i.checked = true;
+  });
+  s2 = readChooser();
+
+  var upper = countFor(s2.level, s2.campus, s2.term);
+  var exact = countExact(s2);
+  var go = document.getElementById("go");
+  go.disabled = !upper;
+  go.textContent = !upper ? "No schedule published"
+    : exact ? "Show my events (" + exact + ")"
+            : "No events yet — tick a filter below";
+}
+[].slice.call(document.querySelectorAll('.chooser input, .chooser select')).forEach(function (i) {
+  i.addEventListener("change", refreshAvailability);
+});
+refreshAvailability();
+
+/* ---------- shareable state in the URL hash ------------------------------ */
+function writeHash() {
+  var s = readChooser();
+  var p = "level=" + encodeURIComponent(s.level) +
+          "&campus=" + encodeURIComponent(s.campus) +
+          "&term=" + encodeURIComponent(s.term);
+  if (s.streams.length) p += "&streams=" + encodeURIComponent(s.streams.join("|"));
+  if (s.program) p += "&program=" + encodeURIComponent(s.program);
+  history.replaceState(null, "", "#" + p);
+}
+function applyHash() {
+  var h = location.hash.replace(/^#/, "");
+  if (!h) return false;
+  var p = {};
+  h.split("&").forEach(function (kv) {
+    var i = kv.indexOf("=");
+    if (i > 0) p[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
+  });
+  if (!p.level || !p.campus || !p.term) return false;
+  function pick(name, val) {
+    var el = document.querySelector('input[name="' + name + '"][value="' + val.replace(/"/g, '\\"') + '"]');
+    if (el) { el.checked = true; return true; }
+    return false;
+  }
+  var ok = pick("level", p.level) && pick("campus", p.campus) && pick("term", p.term);
+  refreshConditional(readChooser());
+  if (p.streams) {
+    p.streams.split("|").forEach(function (s) { pick("stream", s); });
+  }
+  if (p.program) {
+    var psel = document.getElementById("program");
+    refreshConditional(readChooser());
+    psel.value = p.program;
+  }
+  refreshAvailability();
+  return ok;
+}
+if (applyHash()) {
+  document.getElementById("go").click();
+}

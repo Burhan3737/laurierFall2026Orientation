@@ -1,0 +1,586 @@
+/* @fonts https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400..600&display=swap */
+/* ===========================================================================
+   THE INDEX — variant B
+   A reference catalogue: hairlines, counts, a working gothic for the apparatus
+   and a reading face for the one record you have chosen. Purple is the rule,
+   gold marks the record in hand.
+   ======================================================================== */
+:root{
+  --purple:#330072;
+  --purple-d:#250053;
+  --lilac:#7A3A93;
+  --gold:#F2A900;
+  --gold-d:#8A6100;
+  --paper:#FFFFFF;
+  --tint:#F7F5F9;
+  --tint-d:#EDE8F2;
+  --ink:#1B1723;
+  --meta:#57506A;
+  --line:#DED8E7;
+  --line-h:#C3B9D2;
+  --g:"Libre Franklin",Helvetica,Arial,sans-serif;
+  --s:"Newsreader",Georgia,serif;
+  --top:87px;   /* the bar is 84 plus its 3px gold rule */
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:var(--top)}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--g);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0;font-weight:600}
+p{margin:0}
+ul{margin:0;padding:0;list-style:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+a{color:var(--purple)}
+mark{background:#FFE9AF;color:inherit;padding:0 1px}
+kbd{
+  font-family:var(--g);font-size:11px;font-weight:600;border:1px solid var(--line-h);
+  border-bottom-width:2px;padding:1px 5px;color:var(--meta);background:#fff;
+}
+
+/* ---- top bar ----------------------------------------------------------- */
+.topbar{
+  position:sticky;top:0;z-index:60;background:var(--purple);color:#fff;
+  border-bottom:3px solid var(--gold);
+}
+.topin{
+  max-width:1680px;margin:0 auto;padding:0 22px;height:84px;
+  display:flex;align-items:center;gap:24px;
+}
+.mark{display:flex;flex-direction:column;text-decoration:none;flex:0 0 auto;line-height:1.15}
+.mk1{font-size:19px;font-weight:700;letter-spacing:-.02em;color:#fff}
+.mk2{font-size:10px;font-weight:600;letter-spacing:.17em;text-transform:uppercase;color:var(--gold)}
+.searchwrap{flex:1 1 auto;position:relative;max-width:660px}
+#q{
+  width:100%;min-width:0;font:inherit;font-size:16px;padding:11px 76px 11px 14px;
+  border:1px solid #6B44A0;background:#26005A;color:#fff;border-radius:0;
+  -webkit-appearance:none;appearance:none;
+}
+#q::placeholder{color:#B9A5D6}
+#q:focus{outline:2px solid var(--gold);outline-offset:-1px;background:#1D0044}
+.qclear{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--gold);padding:5px 6px;
+}
+.topmeta{margin-left:auto;text-align:right;flex:0 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cnt{font-size:12px;color:#D6C7EC;letter-spacing:.04em}
+.cnt b{font-size:19px;font-weight:700;color:#fff;margin-right:4px}
+.who{font-size:11px;color:#B9A5D6;letter-spacing:.02em;max-width:34ch;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.whocmp{color:var(--gold)}
+
+/* ---- shell ------------------------------------------------------------- */
+.shell{
+  max-width:1680px;margin:0 auto;padding:0 22px;
+  display:grid;grid-template-columns:262px minmax(0,1fr) 396px;align-items:start;
+}
+.rail{
+  position:sticky;top:var(--top);max-height:calc(100vh - var(--top));overflow-y:auto;
+  padding:18px 20px 40px 0;border-right:1px solid var(--line);
+}
+.results{min-width:0;padding:0 24px 60px}
+.reader{
+  position:sticky;top:var(--top);max-height:calc(100vh - var(--top));overflow-y:auto;
+  border-left:1px solid var(--line);background:var(--tint);
+}
+
+/* ---- rail -------------------------------------------------------------- */
+.railhead{display:flex;align-items:baseline;justify-content:space-between;
+  padding-bottom:10px;border-bottom:2px solid var(--purple)}
+.railhead h2{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--purple)}
+.reset{font-size:11px;font-weight:600;color:var(--meta);text-decoration:underline;text-underline-offset:3px}
+.reset:hover{color:var(--purple)}
+.fgroup{padding:16px 0 4px;border-bottom:1px solid var(--line)}
+.fgroup h3{
+  font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--meta);margin-bottom:7px;
+}
+.fnote{font-size:11.5px;color:var(--meta);line-height:1.4;margin:-3px 0 8px;max-width:30ch}
+.fb{
+  display:flex;align-items:center;gap:8px;width:100%;padding:5px 4px 5px 0;font-size:13.5px;
+  color:var(--ink);
+}
+.fb:hover:not(.zero){background:var(--tint)}
+.fx{
+  flex:0 0 auto;width:11px;height:11px;border:1px solid var(--line-h);border-radius:50%;background:#fff;
+}
+.fx.box{border-radius:0}
+.fb.on .fx{background:var(--purple);border-color:var(--purple);box-shadow:inset 0 0 0 2px #fff}
+.fb.on .fx.box{box-shadow:none}
+.fb.on{font-weight:600;color:var(--purple)}
+.ft{flex:1 1 auto;min-width:0}
+.fn{
+  flex:0 0 auto;font-size:11.5px;font-weight:600;color:var(--meta);
+  font-variant-numeric:tabular-nums;
+}
+.fb.on .fn{color:var(--purple)}
+.fb.zero{color:#6C6480;cursor:not-allowed}
+.fb.zero .fn{color:#6C6480}
+.fsel{
+  width:100%;font:inherit;font-size:13px;padding:7px 8px;border:1px solid var(--line-h);
+  background:#fff;color:var(--ink);border-radius:0;margin-bottom:10px;
+}
+
+/* ---- results ----------------------------------------------------------- */
+.reshead{
+  position:sticky;top:var(--top);z-index:20;background:var(--paper);
+  padding:14px 0 10px;border-bottom:1px solid var(--line);
+}
+.pivots{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.plab{font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--meta);margin-right:4px}
+.pv{
+  font-size:12.5px;font-weight:500;padding:4px 10px;border:1px solid var(--line);color:var(--meta);
+}
+.pv:hover{border-color:var(--purple);color:var(--purple)}
+.pv.on{background:var(--purple);border-color:var(--purple);color:#fff;font-weight:600}
+.rowhead{
+  display:grid;grid-template-columns:92px 96px minmax(0,1fr) minmax(0,.85fr) minmax(0,.6fr);
+  gap:12px;padding:9px 8px 6px;font-size:9.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--meta);
+}
+.grp{margin-bottom:2px}
+.ghead{
+  display:flex;align-items:baseline;gap:10px;padding:16px 8px 6px;
+  border-bottom:2px solid var(--purple);position:sticky;top:calc(var(--top) + 46px);
+  background:var(--paper);z-index:10;
+}
+.gt{font-size:15px;font-weight:700;color:var(--purple);letter-spacing:-.01em}
+.gn{
+  margin-left:auto;font-size:11px;font-weight:700;color:#fff;background:var(--purple);
+  padding:1px 7px;font-variant-numeric:tabular-nums;
+}
+.row{
+  display:grid;grid-template-columns:92px 96px minmax(0,1fr) minmax(0,.85fr) minmax(0,.6fr);
+  gap:12px;width:100%;padding:8px;border-bottom:1px solid var(--line);align-items:baseline;
+}
+.row:hover{background:var(--tint)}
+.row.cur{background:#FFF6E0;box-shadow:inset 4px 0 0 var(--gold)}
+.rd{font-size:12px;font-weight:600;color:var(--meta);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;min-width:0}
+.rt{font-size:12px;color:var(--meta);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rn{font-size:14.5px;font-weight:600;line-height:1.3;min-width:0}
+.rp{display:block;font-size:11.5px;font-weight:400;color:var(--meta);font-style:italic}
+.rw,.rh{font-size:12.5px;color:var(--meta);line-height:1.35;min-width:0;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tagv{
+  font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:#fff;background:var(--lilac);padding:1px 5px;
+}
+.row.off{background:repeating-linear-gradient(135deg,#fff,#fff 6px,#F6F3F9 6px,#F6F3F9 12px)}
+.row.off .rn{font-weight:400;color:var(--meta)}
+.rx{grid-column:1 / -1;font-size:11.5px;color:var(--meta);font-style:italic;padding-top:2px}
+.none{padding:48px 8px;max-width:44ch}
+.none p{font-size:15px;color:var(--meta);margin-bottom:8px}
+.none b{color:var(--ink)}
+
+/* ---- reading pane ------------------------------------------------------ */
+.backbtn{display:none}
+.rec{padding:22px 24px 60px}
+.recno{
+  font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--meta);
+  font-variant-numeric:tabular-nums;
+}
+.elig{
+  margin-top:12px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold-d);border-bottom:2px solid var(--gold);display:inline-block;padding-bottom:4px;
+}
+.elig.no{color:var(--meta);border-bottom-color:var(--line-h)}
+.rec h2{
+  margin-top:14px;font-family:var(--s);font-size:27px;line-height:1.16;font-weight:600;
+  letter-spacing:-.012em;color:var(--ink);
+}
+.parent{margin-top:6px;font-size:12.5px;color:var(--meta);font-weight:500}
+.prose{margin-top:14px;font-family:var(--s);font-size:16.5px;line-height:1.6;color:#2B2536}
+.facts{margin:22px 0 0;display:grid;grid-template-columns:82px minmax(0,1fr);gap:0}
+.facts dt{
+  font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--meta);
+  padding:8px 10px 8px 0;border-top:1px solid var(--line);
+}
+.facts dd{margin:0;font-size:13.5px;padding:8px 0;border-top:1px solid var(--line);
+  min-width:0;overflow-wrap:anywhere}
+.links{margin-top:18px;display:flex;flex-direction:column;gap:5px}
+.lk{
+  display:block;padding:9px 12px;font-size:13px;font-weight:600;text-decoration:none;
+  background:var(--purple);color:#fff;
+}
+.lk::after{content:" \2192"}
+.lk:hover{background:var(--lilac)}
+.lk.dead{background:var(--tint-d);color:var(--meta);font-weight:500}
+.lk.dead::after{content:""}
+.flag{margin-top:12px;font-size:12px;color:var(--meta);border-left:3px solid var(--line-h);padding-left:10px}
+.cite{margin-top:22px;padding-top:12px;border-top:1px solid var(--line);font-size:11px;
+  line-height:1.6;color:var(--meta)}
+.cite span{display:block;font-size:9.5px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink);margin-bottom:4px}
+.cite a{display:block;color:var(--purple);overflow-wrap:anywhere;margin-bottom:4px}
+.rempty{padding:34px 24px}
+.rempty h2{font-family:var(--s);font-size:22px;font-weight:500;color:var(--meta)}
+.rempty p{margin-top:10px;font-size:13.5px;color:var(--meta);max-width:34ch;line-height:1.55}
+.keys{margin:20px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center}
+.keys dt{display:flex;gap:3px}
+.keys dd{margin:0;font-size:12.5px;color:var(--meta)}
+
+/* ---- endmatter --------------------------------------------------------- */
+.railtoggle{display:none}
+.endmatter{border-top:3px solid var(--purple);background:var(--tint);margin-top:20px}
+.endin{
+  max-width:1680px;margin:0 auto;padding:36px 22px 52px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:38px;
+}
+.endcol h2{font-size:17px;font-weight:700;color:var(--purple)}
+.endcol .lede{margin-top:8px;font-size:13.5px;color:var(--meta);max-width:60ch;line-height:1.55}
+.notelist{margin-top:16px}
+.notelist li{display:flex;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+.notelist b{font-size:10.5px;font-weight:700;color:var(--gold-d);padding-top:3px}
+.notelist strong{display:block;font-size:13.5px}
+.notelist p{margin-top:3px;font-size:12.5px;color:var(--meta);line-height:1.5}
+.srcgrid{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr));gap:0 22px}
+.src{padding:9px 0;border-top:1px solid var(--line);font-size:12px;min-width:0}
+.src b{display:block;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple)}
+.src span{display:block;margin:2px 0;color:var(--ink);font-size:12.5px}
+.src a{display:block;color:var(--meta);font-size:11px;overflow-wrap:anywhere}
+.colophon{margin-top:22px;font-size:11.5px;color:var(--meta);line-height:1.6;max-width:70ch}
+
+/* ---- narrow ------------------------------------------------------------ */
+@media (max-width:1320px){
+  .shell{grid-template-columns:230px minmax(0,1fr) 340px}
+  .row,.rowhead{grid-template-columns:84px 88px minmax(0,1fr) minmax(0,.8fr)}
+  .rh{display:none}
+  .rowhead span:last-child{display:none}
+}
+@media (max-width:1080px){
+  :root{--top:76px}
+  .topin{gap:12px;flex-wrap:wrap;height:auto;padding:10px 16px}
+  .mark{flex:0 0 auto}
+  .searchwrap{order:3;flex:1 1 100%;max-width:none}
+  .topmeta{flex-direction:row;align-items:baseline;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .mark{min-width:0}
+  .who{max-width:100%}
+  .shell{display:block;padding:0 16px}
+  .rail{
+    position:fixed;top:0;left:0;bottom:0;width:min(320px,86vw);z-index:70;background:#fff;
+    max-height:none;border-right:2px solid var(--purple);padding:18px 18px 60px;
+    transform:translateX(-102%);transition:transform .18s ease;box-shadow:6px 0 24px rgba(27,23,35,.18);
+  }
+  body.railopen .rail{transform:none}
+  .results{padding:0 0 60px}
+  .reshead{top:0}
+  .ghead{top:52px}
+  .railtoggle{
+    display:block;position:fixed;left:14px;bottom:14px;z-index:75;background:var(--purple);
+    color:#fff;font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+    padding:12px 18px;box-shadow:0 3px 14px rgba(27,23,35,.3);
+  }
+  .reader{
+    position:fixed;inset:0;z-index:80;max-height:none;background:var(--paper);
+    border-left:0;display:none;overflow-y:auto;
+  }
+  body.reading .reader{display:block}
+  body.reading{overflow:hidden}
+  .backbtn{
+    display:block;position:sticky;top:0;width:100%;background:var(--purple);color:#fff;
+    padding:13px 18px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  }
+}
+@media (max-width:640px){
+  /* A phone gets no grid at all. Four column tracks fighting three pivot rules
+     produced rows whose time cell computed to 0px, so half the schedule showed
+     no time; a row that stacks cannot do that. */
+  .row,.rowhead{display:block;padding:10px 8px}
+  .rowhead{display:none}
+  .rd,.rt{display:inline;font-size:12px}
+  .rd::after{content:" ·";color:var(--line-h)}
+  .rn{display:block;font-size:15px;margin-top:2px}
+  .rw,.rh{display:block;margin-top:2px}
+  .rh{display:none}
+  .rx,.rnote{display:block;margin-top:2px}
+  .mk2{display:none}
+}
+@media print{
+  .topbar,.rail,.reader,.railtoggle,.reshead,.endmatter{display:none!important}
+  .shell{display:block}
+  .row{break-inside:avoid}
+}
+
+/* ---- the three facts that outrank the prose ---------------------------- */
+.railnote{margin-top:8px;font-size:11px;color:var(--meta);line-height:1.4}
+.facts.key{margin-top:16px;border-top:2px solid var(--purple)}
+.facts.key dt{border-top:0;padding-top:9px;color:var(--purple)}
+.facts.key dd{border-top:0;padding-top:9px;font-size:14.5px;font-weight:500}
+.facts.key dt + dd + dt,.facts.key dt + dd + dt + dd{border-top:1px solid var(--line)}
+.rec .links{margin-top:16px}
+.prose p + p{margin-top:.7em}
+.recno{min-height:14px}
+
+/* ---- the pivot is the point, so it reads as a control ------------------ */
+.reshead{border-top:2px solid var(--purple);padding-top:12px}
+.plab{font-size:11px;letter-spacing:.14em;color:var(--purple)}
+.pv{padding:5px 12px;font-size:13px}
+.dup{
+  display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--gold-d);border:1px solid #E2C98F;background:#FFF8E8;padding:0 4px;margin-left:7px;
+  vertical-align:1px;
+}
+.dupnote{
+  margin-top:14px;font-size:12.5px;line-height:1.5;color:#5C4B1F;background:#FFF8E8;
+  border-left:4px solid var(--gold);padding:9px 12px;
+}
+.dupnote b{color:var(--gold-d)}
+
+/* ---- the record reads as a catalogue entry ----------------------------- */
+.recmast{
+  font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--meta);
+  border-bottom:2px solid var(--gold);padding-bottom:8px;margin-bottom:12px;
+}
+.recmast b{color:var(--purple);font-weight:700}
+.recnav{display:flex;align-items:center;gap:10px}
+.recnav .recno{flex:1;text-align:center}
+.stepr{
+  width:26px;height:26px;border:1px solid var(--line-h);color:var(--purple);font-size:15px;
+  line-height:1;display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+}
+.stepr:hover:not(:disabled){background:var(--purple);border-color:var(--purple);color:#fff}
+.stepr:disabled{color:#6E6782;cursor:default}
+.xlink{
+  font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--purple);
+  border-bottom:1px solid var(--gold);padding-bottom:1px;white-space:nowrap;
+}
+.xlink:hover{border-bottom-color:var(--purple)}
+.xlink::before{content:"\00b7  ";color:var(--line-h);border:0}
+.lklist{margin-top:16px;font-size:13.5px;line-height:1.9}
+.lklab{
+  display:block;font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--meta);margin-bottom:2px;
+}
+.lk{
+  display:inline;background:none;color:var(--purple);font-weight:600;padding:0;
+  text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;
+}
+.lksep{display:inline}
+.lk::after{content:""}
+.lk:hover{background:none;color:var(--lilac)}
+.lk.dead{background:none;color:var(--meta);font-weight:400;text-decoration:line-through}
+.lksep{color:var(--line-h);margin:0 7px}
+.cite i{font-style:italic}
+
+/* ---- Laurier's repeats fold away --------------------------------------- */
+.dupfold{border-bottom:1px solid var(--line)}
+.dupbtn{
+  display:block;width:100%;padding:5px 8px 6px 100px;font-size:11.5px;font-weight:600;
+  color:var(--gold-d);background:#FFFBF0;
+}
+.dupbtn::after{content:" \25be"}
+.dupbtn.open::after{content:" \25b4"}
+.dupbtn:hover{background:#FFF6E0}
+.dupkids .row{background:#FFFDF7}
+
+/* ---- Laurier's prose where a time should be ---------------------------- */
+.rnote{
+  grid-column:1 / -1;font-size:11.5px;color:var(--meta);font-style:italic;padding-top:2px;
+}
+.fb.zero .ft{text-decoration:line-through;text-decoration-color:#B3AABF}
+
+@media (max-width:640px){
+  /* no empty gutter: the date column is already the group heading */
+  .piv-day{--cols:minmax(0,1fr)}
+  .piv-day .rt{grid-column:1;font-size:11.5px}
+  .dupbtn{padding-left:8px}
+}
+@media print{
+  .rec{padding:0}
+  .recnav,.recmast,.backbtn{display:none}
+}
+
+/* ---- getting to a day without scrolling 7,500px ----------------------- */
+.jump{
+  display:flex;align-items:stretch;gap:0;overflow-x:auto;margin-top:10px;
+  border-top:1px solid var(--line);
+}
+.jlab{
+  flex:0 0 auto;align-self:center;font-size:10px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--meta);padding-right:12px;
+}
+.jb{
+  flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:0;
+  padding:6px 10px 5px;border-bottom:3px solid transparent;white-space:nowrap;
+}
+.jb:hover{background:var(--tint);border-bottom-color:var(--gold)}
+.jt{font-size:12.5px;font-weight:600;color:var(--purple);max-width:16ch;
+  overflow:hidden;text-overflow:ellipsis}
+.jn{font-size:10.5px;color:var(--meta);font-variant-numeric:tabular-nums}
+.jsel{
+  font:inherit;font-size:12.5px;padding:5px 8px;border:1px solid var(--line-h);
+  background:#fff;color:var(--ink);border-radius:0;max-width:min(340px,60vw);margin:8px 0 0;
+}
+.totop{
+  margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--meta);border-bottom:2px solid var(--line-h);padding-bottom:1px;align-self:center;
+}
+.totop:hover{color:var(--purple);border-bottom-color:var(--purple)}
+.lksep{color:var(--meta)}
+@media (max-width:640px){
+  .results{padding-bottom:96px}
+}
+
+/* ---- the jump rail scrolls without a chrome scrollbar under it --------- */
+.jump{
+  scrollbar-width:none;-ms-overflow-style:none;position:relative;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%);
+}
+.jump::-webkit-scrollbar{display:none}
+
+/* ---- the filter button belongs on a bar, not over the rows ------------- */
+@media (max-width:1080px){
+  .railtoggle{
+    left:0;right:0;bottom:0;width:100%;text-align:center;padding:14px 18px;
+    box-shadow:0 -3px 14px rgba(27,23,35,.22);border-top:3px solid var(--gold);
+  }
+  .results{padding-bottom:78px}
+  .reader{bottom:0}
+}
+
+/* ---- print: a list is no use without saying whose list it is ---------- */
+@media print{
+  .shell{display:block}
+  .results{padding:0}
+  .printhead{display:block !important;margin-bottom:10pt;border-bottom:2px solid #000;padding-bottom:6pt}
+  .printhead b{font-size:15pt;display:block}
+  .printhead span{font-size:9pt}
+  .grp{break-inside:auto}
+  .ghead{position:static;break-after:avoid}
+  .row{break-inside:avoid;display:grid !important;grid-template-columns:80px 90px 1fr 1fr}
+  .rowhead,.jump,.dupbtn{display:none}
+  .dupkids{display:block !important}
+  .dupkids[hidden]{display:block !important}
+}
+.printhead{display:none}
+
+/* ---- comparison: two boards read against each other -------------------- */
+.cmpbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:10px;
+  padding-top:9px;border-top:1px solid var(--line);
+}
+.cmplab{
+  font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--meta);
+}
+.cmpb{
+  font-size:12.5px;font-weight:500;padding:3px 10px;border:1px solid var(--line);color:var(--meta);
+}
+.cmpb:hover{border-color:var(--purple);color:var(--purple)}
+.cmpbar.on{background:#FFF8E8;border-top:2px solid var(--gold);padding:9px 10px;margin-top:10px}
+.cmpwho{font-size:12.5px;font-weight:700;color:var(--purple)}
+.cmpvs{font-size:11px;color:var(--meta);text-transform:uppercase;letter-spacing:.1em}
+.cmpsum{font-size:12.5px;color:#5C4B1F}
+.cmpsum b{color:var(--gold-d)}
+.cmpx{
+  margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--meta);border-bottom:2px solid var(--line-h);padding-bottom:1px;
+}
+.cmpx:hover{color:var(--purple);border-bottom-color:var(--purple)}
+.cmp{
+  display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  padding:0 5px;margin-left:7px;vertical-align:1px;
+}
+.cmp.both{background:var(--tint-d);color:var(--meta)}
+.cmp.mine{background:var(--purple);color:#fff}
+.cmp.theirs{background:var(--gold);color:#2A1B00}
+
+/* ---- a host column that is mostly empty is not a column ---------------- */
+.rhin{display:none}
+.nohost .rh,.nohost .rowhead .h-host{display:none}
+.nohost .rhin{
+  display:block;grid-column:3;font-size:12px;color:var(--meta);margin-top:1px;
+}
+@media (max-width:640px){ .nohost .rhin{grid-column:auto} }
+
+/* ---- which columns exist, and what each is allowed to take -------------
+   Five columns, and three independent reasons one of them disappears: the
+   pivot the board is filed under is redundant, and a host column nobody fills
+   is dead weight. The combinations have to be spelled out, because a rule
+   written for "four columns without a date" and one written for "four columns
+   without a host" will otherwise fight, and the loser was the time cell —
+   the one thing in a schedule that must never clip.
+   TIME is fixed and never gives ground; VENUE is the column that yields. */
+.results        {--cols:88px 116px minmax(210px,1.5fr) minmax(0,.9fr) minmax(0,.6fr)}
+.piv-day        {--cols:116px minmax(210px,1.5fr) minmax(0,.9fr) minmax(0,.6fr)}
+.piv-where      {--cols:88px 116px minmax(230px,1.6fr) minmax(0,.7fr)}
+.piv-host       {--cols:88px 116px minmax(230px,1.6fr) minmax(0,.9fr)}
+.nohost         {--cols:88px 116px minmax(230px,1.6fr) minmax(0,.9fr)}
+.piv-day.nohost {--cols:116px minmax(230px,1.6fr) minmax(0,.9fr)}
+.piv-where.nohost{--cols:88px 116px minmax(230px,1fr)}
+.piv-host.nohost{--cols:88px 116px minmax(230px,1.6fr) minmax(0,.9fr)}
+.row,.rowhead{grid-template-columns:var(--cols)}
+.piv-day .rd,.piv-day .rowhead .h-date{display:none}
+.piv-where .rw,.piv-where .rowhead .h-venue{display:none}
+.piv-host .rh,.piv-host .rowhead .h-host{display:none}
+.nohost .rh,.nohost .rowhead .h-host{display:none}
+.rt{min-width:0}
+
+@media (max-width:1320px){
+  .results        {--cols:82px 112px minmax(180px,1.4fr) minmax(0,.85fr)}
+  .piv-day        {--cols:112px minmax(180px,1.4fr) minmax(0,.85fr)}
+  .piv-where      {--cols:82px 112px minmax(180px,1.2fr)}
+  .piv-host       {--cols:82px 112px minmax(180px,1.4fr)}
+  .nohost         {--cols:82px 112px minmax(180px,1.4fr)}
+  .piv-day.nohost {--cols:112px minmax(180px,1.4fr)}
+  .piv-where.nohost{--cols:82px 112px minmax(180px,1fr)}
+  .piv-host.nohost{--cols:82px 112px minmax(180px,1.4fr)}
+  .rh,.rowhead .h-host{display:none}
+}
+@media (max-width:640px){
+  .row,.rowhead{display:block;padding:10px 8px}
+  .rowhead{display:none}
+  .rd,.rt{display:inline;font-size:12px}
+  .rd::after{content:" ·";color:var(--line-h)}
+  .rn{display:block;font-size:15px;margin-top:2px}
+  .rw{display:block;margin-top:2px}
+  .rh{display:none}
+  .rx,.rnote{display:block;margin-top:2px}
+  .results{padding-bottom:96px}
+}
+
+/* ---- comparison is asked for, not always on offer ---------------------- */
+.cmpopen{
+  display:block;margin-top:9px;padding-top:8px;border-top:1px solid var(--line);
+  font-size:11.5px;font-weight:600;color:var(--meta);
+}
+.cmpopen:hover{color:var(--purple)}
+.greason{
+  font-size:11px;font-weight:600;color:var(--meta);font-style:italic;margin-left:10px;
+}
+/* the reading pane's field runs the height it is given */
+.reader{min-height:calc(100vh - var(--top))}
+@media (max-width:1080px){
+  .cmpopen{display:none}
+  .cmpbar{display:none}
+}
+
+/* ---- the day heading clears the header it sticks under ----------------- */
+.ghead{top:calc(var(--top) + var(--reshead, 46px))}
+.rclash{
+  grid-column:1 / -1;font-size:11.5px;font-weight:600;color:var(--gold-d);padding-top:2px;
+}
+.row.cur .rclash{color:#7A5A00}
+/* ---- comparison reads from a key, not from three badges ---------------- */
+.cmpkey{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#5C4B1F}
+.cmpkey i{
+  display:inline-block;width:11px;height:11px;margin-left:8px;border:1px solid var(--line-h);
+}
+.cmpkey i:first-child{margin-left:0}
+.k-both{background:var(--tint-d)}
+.k-mine{background:#fff}
+.k-theirs{background:var(--gold);border-color:var(--gold-d)}
+.row.cmp-theirs{background:#FFFBF0}
+.stepr:disabled{color:#6E6782}
+@media (max-width:640px){ .rclash{grid-column:auto} }
+
+/* A keyboard user was getting the browser default ring over every custom control
+   in here — on a purple bar it is close to invisible. One rule, gold, drawn
+   outside the box so it is never clipped by a scrolling column. */
+.rail button:focus-visible,.rail label:focus-visible,.results button:focus-visible,
+.reader button:focus-visible,.topin button:focus-visible,.jump a:focus-visible,
+.row:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
+  outline:2px solid var(--gold);outline-offset:2px;border-radius:1px;
+}

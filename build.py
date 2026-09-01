@@ -6,10 +6,13 @@
 The no-argument invocation is the canonical build and its output is byte-for-byte
 stable; --css/--out only swap the stylesheet and the destination.
 """
-import json, io, re, datetime, subprocess, sys, argparse
+import json, io, os, re, datetime, subprocess, sys, argparse
 
 _ap = argparse.ArgumentParser(description=__doc__)
-_ap.add_argument('--css', default='_style_min.css', help='stylesheet to inline')
+_ap.add_argument('--css', default='_style_a.css', help='stylesheet to inline')
+_ap.add_argument('--js',  default='_app_a.js', help='application script to inline')
+_ap.add_argument('--body', default='_body_a.html',
+                 help='alternate body template; {{META}}, {{SRCGRID}}, {{NSOURCES}}, {{NEVENTS}} are substituted')
 _ap.add_argument('--out', default='orientation.html', help='page to write')
 ARGS = _ap.parse_args()
 
@@ -56,12 +59,13 @@ def opts(name, values, labels=None, kind="radio"):
     return "\n        ".join(out)
 
 # fail the build rather than shipping a script that will not parse
-for f in ('_app.js',):
+for f in (ARGS.js,):
     r = subprocess.run(['node', '--check', f], capture_output=True, text=True)
     if r.returncode:
         sys.exit('SYNTAX ERROR in %s\n%s' % (f, r.stderr))
 
 CSS = open(ARGS.css, encoding='utf-8').read()
+APP = open(ARGS.js, encoding='utf-8').read()
 
 # A stylesheet may name its own webfonts with a first-line directive:
 #     /* @fonts https://fonts.googleapis.com/css2?... */
@@ -71,20 +75,32 @@ DEFAULT_FONTS = ("https://fonts.googleapis.com/css2?"
 _m = re.search(r'/\*\s*@fonts\s+(\S+)\s*\*/', CSS)
 FONTS = _m.group(1) if _m else DEFAULT_FONTS
 
-HTML = f"""<!DOCTYPE html>
+# A variant is an offline document: if fetch_fonts.py has cached its webfaces, they
+# are inlined as base64 and no <link> is emitted at all, so the page keeps its
+# typography with the network unplugged. Without a cache it falls back to the link,
+# and the canonical no-argument build always takes the link path unchanged.
+_NL = chr(10)
+_fontcache = os.path.join('_fonts', os.path.splitext(os.path.basename(ARGS.css))[0] + '.fonts.css')
+if ARGS.body and os.path.exists(_fontcache):
+    FONTHEAD = '<style>' + _NL + open(_fontcache, encoding='utf-8').read()
+else:
+    FONTHEAD = ('<link rel="preconnect" href="https://fonts.googleapis.com">' + _NL +
+                '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' + _NL +
+                '<link href="%s" rel="stylesheet">' % FONTS + _NL +
+                '<style>' + _NL)
+
+HEAD = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Laurier Orientation — Event Finder</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="{FONTS}" rel="stylesheet">
-<style>
-{CSS}
+{FONTHEAD}{CSS}
 </style>
 </head>
-<body>
+"""
+
+BODY_DEFAULT = f"""<body>
 
 <header class="board">
   <div class="wrap">
@@ -164,17 +180,41 @@ HTML = f"""<!DOCTYPE html>
   {len(EV)} events extracted from {len(SOURCES)} Laurier schedule pages &middot; compiled 31 Aug 2026<br>
   Laurier updates these schedules continuously — reconfirm before travelling to a venue &middot; eligibility shown here is an interpretation of each page's stated audience, not an official ruling
 </footer>
+"""
 
+TAIL = f"""
 <script>
 const EV = {PAYLOAD};
 const TODAY = "{TODAY}";
 </script>
 <script>
-{open('_app.js', encoding='utf-8').read()}
+{APP}
 </script>
 </body>
 </html>
 """
 
+# A variant supplies its own body markup and its own script; the chooser vocabulary that
+# build.py holds (levels, campuses, terms, streams) is handed over as META so the variant
+# can build whatever control surface it likes without re-deriving it from the events.
+META = json.dumps({
+  "levels": LEVELS, "levelLabels": LEVEL_LB, "campuses": CAMPUSES,
+  "terms": TERMS, "streams": STREAMS,
+  "nEvents": len(EV), "nSources": len(SOURCES),
+  "pageTitles": PAGE_TITLES,
+  "sources": [{"file": f, "title": PAGE_TITLES.get(f, f), "url": u} for f, u in SOURCES],
+}, separators=(',', ':'), ensure_ascii=False)
+
+if ARGS.body:
+    BODY = (open(ARGS.body, encoding='utf-8').read()
+            .replace('{{META}}', META)
+            .replace('{{SRCGRID}}', src_html)
+            .replace('{{NSOURCES}}', str(len(SOURCES)))
+            .replace('{{NEVENTS}}', str(len(EV))))
+else:
+    BODY = BODY_DEFAULT
+
+HTML = HEAD + BODY + TAIL
+
 io.open(ARGS.out, 'w', encoding='utf-8').write(HTML)
-print("%s written: %d KB, %d events (%s)" % (ARGS.out, len(HTML)//1024, len(EV), ARGS.css))
+print("%s written: %d KB, %d events (%s + %s)" % (ARGS.out, len(HTML)//1024, len(EV), ARGS.css, ARGS.js))

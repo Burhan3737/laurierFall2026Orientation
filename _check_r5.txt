@@ -1,0 +1,3 @@
+  ok    orientation-a.html builds, parses, resolves every call, and runs clean at 1400px and 420px across 4 states
+  ok    orientation-b.html builds, parses, resolves every call, and runs clean at 1400px and 420px across 4 states
+  ok    orientation-c.html builds, parses, resolves every call, and runs clean at 1400px and 420px across 4 states
