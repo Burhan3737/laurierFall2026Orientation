@@ -934,3 +934,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
     color:#333;line-height:1.45;
   }
 }
+
+/* a duplicate must explain itself on paper too */
+.prdup{font-style:italic;font-weight:400}

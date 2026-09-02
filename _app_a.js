@@ -127,7 +127,12 @@ function stripLead(n, d) {
   return s.slice(m[0].length) || s;
 }
 function dupKey(e) {
-  return [stripDay(e.t), e.d || "", e.n || "", e.w || ""].join(" § ");
+  /* Laurier retypes the same venue with different capitalisation across pages
+     ("Zoom | Registration is Required" vs "...is required"), which split one event
+     into two unmarked singletons. Fold case and whitespace on the free-text parts;
+     the title already goes through stripDay. */
+  function fold(s) { return String(s || "").replace(/\s+/g, " ").trim().toLowerCase(); }
+  return [stripDay(e.t), e.d || "", fold(e.n), fold(e.w)].join(" § ");
 }
 /* Every rendered title goes through here. Printing e.t directly is how "Tuesday,
    Sept. 8 - Meet and Greet…" ended up sitting under a heading reading "Tuesday 8

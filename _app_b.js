@@ -96,7 +96,12 @@ function stripLead(n, d) {
    parity compares it against the incumbent. */
 function title(e) { return stripDay(e.t); }
 function dupKey(e) {
-  return [stripDay(e.t), e.d || "", e.n || "", e.w || ""].join(" § ");
+  /* Laurier retypes the same venue with different capitalisation across pages
+     ("Zoom | Registration is Required" vs "...is required"), which split one event
+     into two unmarked singletons. Fold case and whitespace on the free-text parts;
+     the title already goes through stripDay. */
+  function fold(s) { return String(s || "").replace(/\s+/g, " ").trim().toLowerCase(); }
+  return [stripDay(e.t), e.d || "", fold(e.n), fold(e.w)].join(" § ");
 }
 function esc(s) {
   return String(s == null ? "" : s)

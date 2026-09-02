@@ -130,6 +130,19 @@ def grab(lines, label):
 # 'Valorant Esports Tournament!' is a real event name, 'Get Your Ticket Now!' is not.
 CTA = re.compile(r'^(ITINERARY|NOTE|BONUS|Get Your|Click|Register|Sign up|RSVP|Buy|Watch|Learn more|This session)', re.I)
 
+def join_lead(lead, rest):
+    """Attach a bolded lead-in to the text after it. Laurier bolds the opening words of a
+    sentence as often as it bolds a heading, so only punctuate when the remainder does not
+    continue the sentence."""
+    lead, rest = clean(lead), clean(rest)
+    if not lead:
+        return rest
+    if not rest:
+        return lead
+    if re.match(r'[a-z]', rest) or lead.endswith((':', '-', '—')):
+        return clean(lead + " " + rest)
+    return clean(lead.rstrip('.') + ". " + rest)
+
 def looks_like_title(s):
     return (bool(s) and len(s) < 90 and len(s.split()) <= 9
             and not s.endswith('.') and not CTA.match(s) and not FIELD.match(s))
@@ -197,7 +210,7 @@ def parse_panel(panel, fallback_title):
             if pend_title and pend_desc:
                 # a bold block that never got a Where/When is prose, not a sub-event:
                 # fold it in at the position it appears so the order matches the page
-                pend_desc = [clean(pend_title + ". " + " ".join(pend_desc))]
+                pend_desc = [join_lead(pend_title, " ".join(pend_desc))]
             pend_title = lt.rstrip(':').strip()
             rest = clean(txt[len(lt):])
             if rest:
@@ -231,7 +244,7 @@ def parse_panel(panel, fallback_title):
 
     # trailing prose after the last Where/When belongs to the last event
     if events and (pend_desc or pend_links or pend_title):
-        tail = clean(" ".join(([pend_title + "."] if pend_title else []) + pend_desc))
+        tail = join_lead(pend_title, " ".join(pend_desc)) if pend_title else clean(" ".join(pend_desc))
         if tail:
             events[-1]["desc"] = (events[-1]["desc"] + " " + tail).strip()
         events[-1]["links"] += [l for l in pend_links if l not in events[-1]["links"]]
@@ -243,7 +256,7 @@ def parse_panel(panel, fallback_title):
         bt = events[0]["_bold_title"]
         events[0]["title"] = fallback_title
         if bt and bt not in events[0]["desc"]:
-            events[0]["desc"] = clean(bt + ". " + events[0]["desc"])
+            events[0]["desc"] = join_lead(bt, events[0]["desc"])
     for e in events:
         e.pop("_bold_title", None)
 

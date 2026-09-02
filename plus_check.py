@@ -71,8 +71,12 @@ def dup_key(e):
     """The page's own answer to 'are these the same event', in Python."""
     t = e.get("title") or ""
     m = DAYRE.match(t)
+    # mirrors dupKey() in the app: the free-text parts are case- and whitespace-folded,
+    # because Laurier retypes the same venue with different capitalisation across pages
+    def fold(x):
+        return re.sub(r"\s+", " ", str(x or "")).strip().lower()
     return " \u00a7 ".join([t[m.end():] if m else t, e.get("date") or "",
-                            e.get("when") or "", e.get("where") or ""])
+                            fold(e.get("when")), fold(e.get("where"))])
 
 
 EV = json.load(open(os.path.join(HERE, "events.json"), encoding="utf-8"))["events"]
