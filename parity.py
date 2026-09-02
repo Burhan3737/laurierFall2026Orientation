@@ -90,21 +90,29 @@ def titles_incumbent(s):
 def marked(d):
     return Counter(html.unescape(t) for t in re.findall(r'data-ev-title="([^"]*)"', body_only(d)))
 
-def titles_a(s):
-    """A pages by day, so parity is also a proof that every eligible event is
-    reachable through the day navigator — not merely present in one wide view.
+def titles_by_day(page, s):
+    """A-family pages by day, so parity is also a proof that every eligible event
+    is reachable through the day navigator — not merely present in one wide view.
     Counter union takes the max per title, which would hide a repeated title
     appearing on several days, so the day pages are summed instead."""
     base = frag_of(s)
-    week = body_only(dom("orientation-a.html", base + "&view=week"))
+    week = body_only(dom(page, base + "&view=week"))
     days = sorted(set(re.findall(r'class="bar[^"]*" data-day="([^"]+)"', week)))
     if not days:
-        return marked(dom("orientation-a.html", base + "&view=week"))
+        return marked(dom(page, base + "&view=week"))
     got = Counter()
     with ThreadPoolExecutor(max_workers=4) as ex:
-        for c in ex.map(lambda k: marked(dom("orientation-a.html", base + "&view=day&day=" + k)), days):
+        for c in ex.map(lambda k: marked(dom(page, base + "&view=day&day=" + k)), days):
             got += c
     return got
+
+
+def titles_a(s):
+    return titles_by_day("orientation-a.html", s)
+
+
+def titles_a_plus(s):
+    return titles_by_day("orientation-a-plus.html", s)
 
 def titles_b(s):
     return marked(dom("orientation-b.html", frag_of(s)))
@@ -112,8 +120,9 @@ def titles_b(s):
 def titles_c(s):
     return marked(dom("orientation-c.html", frag_of(s)))
 
-GRAB = {"a": titles_a, "b": titles_b, "c": titles_c}
-PAGE = {"a": "orientation-a.html", "b": "orientation-b.html", "c": "orientation-c.html"}
+GRAB = {"a": titles_a, "b": titles_b, "c": titles_c, "a_plus": titles_a_plus}
+PAGE = {"a": "orientation-a.html", "b": "orientation-b.html", "c": "orientation-c.html",
+        "a_plus": "orientation-a-plus.html"}
 
 # ------------------------------------------------------------ selections ----
 def build_selections():
@@ -285,7 +294,7 @@ def shared_logic_check(names):
 SMOKE = ('<script>setTimeout(function(){var n=document.querySelectorAll("[data-ev-title]").length;'
          r'var t=document.body.innerText.match(/(\d+)\s+events? you can attend/);'
          r'var c=document.body.innerText.match(/(\d+)\s+records?/);'
-         'var e=document.querySelector(".empty,.none,.rempty,.clashhead,.loosebar")?1:0;'
+         'var e=document.querySelector(".empty,.none,.rempty,.clashhead,.loosebar,.planhead,.reghead")?1:0;'
          'document.title="SMOKE:"+n+"|"+((t&&t[1])||(c&&c[1])||"?")+"|"+e;},400);</script>')
 
 
@@ -296,11 +305,13 @@ def smoke_check(names, sels):
     must put at least one event in the DOM whenever the counter is non-zero."""
     jobs = []
     for n in names:
-        page = "orientation-%s.html" % n
+        page = PAGE[n]
         src = open(at(page), encoding="utf-8").read()
         tmp = os.path.join(tempfile.gettempdir(), "smoke-" + page)
         open(tmp, "w", encoding="utf-8").write(src.replace("</body>", SMOKE + "</body>", 1))
-        extra = {"a": ["&view=week", "&view=clash"], "b": ["&by=where"], "c": ["&full=1"]}
+        extra = {"a": ["&view=week", "&view=clash"], "b": ["&by=where"], "c": ["&full=1"],
+                 "a_plus": ["&view=week", "&view=clash", "&view=plan", "&view=reg",
+                            "&q=lazaridis"]}
         for s in sels:
             for w in (380, 700, 1400):
                 jobs.append((n, tmp, frag_of(s), label(s), w))
@@ -352,8 +363,21 @@ def control_check(names):
     ok = True
     files = ["_app_%s.js", "_style_%s.css", "_body_%s.html"]
     for n in names:
-        for pat in files + ["orientation-%s.html"]:
+        for pat in files:
             path = at(pat % n)
+            if not os.path.exists(path):
+                continue
+            src = open(path, encoding="utf-8").read()
+            allowed = (9, 10, 13)
+            bad = sorted({ord(c) for c in src
+                          if (ord(c) < 32 and ord(c) not in allowed)
+                          or 127 <= ord(c) <= 159})
+            if bad:
+                print("  FAIL  %s carries %s" % (os.path.basename(path),
+                      ", ".join("U+%04X" % b for b in bad)))
+                ok = False
+        for pat in [PAGE[n]]:
+            path = at(pat)
             if not os.path.exists(path):
                 continue
             src = open(path, encoding="utf-8").read()
@@ -480,10 +504,10 @@ def links_check(sels):
 
 # ---------------------------------------------------------------- main ------
 def main():
-    names = [a for a in sys.argv[1:] if a in GRAB] or ["a", "b", "c"]
+    names = [a for a in sys.argv[1:] if a in GRAB] or ["a", "b", "c", "a_plus"]
     snapshot()
     sels = build_selections()
-    print("Parity: %d selections x %d variants, against orientation.html\n" % (len(sels), len(names)))
+    print("Parity: %d selections x %d variants, against %s\n" % (len(sels), len(names), REFERENCE))
 
     print("Eligibility core")
     core_ok = core_check(names)
@@ -498,7 +522,7 @@ def main():
 
     all_ok = core_ok
     for n in names:
-        print("\norientation-%s.html" % n)
+        print("\n%s" % PAGE[n])
         with ThreadPoolExecutor(max_workers=3) as ex:
             got = list(ex.map(GRAB[n], sels))
         fails = 0
@@ -533,6 +557,10 @@ def main():
     probe = [frag_of(s) for s in sels[:14]]
     for page, extra in [("orientation.html", []),
                         ("orientation-a.html", ["&view=day&day=2026-09-08", "&view=week"]),
+                        ("orientation-a-plus.html", ["&view=day&day=2026-09-08", "&view=week",
+                                                     "&view=clash", "&view=plan", "&view=reg",
+                                                     "&q=lazaridis", "&q=zzzznothing",
+                                                     "&view=plan&q=lazaridis", "&ghosts=1"]),
                         ("orientation-b.html", ["&by=where", "&by=host", "&by=daypart",
                                                 "&by=stream", "&by=section", "&all=1", "&q=residence"]),
                         ("orientation-c.html", ["&picks=1|2|3", "&only=1", ""])]:

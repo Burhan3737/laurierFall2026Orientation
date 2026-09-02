@@ -28,6 +28,8 @@ PAGES = {
     "orientation-b.html": ["", "&only=clash", "&pivot=venue",
                            "&cmp=1&clevel=graduate&ccampus=Brantford&cterm=Fall%202026"],
     "orientation-c.html": ["", "&full=1", "&only=picks"],
+    "orientation-a-plus.html": ["", "&view=week", "&view=clash", "&view=plan",
+                                "&view=reg", "&ghosts=1", "&q=lazaridis"],
 }
 SEL = "#level=undergraduate&campus=Waterloo&term=Fall%202026"
 

@@ -64,7 +64,18 @@ STATES = {
     "c": ["", "level=undergraduate&campus=Waterloo&term=Fall%202026",
           "level=undergraduate&campus=Waterloo&term=Fall%202026&full=1",
           "level=graduate&campus=Waterloo&term=Fall%202026"],
+    "a_plus": ["level=undergraduate&campus=Waterloo&term=Fall%202026",
+               "level=undergraduate&campus=Waterloo&term=Fall%202026&view=week",
+               "level=undergraduate&campus=Waterloo&term=Fall%202026&view=clash",
+               "level=undergraduate&campus=Waterloo&term=Fall%202026&view=plan",
+               "level=undergraduate&campus=Waterloo&term=Fall%202026&view=reg",
+               "level=undergraduate&campus=Waterloo&term=Fall%202026&q=lazaridis",
+               "level=graduate&campus=Waterloo&term=Fall%202026&view=week"],
 }
+
+# The source triple is named for the variant; the page it builds is not always
+# "orientation-<variant>.html".
+PAGES = {"a_plus": "orientation-a-plus.html"}
 
 TRAP = ('<script>window.__e=[];addEventListener("error",function(v){__e.push(v.message)});'
         'addEventListener("unhandledrejection",function(){__e.push("promise")});</script>')
@@ -176,7 +187,7 @@ def check(v):
     css = "_style_%s.css" % v
     js = "_app_%s.js" % v
     body = "_body_%s.html" % v
-    out = "orientation-%s.html" % v
+    out = PAGES.get(v, "orientation-%s.html" % v)
 
     r = subprocess.run([sys.executable, "build.py", "--css", css, "--js", js,
                         "--body", body, "--out", out],
@@ -235,6 +246,6 @@ def check(v):
 
 
 if __name__ == "__main__":
-    which = [a for a in sys.argv[1:] if a in "abc"] or ["a", "b", "c"]
+    which = [a for a in sys.argv[1:] if a in STATES] or ["a", "b", "c", "a_plus"]
     results = [check(v) for v in which]
     sys.exit(0 if all(results) else 1)

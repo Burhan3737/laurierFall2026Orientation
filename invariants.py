@@ -138,11 +138,17 @@ STATES = {
           (DENSE, 1400), (BOARD, 420)],
     "b": [(BOARD, 1400), (BOARD + "&by=where", 1400), (DENSE, 1400), (BOARD, 420)],
     "c": [(BOARD, 1400), (BOARD + "&full=1", 1400), (DENSE, 1400), (BOARD, 420)],
+    "a_plus": [(BOARD, 1400), (BOARD + "&view=week", 1400), (BOARD + "&view=clash", 1400),
+               (BOARD + "&view=plan", 1400), (BOARD + "&view=reg", 1400),
+               (BOARD + "&q=lazaridis", 1400), (DENSE, 1400), (BOARD, 420),
+               (BOARD + "&view=reg", 420)],
 }
+
+PAGES = {"a_plus": "orientation-a-plus.html"}
 
 
 def check(v):
-    page = "orientation-%s.html" % v
+    page = PAGES.get(v, "orientation-%s.html" % v)
     bad = []
     for frag, width in STATES[v]:
         for issue in run(page, frag, width):
@@ -182,7 +188,7 @@ def selftest():
 if __name__ == "__main__":
     if "--selftest" in sys.argv:
         sys.exit(0 if selftest() else 1)
-    which = [a for a in sys.argv[1:] if a in "abc"] or ["a", "b", "c"]
+    which = [a for a in sys.argv[1:] if a in STATES] or ["a", "b", "c", "a_plus"]
     print("Rendered invariants")
     results = [check(v) for v in which]
     sys.exit(0 if all(results) else 1)
