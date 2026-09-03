@@ -12,12 +12,20 @@ _ap = argparse.ArgumentParser(description=__doc__)
 _ap.add_argument('--css', default='_style_a.css', help='stylesheet to inline')
 _ap.add_argument('--js',  default='_app_a.js', help='application script to inline')
 _ap.add_argument('--body', default='_body_a.html',
-                 help='alternate body template; {{META}}, {{SRCGRID}}, {{NSOURCES}}, {{NEVENTS}} are substituted')
+                 help='alternate body template; {{META}}, {{SRCGRID}}, {{NSOURCES}}, '
+                      '{{NEVENTS}}, {{NDISTINCT}} are substituted')
 _ap.add_argument('--out', default='orientation.html', help='page to write')
 ARGS = _ap.parse_args()
 
 d = json.load(open('events.json', encoding='utf-8'))
 EV = d['events']
+# Laurier publishes many of these sessions on two or three of its schedule pages,
+# and the pages fold those copies into one event. "520 events" was therefore a
+# number no reader could ever reach: the most anywhere is the distinct count. It
+# is not recomputed here — dupkey.py runs the page's own dupKey(), so the footer
+# counts events the same way the board does, or not at all.
+import dupkey
+NDISTINCT = len(dupkey.fold(EV))
 TODAY = "2026-08-31"
 
 # ---- compact the payload: short keys, drop empties -------------------------
@@ -200,7 +208,7 @@ const TODAY = "{TODAY}";
 META = json.dumps({
   "levels": LEVELS, "levelLabels": LEVEL_LB, "campuses": CAMPUSES,
   "terms": TERMS, "streams": STREAMS,
-  "nEvents": len(EV), "nSources": len(SOURCES),
+  "nEvents": len(EV), "nDistinct": NDISTINCT, "nSources": len(SOURCES),
   "pageTitles": PAGE_TITLES,
   "sources": [{"file": f, "title": PAGE_TITLES.get(f, f), "url": u} for f, u in SOURCES],
 }, separators=(',', ':'), ensure_ascii=False)
@@ -210,11 +218,13 @@ if ARGS.body:
             .replace('{{META}}', META)
             .replace('{{SRCGRID}}', src_html)
             .replace('{{NSOURCES}}', str(len(SOURCES)))
-            .replace('{{NEVENTS}}', str(len(EV))))
+            .replace('{{NEVENTS}}', str(len(EV)))
+            .replace('{{NDISTINCT}}', str(NDISTINCT)))
 else:
     BODY = BODY_DEFAULT
 
 HTML = HEAD + BODY + TAIL
 
 io.open(ARGS.out, 'w', encoding='utf-8').write(HTML)
-print("%s written: %d KB, %d events (%s + %s)" % (ARGS.out, len(HTML)//1024, len(EV), ARGS.css, ARGS.js))
+print("%s written: %d KB, %d listings / %d distinct events (%s + %s)"
+      % (ARGS.out, len(HTML)//1024, len(EV), NDISTINCT, ARGS.css, ARGS.js))

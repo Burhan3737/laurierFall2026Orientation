@@ -1091,3 +1091,117 @@ is passed on rather than acted on. The same goes for its notes on the whole-run 
 truncated labels, the phone form of that view, B's venue-pivot sort order and column
 truncation, C's document length and missing clock, and the composition of the two chooser
 screens — all pre-existing, none of them touched by this round.
+
+---
+
+## Round 6 — seven corrections from an audit, and one page put under watch
+
+### 1. The data notes are back on main and A-plus
+
+Round 5 asked for the "where this data disagrees with itself" section to go "and
+any now-dead code that fed it", and `buildNotes()` went with it. It was not dead:
+the same function fed four notes that `REVIEW.md` records as the *agreed
+mitigation* for four known limitations, and removing them left a graduate reading
+the Spring board seven events under "Fri 9 Jan" with nothing anywhere to say that
+Laurier's Spring page carries January dates. B and C had kept theirs, so the main
+page was the only one that had quietly stopped saying it.
+
+Restored to A and A-plus: undated events, the Spring page's January dates, the
+Winter 2027 placeholder, and program and faculty welcomes carrying no audience.
+The framing is not restored — the heading is "Before you rely on this", the lede
+says these are things Laurier leaves unsettled rather than things we disagree with
+it about, and the fifth note, a count of events without a usable time or venue, is
+left out: it is a statistic about the extraction, which is the kind of thing round
+5 was right to remove.
+
+### 2 and 3. `stripDay` was defeated by a typo and by the word "Daily"
+
+`international.html` publishes **"Wednedday, Sept. 9 - Your First Grocery Store
+Tour in Canada"** — Laurier's own misspelling, live today. The alternation of
+correctly spelled weekdays did not match it, so the prefix stayed on the card,
+under a heading already reading Wednesday, and `dupKey` filed it apart from the
+correctly spelled copy of itself on the Brantford schedule: one event, drawn
+twice. The weekday slot is now any word at all, with a month and a day number
+required after it so a title that merely begins with a word before a month name is
+not eaten.
+
+`locus.html` publishes **"Daily - LOCUS Orientation Hub"** where two undergraduate
+schedules publish "LOCUS Orientation Hub", same day, hour and room. Not every day
+prefix is a date; the label says when it runs and is not part of its name. Both
+now strip, 355 distinct events becomes 353, and because `dupkey.py` runs the
+page's own function under node, `parity.py` and `plus_check.py` followed without
+being told.
+
+`plus_check.py` had a second copy of the old regex to strip titles before looking
+for them on the printed page. It went stale the moment the page learned better —
+a gate that strips differently from the page it is checking proves nothing — so it
+calls `dupkey.shown_title()` now, and there is one implementation again.
+
+### 4. A map link sent a Milton student 50km the wrong way
+
+`campusOf()` preferred the campus the *reader* picked. Laurier scopes the Waterloo
+SEEDs day to Milton, Virtual and Waterloo students alike, so with Milton chosen the
+map query for the Indigenous Student Centre on Albert Street read "…, Milton,
+Ontario" — and the same wrong campus was printed on paper, where a student cannot
+click through and notice. It now asks where the event is *held*: the venue, then
+the section Laurier publishes it under ("Waterloo Campus SEEDs Orientation"), then
+the anchor it is cited from (indigenous.html's day one is `#waterloo`), then an
+event scoped to a single campus. Only when nothing says where it is does the
+reader's own campus stand in.
+
+`plus_check.py`'s map test passed through all of this, because its rule was that
+every word of a query came from the venue or names *a* campus, and "Milton" is a
+campus. It now renders the board three times, once per campus picked, and requires
+that any campus a query names is one Laurier itself puts the event on. Against the
+old `campusOf` it fails on two of the three passes, naming the SEEDs events.
+
+### 5. "Orientation starts on …" stopped being true on the second morning
+
+The day it named was the next day with events at or after the live clock, not the
+start of the run — correct on 3 September and wrong from the 6th, which is the week
+this page exists for. The run's first day is now found without asking the clock,
+and the label follows it: "Orientation starts on Friday 4 Sept" until it does,
+"Next up Sunday 6 Sept" afterwards.
+
+### 6. Two different tickets, one label
+
+`international.html` publishes the Niagara Falls Trip twice, one bus from each
+departure campus, identical in name, day, time and venue, pointing at two different
+Eventbrite events. With "show what you cannot attend" on, the registration list
+offered both as "Get Your Ticket for Niagara Falls". `allLinksOf`'s disambiguator
+appends the schedule a link was carried in from, and both were printed on the same
+schedule, so it separated nothing. Both it and `regLinksOf` now qualify by the
+field that actually differs — campus first, then schedule, then section — and the
+two read "(Brantford)" and "(Waterloo)".
+
+### 7. The footer counted something no reader could reach
+
+"520 events extracted from 13 Laurier schedule pages" was true of the file and
+false of the page: duplicates fold, so the most anyone can reach anywhere is 353.
+The footer now states both numbers and what the difference is, and the count is not
+recomputed for it — `build.py` folds with `dupkey.py`, which runs the page's own
+`dupKey()`, so the footer counts events the same way the board does or not at all.
+B's "N of 520 events" counter and its phone search placeholder had the same
+unreachable denominator and now use the same number.
+
+### 8. A page nobody was watching
+
+`students.wlu.ca/academics/graduate-and-postdoctoral-studies/aspire/incoming-student-support.html`
+carries the graduate "Laurier Crash Course" — dated, timed, registrable webinars in
+the same accordion format as the schedules. Nothing is missing from the board
+today, because every Fall 2026 session has already run, but the page says the
+Winter 2027 sessions go up "at the beginning of the fall semester", which is now.
+It is added to `check_drift.py` as **watched, not parsed**: its snapshot lives in
+`_watch/` rather than `_src/`, and `parse.py` reads the files named in its own
+`META` and nothing else, so a watched page cannot reach the board by accident. The
+report names it separately and says what a change there means — a decision to make,
+not a rebuild to run.
+
+### Gates
+
+`build_all.py`, then `parity.py` (83 selections x 4 variants, including a new
+"one event, one entry" check that folds by a rule knowing nothing about day
+prefixes, and fails on the old `stripDay`), `check.py`, `invariants.py`,
+`contrast.py`, `plus_check.py`, `test_regressions.py` 48/48, `check_drift.py`
+clean across 14 pages. Both new assertions were negative-tested against the code
+they were written for before being trusted.

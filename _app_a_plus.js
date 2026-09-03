@@ -110,8 +110,19 @@ var NOW = (function () {
    built on the raw title files them apart. Shared by every variant, because
    which listings are the same event is a fact, not a presentation choice. */
 function stripDay(t) {
-  var m = String(t || "").match(/^(Sun|Mon|Tues?|Wed(nes)?|Thurs?|Fri|Satur?)(day)?,?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept?|Oct|Nov|Dec)\.?\s*\d{1,2}\s*[-–—:]\s*/i);
-  return m ? String(t).slice(m[0].length) : String(t || "");
+  var s = String(t || "");
+  /* Any word at all in the weekday slot, not a list of the correctly spelled
+     ones: Laurier publishes "Wednedday, Sept. 9 - Your First Grocery Store Tour
+     in Canada", and its own typo was enough to leave the prefix on the card,
+     under a heading already reading Wednesday, beside the copy of itself that
+     had been stripped. A month and a day number must follow, so a title whose
+     first word merely happens to sit before a month name is not eaten. */
+  var m = s.match(/^[A-Za-z]{3,12},?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept?|Oct|Nov|Dec)\.?\s*\d{1,2}\s*[-–—:]\s*/i);
+  /* Not every day prefix is a date. "Daily - LOCUS Orientation Hub" on one
+     schedule and "LOCUS Orientation Hub" on two others are one hub, open every
+     day; the label says when it runs and is not part of its name. */
+  if (!m) m = s.match(/^(Daily|Every ?day|Weekdays?|All week|Ongoing)\s*[-–—:]\s*/i);
+  return m ? s.slice(m[0].length) : s;
 }
 
 /* Some Laurier pages write "Wednesday, Sept. 2 | 8:30 a.m. to 3:30 p.m." into the
@@ -219,14 +230,26 @@ function allLinksOf(e, copies) {
     var taken = links.some(function (x) {
       return String(x.text || "").toLowerCase() === String(l.text || "").toLowerCase();
     });
-    links.push(taken && from
-      ? { href: l.href, text: l.text + " (on Laurier's " + from + ")" }
-      : l);
+    links.push(taken && from ? { href: l.href, text: l.text + " " + from } : l);
+  }
+  /* Which listing a carried-in link came from, said in whichever words actually
+     tell it apart from this one. Naming the schedule is enough when the two sit
+     on different pages, but Laurier publishes the Niagara Falls trip twice on
+     one page, a bus from each campus and a different ticket for each, and "on
+     Laurier's International schedule" printed on both separates nothing. */
+  function whence(o) {
+    var pg = sourceTitle(o), cp;
+    if (pg && pg !== sourceTitle(e)) return "(on Laurier's " + pg + ")";
+    cp = (o.cp || []).filter(function (c) { return (e.cp || []).indexOf(c) < 0; });
+    if (cp.length) return "(" + cp.join(" and ") + ")";
+    if (o.s && o.s !== e.s) return "(" + o.s + ")";
+    return pg ? "(on Laurier's " + pg + ")" : "";
   }
   (e.sl || []).concat(e.pl || []).forEach(function (l) { add(l, ""); });
   (copies || []).forEach(function (o) {
     if (o === e) return;
-    (o.l || []).concat(o.sl || [], o.pl || []).forEach(function (l) { add(l, sourceTitle(o)); });
+    var from = whence(o);
+    (o.l || []).concat(o.sl || [], o.pl || []).forEach(function (l) { add(l, from); });
   });
   return links;
 }
@@ -321,10 +344,32 @@ function regLinksOf(e) {
   sourcesOf(e).forEach(function (o) {
     (o.l || []).concat(o.sl || []).forEach(function (l) {
       if (!REGRE.test(l.text || "") || isDead(l.href) || seen[l.href]) return;
-      seen[l.href] = 1; out.push(l);
+      seen[l.href] = 1; out.push({ href: l.href, text: String(l.text || ""), from: o });
     });
   });
-  return out;
+  /* Laurier publishes the Niagara Falls trip twice, one bus from each departure
+     campus, identical in name, day, time and venue and pointing at two different
+     Eventbrite events. Two buttons both reading "Get Your Ticket for Niagara
+     Falls", one of which puts a Brantford student on a coach leaving Waterloo,
+     is not a choice anybody can make. Where one label covers two addresses, each
+     says which of Laurier's listings it belongs to — named by whichever of
+     campus, schedule or section is the thing that actually differs between them,
+     since naming the page separates nothing when both were printed on it. */
+  var n = {};
+  out.forEach(function (l) { var k = l.text.toLowerCase(); n[k] = (n[k] || 0) + 1; });
+  function apart(l, of) {
+    var mine = of(l.from);
+    return mine && out.some(function (x) {
+      return x !== l && x.text.toLowerCase() === l.text.toLowerCase() && of(x.from) !== mine;
+    }) ? mine : "";
+  }
+  return out.map(function (l) {
+    if (n[l.text.toLowerCase()] < 2) return { href: l.href, text: l.text };
+    var q = apart(l, function (o) { return (o.cp || []).join(" and "); }) ||
+            apart(l, function (o) { return sourceTitle(o); }) ||
+            apart(l, function (o) { return o.s || ""; });
+    return { href: l.href, text: q ? l.text + " (" + q + ")" : l.text };
+  });
 }
 /* The banner at the top of a schedule belongs to that schedule and to the
    listing read from it — not to every listing of the same event. Gathering it
@@ -402,8 +447,24 @@ var CAMPUSRE = /^(?:waterloo|brantford|milton)\s+campus$/i;
 var NOTERE = /^(?:(?:team\s+)?registration\s+is\s+required|email\s+to\s+be\s+sent.*)$/i;
 var CITYRE = /\b(waterloo|brantford|milton|kitchener|cambridge|guelph|toronto|hamilton|ontario|on)\b/i;
 
+/* A map query names a place, so the campus in it has to be the campus the event
+   is *held* on. Preferring the campus the reader picked sent a Milton student to
+   Milton for the SEEDs afternoon on Albert Street in Waterloo — 50km wrong, and
+   wrong on paper too, where nobody can click through and notice. Laurier scopes
+   that day to Milton, Virtual and Waterloo students alike, but says where it is
+   in the venue and in the section it publishes it under ("Waterloo Campus SEEDs
+   Orientation"). Those are asked first, and an event scoped to one campus is on
+   it; only when nothing says where it is does the reader's own campus stand in,
+   as the likeliest of the campuses Laurier invited. */
+var HELDRE = /\b(Waterloo|Brantford|Milton|Kitchener)\b/i;
+var HELDNAME = { waterloo: "Waterloo", brantford: "Brantford",
+                 milton: "Milton", kitchener: "Waterloo" };
 function campusOf(e) {
-  var cp = e.cp || [];
+  var cp = e.cp || [], u = String(e.u || ""), h = u.indexOf("#");
+  var m = HELDRE.exec(e.w || "") || HELDRE.exec(e.s || "") ||
+          (h >= 0 ? HELDRE.exec(u.slice(h + 1)) : null);
+  if (m) return HELDNAME[m[1].toLowerCase()];
+  if (cp.length === 1) return cp[0];
   if (sel && cp.indexOf(sel.campus) >= 0) return sel.campus;
   return cp[0] || "Waterloo";
 }
@@ -1604,9 +1665,14 @@ function dayHtml(list, keys) {
   var tight = lanes > MAX_LANES;
   var listNow = asList || narrow;
 
-  // the board opens on the busiest day ahead, so the thing worth pointing at is
-  // where the run actually starts
-  var firstK = keys.filter(function (k) { return k !== "TBA" && k >= NOW; })[0];
+  /* The board opens on the busiest day ahead, so it points at where the run
+     starts. That sentence is only true until the run does start: from the second
+     morning onward the next day with events on it is not the beginning of
+     anything, and the week this page exists for is exactly the week it would be
+     saying so. The label follows the clock rather than going quietly false. */
+  var dated = keys.filter(function (k) { return k !== "TBA"; });
+  var begun = dated.length > 0 && dated[0] < NOW;
+  var firstK = begun ? dated.filter(function (k) { return k >= NOW; })[0] : dated[0];
   var away = firstK && firstK !== day;
   var fdt = away ? new Date(firstK + "T00:00:00") : null;
 
@@ -1615,7 +1681,7 @@ function dayHtml(list, keys) {
     '<div class="dtitle"><h2>' + (undated ? "Undated" : DOW[dt.getDay()] + " " + dt.getDate() + " " + MON[dt.getMonth()] + " " + dt.getFullYear()) + "</h2>" +
     "<p>" + todays.length + " event" + (todays.length === 1 ? "" : "s") +
     (parts.loose.length ? " · " + parts.loose.length + " without a clock time" : "") + "</p>" +
-    (away ? '<p class="peak">Orientation starts on ' +
+    (away ? '<p class="peak">' + (begun ? "Next up" : "Orientation starts on") + " " +
       '<button class="peakbtn" data-day="' + firstK + '">' + DOW[fdt.getDay()] + " " +
       fdt.getDate() + " " + MON[fdt.getMonth()] + " ›</button></p>" : "") + "</div>" +
     '<button class="step" data-step="1"' + (i >= keys.length - 1 ? " disabled" : "") + ' aria-label="Next day">›</button>' +
@@ -2452,6 +2518,59 @@ function readHash() {
   }
 }
 
+/* ---- what Laurier leaves unsettled --------------------------------------
+   Four places where its own pages do not answer the question, kept beside the
+   sources rather than folded into the events, because a student reading a room
+   number should not have to step over them. Each is counted from the data on
+   every build, so a note cannot outlive the thing it describes. */
+function buildNotes() {
+  var notes = [];
+  var undated = EV.filter(function (e) { return !e.d; });
+  if (undated.length) {
+    var byTerm = {};
+    undated.forEach(function (e) { byTerm[e.tm] = (byTerm[e.tm] || 0) + 1; });
+    notes.push(["Some events are published without a date",
+      undated.length + " events carry no date on Laurier's page (" +
+      Object.keys(byTerm).map(function (t) { return byTerm[t] + " in " + t; }).join(", ") +
+      "). They cannot be put on the clock, so they are gathered at the end of the " +
+      "run under a heading reading “Undated”."]);
+  }
+  var spring = EV.filter(function (e) { return e.tm === "Spring 2026" && e.d && e.d.slice(5, 7) === "01"; });
+  if (spring.length) {
+    notes.push(["The Spring graduate schedule shows January dates",
+      "The page titled “Laurier Spring Orientation: Graduate Schedule” lists its " +
+      spring.length + " sessions on Jan. 5, 7 and 9, 2026. January is the winter term at " +
+      "Laurier, so the page looks either mislabelled or left over from an earlier cycle. " +
+      "The dates are shown exactly as Laurier published them — confirm with " +
+      "aspire@wlu.ca before relying on them."]);
+  }
+  var winter = EV.filter(function (e) { return e.tm === "Winter 2027"; });
+  if (winter.length && winter.every(function (e) { return !e.d; })) {
+    var wVenue = winter.filter(function (e) { return (e.f || []).indexOf("no-venue") === -1; }).length;
+    var wTime = winter.filter(function (e) { return (e.f || []).indexOf("no-time") === -1; }).length;
+    notes.push(["The Winter 2027 schedule is mostly a placeholder",
+      "All " + winter.length + " Winter 2027 events are published without a date, and Laurier " +
+      "states registration opens in October 2026. " +
+      (wVenue ? wVenue + " of them do give a venue (the online sessions state Zoom); the other " +
+                (winter.length - wVenue) + " are TBD. " : "None gives a venue. ") +
+      (wTime ? wTime + " give a time." : "None gives a time.")]);
+  }
+  var prog = EV.filter(function (e) { return e.pg; }).length;
+  if (prog) {
+    notes.push(["Program and faculty welcomes say nothing about who may come",
+      prog + " events are held for one program or faculty, but Laurier states no audience " +
+      "on them, so by default they all show. Use the “My program” dropdown to " +
+      "narrow to your own, or choose “Not listed” to hide them all — Laurier " +
+      "does not publish a welcome for every program."]);
+  }
+  if (!notes.length) return;
+  $("noteslist").innerHTML = notes.map(function (n, i) {
+    return "<li><b>" + String(i + 1).padStart(2, "0") + "</b><div><strong>" + n[0] +
+      "</strong><p>" + n[1] + "</p></div></li>";
+  }).join("");
+  $("notes").hidden = false;
+}
+
 /* ---- go ----------------------------------------------------------------- */
 EV.forEach(function (e, i) { e.__i = i; });
 PLAN = lsRead(LSPLAN);
@@ -2494,6 +2613,7 @@ function announce() {
   SPOKEN = true;
 }
 redraw();
+buildNotes();
 $("scrim").onclick = closeSheet;
 $("skip").onclick = function () {
   var b = $("board");

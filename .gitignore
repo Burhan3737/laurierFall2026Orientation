@@ -14,3 +14,5 @@ _runlogs/
 # artefacts plus_check.py leaves behind when it prints and exports
 _plus_print.pdf
 _plus_plan.ics
+# watched-only snapshots: pages we are told about but do not parse
+_watch/

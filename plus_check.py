@@ -50,10 +50,11 @@ LSPLAN = "wlu-orientation.plan.v1"
 LSREG = "wlu-orientation.registered.v1"
 
 SCRIPT = re.compile(r"<script[\s>].*?</script>", re.S | re.I)
-DAYRE = re.compile(
-    r"^(Sun|Mon|Tues?|Wed(nes)?|Thurs?|Fri|Satur?)(day)?,?\s+"
-    r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept?|Oct|Nov|Dec)\.?\s*\d{1,2}\s*[-\u2013\u2014:]\s*",
-    re.I)
+# The day prefix Laurier writes into some of its titles used to be stripped again
+# here, by a second copy of the page's regex. It went stale the moment the page
+# learned to cope with Laurier's own misspelling ("Wednedday, Sept. 9 - ") and with
+# "Daily - ", and a gate that strips differently from the page it is checking proves
+# nothing. dupkey.shown_title() runs the page's own stripDay(), so there is one of it.
 REGRE = re.compile(r"regist|rsvp|sign ?up|ticket|book now|purchase", re.I)
 
 FAILURES = []
@@ -358,7 +359,7 @@ def test_print(picks, chosen):
               if w.lower() in flatten.lower()]
     ok(not absent, "nothing that only works on a screen is on the paper", str(absent))
 
-    titles = [DAYRE.sub("", e["title"]) for _, e in chosen]
+    titles = [dupkey.shown_title(e) for _, e in chosen]
     lost = [t[:44] for t in titles if re.sub(r"\s+", " ", t) not in flatten]
     ok(not lost, "every event in the plan is printed (%d)" % len(titles), str(lost[:3]))
 
@@ -448,6 +449,37 @@ def test_venue_map():
             invented.append((w[:38], extra[:4]))
     ok(not invented, "every word of every query came from the venue or names the campus",
        str(invented[:3]))
+
+    # A campus name in a query is a claim about where the event is *held*, and it
+    # is printed on paper too, where a reader cannot click through and find out
+    # otherwise. The rule above cannot see a wrong one, because it lets any campus
+    # be added: it passed while a Milton student was sent to Milton for the SEEDs
+    # afternoon on Albert Street in Waterloo, 50km away. A campus is honest only if
+    # Laurier says so - in the venue, in the section the event is published under,
+    # or in the anchor it is cited from - or if Laurier scopes the event to that
+    # campus alone. Never because it is the campus the reader happens to have
+    # picked, which is the thing the three passes below vary.
+    peritem = ("(function(){var o=[];EV.forEach(function(e){var m=mapFor(e);if(!m)return;"
+               "o.push([m.q,e.w||'',e.s||'',e.u||'',(e.cp||[]).join(' '),e.t||'']);});"
+               "return JSON.stringify(o);})()")
+    for picked in ("Waterloo", "Brantford", "Milton"):
+        raw = b64_report(plain_page(),
+                         "level=undergraduate&campus=%s&term=Fall%%202026" % picked, peritem)
+        if not ok(bool(raw), "the mapper answers with %s picked" % picked):
+            continue
+        wrong = []
+        for q, w, sec, u, cp, t in json.loads(raw):
+            said = (w + " | " + sec + " | " + u.split("#")[-1]).lower()
+            if "kitchener" in said:      # Kitchener is Waterloo campus, Laurier's own grouping
+                said += " waterloo"
+            for c in ("waterloo", "brantford", "milton"):
+                if not re.search(r"\b%s\b" % c, q.lower()):
+                    continue
+                if re.search(r"\b%s\b" % c, said) or cp.lower() == c:
+                    continue
+                wrong.append((t[:32], "cp=" + cp, "claims " + c, q[:44]))
+        ok(not wrong, "with %s picked, no query names a campus the event is not held on"
+           % picked, str(wrong[:3]))
 
     want = {
         "LH1001 | Lazaridis Hall": "Lazaridis Hall, Wilfrid Laurier University, Waterloo, Ontario",

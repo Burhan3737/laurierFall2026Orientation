@@ -75,8 +75,19 @@ var NOW = (function () {
    built on the raw title files them apart. Shared by every variant, because
    which listings are the same event is a fact, not a presentation choice. */
 function stripDay(t) {
-  var m = String(t || "").match(/^(Sun|Mon|Tues?|Wed(nes)?|Thurs?|Fri|Satur?)(day)?,?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept?|Oct|Nov|Dec)\.?\s*\d{1,2}\s*[-–—:]\s*/i);
-  return m ? String(t).slice(m[0].length) : String(t || "");
+  var s = String(t || "");
+  /* Any word at all in the weekday slot, not a list of the correctly spelled
+     ones: Laurier publishes "Wednedday, Sept. 9 - Your First Grocery Store Tour
+     in Canada", and its own typo was enough to leave the prefix on the card,
+     under a heading already reading Wednesday, beside the copy of itself that
+     had been stripped. A month and a day number must follow, so a title whose
+     first word merely happens to sit before a month name is not eaten. */
+  var m = s.match(/^[A-Za-z]{3,12},?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept?|Oct|Nov|Dec)\.?\s*\d{1,2}\s*[-–—:]\s*/i);
+  /* Not every day prefix is a date. "Daily - LOCUS Orientation Hub" on one
+     schedule and "LOCUS Orientation Hub" on two others are one hub, open every
+     day; the label says when it runs and is not part of its name. */
+  if (!m) m = s.match(/^(Daily|Every ?day|Weekdays?|All week|Ongoing)\s*[-–—:]\s*/i);
+  return m ? s.slice(m[0].length) : s;
 }
 
 /* Some Laurier pages write "Wednesday, Sept. 2 | 8:30 a.m. to 3:30 p.m." into the
@@ -188,14 +199,26 @@ function allLinksOf(e, copies) {
     var taken = links.some(function (x) {
       return String(x.text || "").toLowerCase() === String(l.text || "").toLowerCase();
     });
-    links.push(taken && from
-      ? { href: l.href, text: l.text + " (on Laurier's " + from + ")" }
-      : l);
+    links.push(taken && from ? { href: l.href, text: l.text + " " + from } : l);
+  }
+  /* Which listing a carried-in link came from, said in whichever words actually
+     tell it apart from this one. Naming the schedule is enough when the two sit
+     on different pages, but Laurier publishes the Niagara Falls trip twice on
+     one page, a bus from each campus and a different ticket for each, and "on
+     Laurier's International schedule" printed on both separates nothing. */
+  function whence(o) {
+    var pg = sourceTitle(o), cp;
+    if (pg && pg !== sourceTitle(e)) return "(on Laurier's " + pg + ")";
+    cp = (o.cp || []).filter(function (c) { return (e.cp || []).indexOf(c) < 0; });
+    if (cp.length) return "(" + cp.join(" and ") + ")";
+    if (o.s && o.s !== e.s) return "(" + o.s + ")";
+    return pg ? "(on Laurier's " + pg + ")" : "";
   }
   (e.sl || []).concat(e.pl || []).forEach(function (l) { add(l, ""); });
   (copies || []).forEach(function (o) {
     if (o === e) return;
-    (o.l || []).concat(o.sl || [], o.pl || []).forEach(function (l) { add(l, sourceTitle(o)); });
+    var from = whence(o);
+    (o.l || []).concat(o.sl || [], o.pl || []).forEach(function (l) { add(l, from); });
   });
   return links;
 }
@@ -977,7 +1000,9 @@ function drawMeta() {
      here — "91 of 508 records" over a reader counting 89 — because Laurier
      lists some events on two pages and the reader folded them and the board did
      not. The board folds them too. */
-  $("topmeta").innerHTML = '<span class="cnt"><b>' + n + "</b> of " + META.nEvents +
+  /* And the total is the events there are, not the listings Laurier printed:
+     520 was a number no reader could reach, because the board folds the copies. */
+  $("topmeta").innerHTML = '<span class="cnt"><b>' + n + "</b> of " + META.nDistinct +
     " events</span>" +
     '<span class="who">' + esc(META.levelLabels[sel.level] || sel.level) + " &middot; " + esc(sel.campus) +
     " &middot; " + esc(sel.term) +
@@ -1217,7 +1242,7 @@ buildVenueMap();
 readHash();
 function redraw() { drawRail(); drawResults(); drawMeta(); drawReader(); }
 $("q").value = Q;
-if (window.innerWidth < 700) $("q").placeholder = "Search " + META.nEvents + " events";
+if (window.innerWidth < 700) $("q").placeholder = "Search " + META.nDistinct + " events";
 redraw();
 buildNotes();
 writeHash();

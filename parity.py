@@ -398,6 +398,78 @@ def smoke_check(names, sels):
     return True
 
 
+# a short lead-in, then a dash: what stripDay is expected to have taken off
+DASHLEAD = re.compile(r"^[^-\u2013\u2014]{1,24}\s[-\u2013\u2014]\s")
+
+# ------------------------------------------------- one event, one entry ------
+def title_check():
+    """Laurier writes the day into some of its own titles, and stripDay() takes it
+    off again so that two copies of one event file under one key. That is checked
+    here from the other side, by a rule that knows nothing about the prefix: any
+    two listings agreeing on date, published time and venue, whose titles agree
+    once a short lead-in before a dash is dropped, are the same event and must
+    have folded into one entry.
+
+    Written that way because both failures were prefixes stripDay did not
+    recognise. Laurier publishes "Wednedday, Sept. 9 - Your First Grocery Store
+    Tour in Canada", its own misspelling, and "Daily - LOCUS Orientation Hub"
+    beside "LOCUS Orientation Hub", and each drew a card twice, one of them under
+    a heading that already said the day. A gate that stripped prefixes the way the
+    page does would have agreed with it and seen nothing."""
+    def fold(x):
+        return " ".join(str(x or "").split()).lower()
+
+    def tail(t):
+        # a short lead-in and a dash: "Daily - ", "Wednedday, Sept. 9 - ". Case is
+        # kept, because dupKey keeps it: the Bachelor of Education page's "Hobbies
+        # fair" and the undergraduate page's "Hobbies Fair" are two listings no
+        # student can ever see together, and folding them here would ask the page
+        # for a merge it must not make.
+        m = re.match(DASHLEAD, t or "")
+        return (t[m.end():] if m else (t or "")).strip()
+
+    groups = {}
+    for e in EVENTS:
+        k = (e.get("date") or "", fold(e.get("when")), fold(e.get("where")), tail(e["title"]))
+        groups.setdefault(k, []).append(e)
+    split = [(k, sorted({x["title"] for x in v}))
+             for k, v in groups.items() if len({dupkey.key_of(x) for x in v}) > 1]
+    for k, titles in split[:4]:
+        print("  FAIL  %s %s is filed as %d different events: %s"
+              % (k[0], k[3][:40], len(titles), titles))
+    if split:
+        print("  %d of Laurier's own repeats are still drawn more than once" % len(split))
+        return False
+    print("  ok    %d listings, %d distinct events: no repeat survives a day prefix "
+          "the page did not expect" % (len(EVENTS), len(dupkey.fold(EVENTS))))
+
+    # and the two it did not expect, named, because they are what this is for.
+    # Both events run more than once, so the claim is not that every listing of
+    # the name is one event: it is that the prefixed listing and the plain one
+    # sharing its day, hour and room end up under the same key, printed plainly.
+    named = True
+    for prefixed, plain in (
+            ("Wednedday, Sept. 9 - Your First Grocery Store Tour in Canada",
+             "Your First Grocery Store Tour in Canada"),
+            ("Daily - LOCUS Orientation Hub", "LOCUS Orientation Hub")):
+        held = {}
+        for e in EVENTS:
+            if e["title"] in (prefixed, plain):
+                held.setdefault(dupkey.key_of(e), set()).add(e["title"])
+        merged = [k for k, t in held.items() if t == {prefixed, plain}]
+        stray = [e for e in EVENTS if e["title"] == prefixed
+                 and dupkey.shown_title(e) != plain]
+        if len(merged) != 1 or stray:
+            print("  FAIL  %s: %d keys hold both listings, %d still print the prefix"
+                  % (prefixed[:44], len(merged), len(stray)))
+            named = False
+    if named:
+        print("  ok    Laurier's misspelled weekday and its Daily label are both stripped, "
+              "and each of those two events is named once")
+    return named
+
+
+
 # ------------------------------------------------------- clean characters ---
 def control_check(names):
     """A stray DEL or NUL from a bad patch renders as an invisible glyph in a
@@ -862,6 +934,9 @@ def main():
 
     print("\nEmpty-board smoke")
     all_ok = smoke_check(names, [x for x in sels if not x["program"]][:14]) and all_ok
+
+    print("\nOne event, one entry")
+    all_ok = title_check() and all_ok
 
     print("\nSource hygiene")
     all_ok = control_check(names) and all_ok
