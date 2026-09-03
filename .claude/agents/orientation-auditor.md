@@ -61,7 +61,36 @@ limitations that are **deliberate choices, not defects**. Do not re-report those
 
 **Do** verify these are still behaving as described. If one has regressed, that is a finding.
 
-## Step 3 — the 13 source pages (your ground truth)
+## Step 2b — look for schedule pages we do not know about
+
+The pipeline only watches the pages listed below, so a schedule Laurier publishes *after*
+this project started is invisible to every gate. `check_drift.py` will report "no drift"
+while a whole new page sits unread. Treat finding one as a high-severity finding.
+
+Re-crawl for them rather than assuming the list is complete:
+
+- Fetch the orientation hubs and follow every link:
+  `https://students.wlu.ca/support-and-wellness/orientation/index.html`,
+  `.../orientation/undergraduate.html`, `.../orientation/graduate.html`, and the
+  Bachelor of Education, international, Indigenous and LOCUS pages. Collect every href
+  matching `/orientation/assets/schedules/` and compare against the known list.
+- Follow onward links from the schedule pages themselves — Laurier cross-links new
+  schedules from existing ones, which is how the Bachelor of Education page was found.
+- Check the graduate side specifically. Graduate orientation is the part of this site that
+  changes most: `MACAdvising@wlu.ca`, ASPIRE and the Faculty of Graduate and Postdoctoral
+  Studies publish program welcomes late, and a Master of Applied Computing session appeared
+  weeks after the first scrape. Check `students.wlu.ca/academics/graduate-and-postdoctoral-studies/`
+  and the ASPIRE incoming-student pages for schedules not in the list.
+- Search the web for recently published Laurier orientation schedules that are not linked
+  from the hubs at all.
+
+Report any page found, what it contains, roughly how many events, and who it would affect.
+Also report new *sections* or *anchors* added to the known pages — `check_drift.py` compares
+accordion panels and byte length, so a new section with no accordion could slip past it.
+
+Finding nothing new is a perfectly good result; say so plainly.
+
+## Step 3 — the known source pages (your ground truth)
 
 Fetch these live yourself. Base
 `https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/`
