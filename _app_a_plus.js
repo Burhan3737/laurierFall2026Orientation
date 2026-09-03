@@ -134,6 +134,111 @@ function dupKey(e) {
   function fold(s) { return String(s || "").replace(/\s+/g, " ").trim().toLowerCase(); }
   return [stripDay(e.t), e.d || "", fold(e.n), fold(e.w)].join(" § ");
 }
+/* ---- one event, however many times Laurier published it -----------------
+   Laurier puts many of these events on more than one of its schedule pages, and
+   a few of them twice on the same page. Listings that agree on title, day, time
+   and venue are one event, so the board shows the event once and its detail
+   names every page it came from. Nothing is dropped; it is merged.
+
+   The listings are not typed identically. One may state the audience, name the
+   host, or carry a link the other leaves out, so which one gets shown matters
+   (see listingRank below), and the links of all of them are joined. Every value
+   on the card still comes from one of Laurier's own listings; nothing is
+   combined into a sentence Laurier never wrote.
+
+   A listing the student cannot attend must never stand in for one they can.
+   Laurier publishes Lane Swim on the undergraduate schedule and again on the
+   Bachelor of Education one; with "show what you cannot attend" turned on, taking
+   whichever listing carried the most detail put "Bachelor of Education students
+   only" against a swim an undergraduate can walk into. An attendable listing
+   wins first, and only then the fuller one.
+
+   Which listings are the same event is a fact about Laurier's pages, not a
+   presentation choice, so this is one implementation shared by every variant. */
+function publishedDetail(e) {
+  return String(e.x || "").length + String(e.a || "").length + String(e.h || "").length +
+         String(e.c || "").length + JSON.stringify(e.si || {}).length +
+         (e.l || []).map(function (l) { return l.href; }).join("").length;
+}
+function attendable(e) { return assess(e).ok; }
+/* Which of Laurier's listings of one event should be the one on the board.
+   Attendable beats not attendable. Then the listing published on the schedule
+   for the student's own level beats one lifted from another level's page,
+   because its "Schedule" line and its citation are the ones that get read: an
+   undergraduate should not be told their event is on the Bachelor of Education
+   schedule when Laurier also published it on theirs. */
+function listingRank(e) {
+  return (attendable(e) ? 2 : 0) + (sel && e.lv === sel.level ? 1 : 0);
+}
+function onePerEvent(list) {
+  var best = {}, order = [];
+  list.forEach(function (e) {
+    var k = dupKey(e);
+    if (!(k in best)) { best[k] = e; order.push(k); return; }
+    var mine = listingRank(e), theirs = listingRank(best[k]);
+    if (mine !== theirs) { if (mine > theirs) best[k] = e; return; }
+    if (publishedDetail(e) > publishedDetail(best[k])) best[k] = e;
+  });
+  return order.map(function (k) { return best[k]; });
+}
+function copiesIn(list, e) {
+  var k = dupKey(e), out = [];
+  (list || []).forEach(function (o) { if (dupKey(o) === k) out.push(o); });
+  return out.length ? out : [e];
+}
+function sourcesOf(e) { return copiesIn(sourcePool(), e); }
+/* Which of Laurier's thirteen schedules something came from. */
+var SRCTITLE = {};
+(META.sources || []).forEach(function (x) {
+  var t = String(x.title || "");
+  var i = t.indexOf(":");
+  SRCTITLE[x.url] = i >= 0 ? t.slice(i + 1).trim() : t;
+});
+function sourceTitle(e) {
+  return SRCTITLE[String(e.u || "").split("#")[0]] || "a Laurier schedule";
+}
+/* Every link Laurier attached to any listing of this event — its own, its
+   section's and its page's, in that order. A link that sits on one listing and
+   not the other is a link the student would lose if only one were read.
+
+   For a single listing this is the incumbent's assembly unchanged, repeated
+   hrefs and all. Laurier gives one LOCUS page two different labels on the same
+   event ("LOCUS Links" and "learn more about each link by clicking here"), so
+   collapsing by address there would drop a label, not a duplicate. Only across
+   listings is a repeated address actually a repeat. */
+function allLinksOf(e, copies) {
+  var links = (e.l || []).slice();
+  function add(l, from) {
+    if (links.some(function (x) { return x.href === l.href; })) return;
+    /* Two of Laurier's schedules each carry a "Register Now!" banner, pointing
+       at two different forms. Brought onto one card they were two buttons with
+       one word between them, and one of them was the wrong level's registration
+       — the defect an earlier round fixed in the parser, returning by another
+       door. A link carried in from another listing names the schedule it came
+       from whenever its label is already taken. */
+    var taken = links.some(function (x) {
+      return String(x.text || "").toLowerCase() === String(l.text || "").toLowerCase();
+    });
+    links.push(taken && from
+      ? { href: l.href, text: l.text + " (on Laurier's " + from + ")" }
+      : l);
+  }
+  (e.sl || []).concat(e.pl || []).forEach(function (l) { add(l, ""); });
+  (copies || []).forEach(function (o) {
+    if (o === e) return;
+    (o.l || []).concat(o.sl || [], o.pl || []).forEach(function (l) { add(l, sourceTitle(o)); });
+  });
+  return links;
+}
+/* What to tell a student who may attend this. Laurier's own words whenever it
+   states an audience, because that is the most accurate thing anyone has.
+   Failing that: open to every Laurier student, or open to you — which means it
+   matches the level, campus, term and streams you gave, not that everyone may
+   come. Saying "open to all" of an event Laurier restricts to undergraduates
+   would be the page inventing a permission. */
+function audienceLine(e) {
+  return e.a || (e.oa ? "Open to all Laurier students" : "Open to you");
+}
 /* Every rendered title goes through here. Printing e.t directly is how "Tuesday,
    Sept. 8 - Meet and Greet…" ended up sitting under a heading reading "Tuesday 8
    Sept 2026", beside its own duplicate that had been stripped. */
@@ -196,15 +301,12 @@ function $(id) { return document.getElementById(id); }
    two answers to one rule get written. */
 var REGRE = /regist|rsvp|sign ?up|ticket|book now|purchase/i;
 
-/* Link assembly lifted verbatim out of openSheet so the sheet, the .ics, the
-   printout and the registration list read the same three fields in the same
-   order. The body below is byte-identical to the incumbent's. */
+/* One link assembly, so the sheet, the .ics, the printout and the registration
+   list read the same fields in the same order. It spans every listing Laurier
+   published of this event: a registration link that sits on the Brantford copy
+   and not the Waterloo one is still this event's registration link. */
 function linksOf(e) {
-  var links = (e.l || []).slice();
-  (e.sl || []).concat(e.pl || []).forEach(function (l) {
-    if (!links.some(function (x) { return x.href === l.href; })) links.push(l);
-  });
-  return links;
+  return allLinksOf(e, sourcesOf(e));
 }
 
 /* Laurier attaches three kinds of link to an event. Its own links, and the links
@@ -216,12 +318,19 @@ function linksOf(e) {
    is stated once, at the top. */
 function regLinksOf(e) {
   var seen = {}, out = [];
-  (e.l || []).concat(e.sl || []).forEach(function (l) {
-    if (!REGRE.test(l.text || "") || isDead(l.href) || seen[l.href]) return;
-    seen[l.href] = 1; out.push(l);
+  sourcesOf(e).forEach(function (o) {
+    (o.l || []).concat(o.sl || []).forEach(function (l) {
+      if (!REGRE.test(l.text || "") || isDead(l.href) || seen[l.href]) return;
+      seen[l.href] = 1; out.push(l);
+    });
   });
   return out;
 }
+/* The banner at the top of a schedule belongs to that schedule and to the
+   listing read from it — not to every listing of the same event. Gathering it
+   across all of them gave every event both schedules' banners, so the printed
+   checklist labelled two different registration forms with the same pair of
+   page names and disambiguated nothing. */
 function pageRegLinksOf(e) {
   var seen = {}, out = [];
   (e.pl || []).forEach(function (l) {
@@ -232,19 +341,6 @@ function pageRegLinksOf(e) {
 }
 function needsReg(e) { return regLinksOf(e).length > 0; }
 
-/* Which of Laurier's thirteen schedules an event was cited from. Two page-wide
-   "Register Now!" banners rendered side by side are indistinguishable, and one of
-   them takes a graduate student to the undergraduate registration form; naming
-   the schedule each came from is the difference between a choice and a coin toss. */
-var SRCTITLE = {};
-(META.sources || []).forEach(function (x) {
-  var t = String(x.title || "");
-  var i = t.indexOf(":");
-  SRCTITLE[x.url] = i >= 0 ? t.slice(i + 1).trim() : t;
-});
-function sourceTitle(e) {
-  return SRCTITLE[String(e.u || "").split("#")[0]] || "a Laurier schedule";
-}
 var LEVELWORD = { undergraduate: "Undergraduate", graduate: "Graduate",
                   "bachelor-of-education": "Bachelor of Education" };
 /* The orientation-wide registrations reachable from a set of events, one entry
@@ -429,14 +525,7 @@ function sortRun(list) {
    board — Bachelor of Education students only" against an event the student
    could walk into. An eligible copy wins wherever one exists. */
 function planEvents() {
-  var byKey = {}, order = [];
-  EV.forEach(function (e) {
-    var k = dupKey(e);
-    if (!PLAN[k]) return;
-    if (!byKey[k]) { byKey[k] = e; order.push(k); return; }
-    if (!assess(byKey[k]).ok && assess(e).ok) byKey[k] = e;
-  });
-  return sortRun(order.map(function (k) { return byKey[k]; }));
+  return sortRun(onePerEvent(EV.filter(function (e) { return PLAN[dupKey(e)]; })));
 }
 /* What in the plan collides with what else in the plan. collidesWith() is this
    page's only overlap engine — it already drops the drop-in desks and Laurier's
@@ -662,7 +751,7 @@ function hitsIn(h) {
 function matchQ(e) { return !q || hitsIn(hayAll(e)); }
 function descOnly(e) { return !!q && hitsIn(hayAll(e)) && !hitsIn(hayMain(e)); }
 function eligibleSet() {
-  return EV.filter(function (e) { return assess(e).ok; });
+  return onePerEvent(EV.filter(function (e) { return assess(e).ok; }));
 }
 
 /* ---- state -------------------------------------------------------------- */
@@ -763,9 +852,12 @@ function livePrograms(s) {
   pool(s).forEach(function (e) { if (e.pg && names.indexOf(e.pg) === -1) names.push(e.pg); });
   return names.sort();
 }
+/* The number in the band and the number of entries on the board have to be the
+   same number. Counting listings while the board drew events had the band say 91
+   over a day rail adding up to 89. */
 function countExact(pick) {
   var prev = sel; sel = pick;
-  var n = EV.filter(function (e) { return assess(e).ok; }).length;
+  var n = onePerEvent(EV.filter(function (e) { return assess(e).ok; })).length;
   sel = prev; return n;
 }
 
@@ -894,8 +986,21 @@ function drawIdbar() {
    the student's own search, and nothing else. Every view reads this, so the day
    navigator, the clock, the whole run and the clash list can never disagree
    about what is on the board. */
+/* Every listing on this student's board, before duplicates are folded and
+   before the search box narrows it. The detail reads it to name every Laurier
+   page an event was published on — searching is a view, not a filter, so it
+   must not change which pages an event is said to come from. */
+var SRCPOOL = null, SRCPOOLKEY = null;
+function sourcePoolKey() {
+  return [ghosts, sel.level, sel.campus, sel.term, sel.streams.join(","), sel.program].join("|");
+}
+function sourcePool() {
+  var k = sourcePoolKey();
+  if (SRCPOOLKEY !== k) { SRCPOOLKEY = k; SRCPOOL = EV.filter(function (e) { return ghosts || assess(e).ok; }); }
+  return SRCPOOL;
+}
 function visible() {
-  return EV.filter(function (e) { return (ghosts || assess(e).ok) && matchQ(e); });
+  return onePerEvent(sourcePool().filter(matchQ));
 }
 function dayKeys(list) {
   var seen = {}, out = [];
@@ -944,10 +1049,10 @@ function drawNav() {
     var onBoard = list.filter(function (e) { return ghosts || assess(e).ok; });
     var shown = onBoard.length;
     var deep = onBoard.filter(descOnly).length;
-    var whole = EV.filter(function (e) { return ghosts || assess(e).ok; }).length;
+    var whole = onePerEvent(sourcePool()).length;
     h += '<p class="qnote">Search &ldquo;' + esc(q) + '&rdquo; — <b>' + shown +
-      "</b> of your " + whole + " events match on title, venue, host, panel or " +
-      "Laurier&rsquo;s own description" +
+      "</b> of your " + whole + " events match on title, venue, host, what it is " +
+      "part of, or Laurier&rsquo;s own description" +
       (deep ? "; <b>" + deep + "</b> of them only in the description" : "") + ". " +
       "It narrows what is drawn; it does not change what you are eligible for." +
       (view === "plan" ? " Your plan below is not filtered by it." : "") + "</p>";
@@ -1050,7 +1155,7 @@ function split(list) {
 function ribbonHtml(it) {
   var e = it.ev, a = assess(e), off = !a.ok;
   return '<button class="rib' + (off ? " off" : "") + (isPicked(e) ? " mine" : "") + '" ' +
-    (off ? 'data-ev-off="' : 'data-ev-title="') + esc(e.t) + '" data-id="' + e.__i + '">' +
+    (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="rt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
     '<span class="rh">' + esc(title(e)) + "</span>" +
     (isPicked(e) ? '<span class="mymark" aria-hidden="true">✓</span>' : "") + "</button>";
@@ -1065,7 +1170,8 @@ function ribbonHtml(it) {
 ------------------------------------------------------------------------- */
 var GAP_MIN = 120, GAP_PX = 46;
 
-function makeScale(items, ppm) {
+function makeScale(items, ppm, gapPx) {
+  gapPx = gapPx || GAP_PX;
   var iv = items.map(function (it) { return [it.s, it.de]; })
                 .sort(function (a, b) { return a[0] - b[0]; });
   var merged = [];
@@ -1078,7 +1184,7 @@ function makeScale(items, ppm) {
   for (var i = 0; i < merged.length; i++) {
     if (i > 0) {
       var gs = merged[i - 1][1], ge = merged[i][0];
-      if (ge - gs >= GAP_MIN) { blocks.push({ a: gs, b: ge, y: y, h: GAP_PX, gap: true }); y += GAP_PX; }
+      if (ge - gs >= GAP_MIN) { blocks.push({ a: gs, b: ge, y: y, h: gapPx, gap: true }); y += gapPx; }
       else { blocks.push({ a: gs, b: ge, y: y, h: (ge - gs) * ppm }); y += (ge - gs) * ppm; }
     }
     var a = i === 0 ? Math.floor(merged[i][0] / 60) * 60 : merged[i][0];
@@ -1138,10 +1244,10 @@ function blockHtml(it, sc) {
   var label = clock(it.s) + "–" + clock(it.e) + " · " + (e.t || "") + (e.w ? " · " + e.w : "");
   return '<article class="' + cls + '" style="top:' + top + "px;height:" +
     Math.max(30, bot - top - 2) + "px;left:calc(" + left + "% + 1px);width:calc(" + w + "% - 3px)\" " +
-    (off ? 'data-ev-off="' : 'data-ev-title="') + esc(e.t) + '" data-id="' + e.__i +
+    (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i +
     '" tabindex="0" title="' + esc(label) + '">' +
     '<span class="bt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
-    '<span class="bh">' + esc(title(e)) + "</span>" + dupTag(e) +
+    '<span class="bh">' + esc(title(e)) + "</span>" +
     (isPicked(e) ? '<span class="mymark" aria-hidden="true">✓</span>' : "") +
     '<span class="bw">' + esc(e.w || (e.vr ? "Online" : "Venue not published")) + "</span>" +
     (off ? '<span class="bx">' + esc(a.reason) + "</span>" : "") + "</article>";
@@ -1149,48 +1255,15 @@ function blockHtml(it, sc) {
 function looseHtml(e) {
   var a = assess(e), off = !a.ok;
   return '<button class="chipev' + (off ? " off" : "") + (isPicked(e) ? " mine" : "") + '" ' +
-    (off ? 'data-ev-off="' : 'data-ev-title="') + esc(e.t) + '" data-id="' + e.__i + '">' +
+    (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="ch">' + esc(title(e)) + "</span>" +
     '<span class="cw">' + esc(off ? a.reason : (e.n || e.w || "Time not published")) + "</span></button>";
-}
-
-/* Laurier publishes some events on more than one schedule page, and a few more
-   than once on the same page. The incumbent reproduces every copy and six audit
-   rounds decided that was right, so nothing is dropped here either -- but a
-   student seeing the same line twice deserves to be told why. */
-var DUP = {};
-function markDups(list) {
-  DUP = {};
-  var g = {};
-  list.forEach(function (e) {
-    var k = dupKey(e);
-    (g[k] = g[k] || []).push(e);
-  });
-  Object.keys(g).forEach(function (k) {
-    var arr = g[k];
-    if (arr.length < 2) return;
-    arr.forEach(function (e, i) {
-      DUP[e.__i] = { n: arr.length, i: i + 1,
-        others: arr.filter(function (o) { return o !== e; })
-                   .map(function (o) { return o.s || "another section"; }) };
-    });
-  });
-}
-function dupTag(e) {
-  var d = DUP[e.__i];
-  return d ? '<span class="dup" title="Laurier lists this event ' + d.n +
-    ' times, with the same day, time and venue">' +
-    (d.n === 2 ? "listed twice" : "listed " + d.n + " times") + "</span>" : "";
 }
 
 /* ---- the board ---------------------------------------------------------- */
 var looseCarry = [];
 function drawBoard() {
   var list = visible(), keys = dayKeys(list);
-  /* The plan outlives the identity band and the search box, so which listings
-     Laurier duplicates has to be worked out over everything the student is
-     eligible for, not over whatever is on the screen this second. */
-  markDups(view === "plan" ? eligibleSet() : list);
   looseCarry = [];
   if (view === "plan") {
     $("board").innerHTML = planHtml();
@@ -1199,8 +1272,8 @@ function drawBoard() {
   } else if (!keys.length) {
     $("board").innerHTML = q
       ? '<div class="empty"><p>Nothing on your board matches &ldquo;' + esc(q) + '&rdquo;.</p>' +
-        "<p>The search reads the title, the venue, the host, the panel an event sits " +
-        "under, and Laurier&rsquo;s own description of it.</p>" +
+        "<p>The search reads the title, the venue, the host, what the event is part " +
+        "of, and Laurier&rsquo;s own description of it.</p>" +
         '<p><button class="pbtn" id="qclr2">Clear the search</button></p></div>'
       : '<div class="empty"><p>Laurier publishes nothing for this combination yet.</p>' +
         "<p>Try another term, or tick a stream above.</p></div>";
@@ -1243,9 +1316,10 @@ function shortTitle(e, dayKey) {
 /* A moment you have to choose between is not the same as a chain of overlaps.
    Three corrections, all of which this got wrong first time:
 
-   - Laurier's duplicate listings are not a clash. The board already labels them
-     "listed twice"; charging them against the student as a conflict as well is
-     the page contradicting itself on adjacent lines.
+   - Laurier's duplicate listings are not a clash. One event published on two of
+     its schedule pages is one event, folded before the board is built; charging
+     it against the student as a conflict with itself would be the page
+     contradicting itself on adjacent lines.
    - A desk that is open from 11am to 5:45pm does not clash with anything. The
      day view already segregates these as "open most of the day", and the clash
      view has to honour the rule the day view invented.
@@ -1259,14 +1333,9 @@ function clashClusters(list) {
     if (k === "TBA") return;
     var timed = split(onDay(list, k)).timed;      // drop-in desks excluded
 
-    // one representative per set of Laurier duplicates
-    var seenKey = {}, items = [];
-    timed.forEach(function (it) {
-      var key = dupKey(it.ev);
-      if (seenKey[key]) return;
-      seenKey[key] = true;
-      items.push(it);
-    });
+    // Laurier's repeats were folded before the board was built, so what is left
+    // here is genuinely a set of different things running at the same time.
+    var items = timed;
     if (items.length < 2) return;
 
     var edges = [];
@@ -1352,9 +1421,9 @@ function clashHtml(list) {
       '<ul class="clopts">' + g.items.map(function (it) {
         var e = it.ev;
         return '<li class="clrow' + (isPicked(e) ? " mine" : "") + '">' +
-          '<button class="clopt" data-ev-title="' + esc(e.t) + '" data-id="' + e.__i + '">' +
+          '<button class="clopt" data-ev-title="' + esc(title(e)) + '" data-id="' + e.__i + '">' +
           '<span class="clt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
-          '<span class="clname">' + esc(title(e)) + dupTag(e) + "</span>" +
+          '<span class="clname">' + esc(title(e)) + "</span>" +
           '<span class="clw">' + esc(e.w || (e.vr ? "Online" : "Venue not published")) +
             (e.h ? ' <span class="cldot">·</span> ' + esc(e.h) : "") + "</span>" +
           (e.oa ? '<span class="clopen">open to all Laurier students</span>' : "") +
@@ -1428,20 +1497,17 @@ function weekHtml(list, keys) {
   dated.forEach(function (k) {
     var dt = new Date(k + "T00:00:00"), past = k < NOW;
     var pt = rows[k];
-    // Laurier listing an event twice draws two identical bars, which reads as a
-    // rendering fault. One bar, marked, and the day view still shows both. Where
-    // two entries share a title and a start time but sit in different rooms they
-    // are not duplicates, so both are drawn and the label says which is which.
-    var seenB = {}, uniq = [], byTitle = {};
+    // Where two entries share a title and a start time but sit in different rooms
+    // they are not the same event -- the Get Involved Fair runs in the Quad and
+    // outside the Athletic Complex at the same hour -- so both are drawn and the
+    // label says which is which. (Laurier's own repeats were folded before the
+    // board was built; there is nothing left to de-duplicate here.)
+    var byTitle = {};
     pt.timed.concat(pt.long).forEach(function (it) {
-      var dk = dupKey(it.ev);
-      if (seenB[dk]) return;
-      seenB[dk] = true;
-      uniq.push(it);
       var tk = stripDay(it.ev.t) + " @" + it.s;
       byTitle[tk] = (byTitle[tk] || 0) + 1;
     });
-    var items = placed(uniq, 20);
+    var items = placed(pt.timed.concat(pt.long), 20);
     var lanes = items.reduce(function (mx, it) { return Math.max(mx, it.col + 1); }, 1);
     var shown = items;
     var n = onDay(list, k).length;
@@ -1464,13 +1530,12 @@ function weekHtml(list, keys) {
         var btop = it.col * (LANE_H + LANE_GAP) + 2;
         var lab = barLabel(it, e, k, wide, room, laneW, byTitle, left, btop, off);
         return lab[1] + '<button class="wb' + (off ? " off" : (e.oa ? " open" : "")) +
-          (it.ncol > 1 ? " clash" : "") + (DUP[e.__i] ? " wdup" : "") +
+          (it.ncol > 1 ? " clash" : "") +
           (isPicked(e) ? " mine" : "") +
           '" style="left:' + left + "%;width:" + wide + "%;top:" + btop + "px\" " +
-          (off ? 'data-ev-off="' : 'data-ev-title="') + esc(e.t) + '" data-id="' + e.__i +
+          (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i +
           '" title="' + esc(clock(it.s) + "–" + clock(it.e) + " · " + e.t +
-            (e.w ? " · " + e.w : "") + (DUP[e.__i] ? " · Laurier lists this " +
-            DUP[e.__i].n + " times" : "")) + '">' +
+            (e.w ? " · " + e.w : "")) + '">' +
           lab[0] +
           "</button>";
       }).join("") +
@@ -1509,9 +1574,9 @@ function agendaHtml(items) {
     var clash = items.filter(function (o) { return o !== it && o.s < it.e && it.s < o.e; });
     return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) +
       (isPicked(e) ? " mine" : "") + '" ' +
-      (off ? 'data-ev-off="' : 'data-ev-title="') + esc(e.t) + '" data-id="' + e.__i + '" tabindex="0">' +
+      (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '" tabindex="0">' +
       '<div class="agt">' + clock(it.s) + "<span>" + clock(it.e) + "</span></div>" +
-      '<div class="agb"><h4>' + esc(title(e)) + "</h4>" + dupTag(e) +
+      '<div class="agb"><h4>' + esc(title(e)) + "</h4>" +
         '<p class="agw">' + esc(e.w || (e.vr ? "Online" : "Venue not published")) +
           mapLink(e) + "</p>" +
         (off ? '<p class="agx">' + esc(a.reason) + "</p>" : "") +
@@ -1529,7 +1594,9 @@ function dayHtml(list, keys) {
   var parts = split(todays);
   var items = placed(parts.timed, 52);
   var sc = items.length ? makeScale(items, 1.15) : null;
-  var clashes = items.filter(function (it) { return it.ncol > 1; }).length;
+  /* How many events overlap is the Clashes lens's whole subject, and it answers
+     it properly — which of them you have to choose between, and when. Counting
+     them again in the day heading said less and said it twice. */
   var lanes = items.reduce(function (m, it) { return Math.max(m, it.ncol); }, 0);
   var narrow = window.innerWidth < 700;
   // Surrendering the clock on the busiest day gives up the one thing this view
@@ -1547,9 +1614,8 @@ function dayHtml(list, keys) {
     '<button class="step" data-step="-1"' + (i <= 0 ? " disabled" : "") + ' aria-label="Previous day">‹</button>' +
     '<div class="dtitle"><h2>' + (undated ? "Undated" : DOW[dt.getDay()] + " " + dt.getDate() + " " + MON[dt.getMonth()] + " " + dt.getFullYear()) + "</h2>" +
     "<p>" + todays.length + " event" + (todays.length === 1 ? "" : "s") +
-    (clashes ? ' · <b class="clashn">' + clashes + " run at the same time as something else</b>" : " · nothing overlaps") +
     (parts.loose.length ? " · " + parts.loose.length + " without a clock time" : "") + "</p>" +
-    (away ? '<p class="peak">This is your busiest day. Orientation starts on ' +
+    (away ? '<p class="peak">Orientation starts on ' +
       '<button class="peakbtn" data-day="' + firstK + '">' + DOW[fdt.getDay()] + " " +
       fdt.getDate() + " " + MON[fdt.getMonth()] + " ›</button></p>" : "") + "</div>" +
     '<button class="step" data-step="1"' + (i >= keys.length - 1 ? " disabled" : "") + ' aria-label="Next day">›</button>' +
@@ -1684,7 +1750,7 @@ function planHtml() {
         return '<article class="pl' + (hit.length ? " hit" : "") + (a.ok ? "" : " off") + '">' +
           '<div class="plt">' + esc(whenLabel(e)) +
             (!e.d ? '<span class="plnod">no date</span>' : "") + "</div>" +
-          '<div class="plb"><h4>' + esc(title(e)) + "</h4>" + dupTag(e) +
+          '<div class="plb"><h4>' + esc(title(e)) + "</h4>" +
             '<p class="plw">' + esc(e.w || (e.vr ? "Online" : "Venue not published")) +
               mapLink(e) + (m ? "" : '<span class="nomap"> — nothing here a map can find</span>') +
               (e.h ? ' <span class="pdot">·</span> ' + esc(e.h) : "") + "</p>" +
@@ -1793,7 +1859,7 @@ function regHtml(list) {
               ' as registered" title="' + (d ? "Registered — click to untick"
                                              : "Tick this when you have registered") +
               '"><span aria-hidden="true">' + (d ? "✓" : "&nbsp;") + "</span></button>" +
-            '<div class="rgb"><h5>' + esc(title(e)) + "</h5>" + dupTag(e) +
+            '<div class="rgb"><h5>' + esc(title(e)) + "</h5>" +
               '<p class="rgm">' + esc(whenLabel(e)) + ' <span class="pdot">·</span> ' +
               esc(e.w || (e.vr ? "Online" : "Venue not published")) + mapLink(e) + "</p>" +
               '<p class="plreg">' + regLinksOf(e).map(function (l) {
@@ -1891,6 +1957,99 @@ function printRegHtml() {
   return h;
 }
 
+/* ---- the printed schedule, drawn as a timetable -------------------------
+   On screen this page's whole argument is the clock. Printed as a list it threw
+   that away: paragraph after paragraph, with no way to see that Tuesday
+   afternoon is free and Wednesday morning is three deep. So paper gets the clock
+   too — one grid a day, the hours down the left, each event a box in its own
+   slot, as tall as it is long.
+
+   A grid cannot carry everything a list can. It has no room for a web address,
+   and paper cannot be clicked, so under each day's grid the same events are
+   written out in the same order, numbered to match the boxes, with the venue,
+   the host, what Laurier says about who may come, anything it overlaps, and
+   every registration and citation address spelled out in full.
+
+   Past four events running at once a box is narrower than a word. That day drops
+   to the written list on its own, and the page says why rather than printing a
+   grid nobody can read.
+------------------------------------------------------------------------- */
+var PR_LANES = 4;      // the most a printed day can stack and still name its events
+var PR_LANES_MAX = 6;  // past that a box holds a number and a time, and nothing else
+var PR_PT_HOUR = 30;   // points per hour at full scale
+var PR_PT_GAP = 13;    // a collapsed stretch of nothing, named rather than drawn
+var PR_PT_MAX = 430;   // the tallest grid that still leaves the page room to breathe
+
+function printGrid(items, named) {
+  /* The same piecewise axis the screen uses: occupied stretches run to scale,
+     and a hole of two hours or more collapses to a band that names the hours it
+     stands for. Drawn to scale, one quiet Saturday was five inches of ruled
+     nothing, and paper does not scroll. */
+  var sc = makeScale(items, PR_PT_HOUR / 60, PR_PT_GAP);
+  if (sc.H > PR_PT_MAX) sc = makeScale(items, (PR_PT_HOUR * PR_PT_MAX / sc.H) / 60, PR_PT_GAP);
+  var h = '<div class="prcal" style="height:' + (sc.H + 3).toFixed(1) + 'pt">';
+  sc.blocks.forEach(function (bl) {
+    if (bl.gap) {
+      h += '<div class="prgap" style="top:' + bl.y.toFixed(1) + "pt;height:" +
+        bl.h.toFixed(1) + 'pt"><span>nothing published between ' + esc(clock(bl.a)) +
+        " and " + esc(clock(bl.b)) + "</span></div>";
+      return;
+    }
+    for (var m = Math.ceil(bl.a / 60) * 60; m <= bl.b; m += 60) {
+      h += '<div class="prhr" style="top:' + sc.pos(m).toFixed(1) + 'pt"><span>' +
+        esc(hourLabel(m)) + "</span></div>";
+    }
+  });
+  h += '<div class="prslots">' + items.map(function (it) {
+    var u = 100 / it.ncol, left = it.col * u;
+    var w = u * Math.min(it.span || 1, it.ncol - it.col);
+    var top = sc.pos(it.s), bot = sc.pos(it.de);
+    return '<div class="prslot' + (isPicked(it.ev) ? " prmine" : "") + '" style="top:' +
+      top.toFixed(1) + "pt;height:" + Math.max(13, bot - top - 1.5).toFixed(1) +
+      "pt;left:" + left.toFixed(2) + "%;width:calc(" + w.toFixed(2) + '% - 2.5pt)">' +
+      '<span class="prno">' + it.no + "</span>" +
+      '<span class="prslott">' + esc(clock(it.s)) + "–" + esc(clock(it.e)) + "</span>" +
+      (named ? '<span class="prslotn">' + esc(title(it.ev)) + "</span>" : "") + "</div>";
+  }).join("") + "</div></div>";
+  return h;
+}
+
+/* One event, written out. The grid says when; this says everything else, and it
+   is the only place a printed page can put a web address. */
+function printEntry(e, no, hit, common) {
+  var m = mapFor(e), src = sourcesOf(e);
+  var pw = e.d ? parseWhen(e.n) : null;
+  var isDrop = !!pw && isDropIn(pw);
+  var bits = [];
+  if (e.h) bits.push("Host: " + e.h);
+  bits.push(audienceLine(e));
+  if (e.c) bits.push("Cost: " + e.c);
+  return '<div class="prev">' +
+    '<p class="prt"><span class="prno">' + no + "</span> " + esc(whenLabel(e)) + "</p>" +
+    '<div class="prbody">' +
+      '<p class="prn">' + esc(title(e)) + "</p>" +
+      '<p class="prw"><b>Where:</b> ' +
+        esc(e.w || (e.vr ? "Online" : "Venue not published by Laurier")) +
+        (m && m.tail ? " · " + esc(m.tail) : "") + "</p>" +
+      '<p class="prm">' + esc(bits.join(" · ")) + "</p>" +
+      (assess(e).ok ? "" : '<p class="proff"><b>Note:</b> not on the board you were ' +
+        "looking at — " + esc(assess(e).reason) + ".</p>") +
+      (hit && hit.length ? '<p class="prc"><b>Overlaps:</b> ' + esc(hit.map(function (o) {
+          return title(o) + " (" + whenLabel(o) + ")";
+        }).join("; ")) + "</p>" : "") +
+      (isDrop ? '<p class="prc"><b>Open most of the day:</b> not counted as clashing ' +
+        "with anything above.</p>" : "") +
+      regLinksOf(e).map(function (l) {
+        return '<p class="prurl"><b>Register (' + esc(l.text) + ")</b><br>" +
+          esc(l.href) + "</p>";
+      }).join("") +
+      (common && src.length === 1 && src[0].u === common ? "" :
+        '<p class="prcite">Cited from ' +
+          (src.length > 1 ? src.length + " Laurier pages<br>" : "") +
+          src.map(function (o) { return esc(o.u); }).join("<br>") + "</p>") +
+    "</div></div>";
+}
+
 function printHtml() {
   if (view === "reg") return printRegHtml();
   var picks = planEvents();
@@ -1909,7 +2068,9 @@ function printHtml() {
       ? list.length + " event" + (list.length === 1 ? "" : "s") + " I have ticked."
       : "Every event I am eligible for" + (q ? ' matching the search "' + esc(q) + '"' : "") +
         " — " + list.length + " in all. Nothing was ticked, so the whole board is printed.") +
-    " Compiled from Laurier's published schedules on 31 Aug 2026.</p></header>";
+    " Drawn on the clock, a day at a time; the numbered notes under each day carry " +
+    "the venues and the web addresses. Compiled from Laurier's published schedules " +
+    "on 31 Aug 2026.</p></header>";
 
   if (wide.length) {
     h += '<section class="prreg"><h2>Register for orientation itself</h2>' +
@@ -1925,41 +2086,81 @@ function printHtml() {
   }
 
   h += byDay(list).map(function (g) {
-    return '<section class="prday"><h2>' + esc(dayLabel(g.k)) + "</h2>" +
-      g.items.map(function (e) {
-        var m = mapFor(e), hit = cm[dupKey(e)] || [];
-        var pw = e.d ? parseWhen(e.n) : null;
-        var isDrop = !!pw && isDropIn(pw);
-        var bits = [];
-        if (e.h) bits.push("Host: " + e.h);
-        if (e.a) bits.push(e.a);
-        if (e.c) bits.push("Cost: " + e.c);
-        return '<div class="prev">' +
-          '<p class="prt">' + esc(whenLabel(e)) + "</p>" +
-          '<div class="prbody">' +
-            '<p class="prn">' + esc(title(e)) +
-              /* Paper has no tooltip and no click-through, so a duplicate must say so
-                 in words. The screen these sheets are generated from marks every one. */
-              (DUP[e.__i] ? ' <span class="prdup">— Laurier lists this ' +
-                 DUP[e.__i].n + ' times; it is one event</span>' : "") + "</p>" +
-            '<p class="prw"><b>Where:</b> ' +
-              esc(e.w || (e.vr ? "Online" : "Venue not published by Laurier")) +
-              (m && m.tail ? " · " + esc(m.tail) : "") + "</p>" +
-            (bits.length ? '<p class="prm">' + esc(bits.join(" · ")) + "</p>" : "") +
-            (assess(e).ok ? "" : '<p class="proff"><b>Note:</b> not on the board you were ' +
-              "looking at — " + esc(assess(e).reason) + ".</p>") +
-            (hit.length ? '<p class="prc"><b>Overlaps:</b> ' + esc(hit.map(function (o) {
-                return title(o) + " (" + whenLabel(o) + ")";
-              }).join("; ")) + "</p>" : "") +
-            (isDrop ? '<p class="prc"><b>Open most of the day:</b> not counted as clashing ' +
-              "with anything above.</p>" : "") +
-            regLinksOf(e).map(function (l) {
-              return '<p class="prurl"><b>Register (' + esc(l.text) + ")</b><br>" +
-                esc(l.href) + "</p>";
-            }).join("") +
-            '<p class="prcite">Cited from ' + esc(e.u) + "</p>" +
-          "</div></div>";
-      }).join("") + "</section>";
+    var parts = split(g.items);
+    var items = placed(parts.timed, 30);
+    var lanes = items.reduce(function (mx, it) { return Math.max(mx, it.ncol); }, 0);
+
+    /* Numbered down the day and, within one start time, left to right across
+       the grid — the 5pm row read 18, 14, 15, 16, 17 when the numbers came from
+       the time sort alone and the columns came from the placement. */
+    var col = {};
+    items.forEach(function (it) { col[it.ev.__i] = it.col; });
+    var ordered = sortRun(g.items).slice().sort(function (a, b) {
+      var aw = parseWhen(a.n), bw = parseWhen(b.n);
+      var as = aw ? aw.s : 1e6, bs = bw ? bw.s : 1e6;
+      if (as !== bs) return as - bs;
+      return (col[a.__i] === undefined ? 99 : col[a.__i]) -
+             (col[b.__i] === undefined ? 99 : col[b.__i]);
+    });
+    var no = {};
+    ordered.forEach(function (e, i) { no[e.__i] = i + 1; });
+    items.forEach(function (it) { it.no = no[it.ev.__i]; });
+
+    /* Nearly every event on a day comes from the same page of Laurier's site.
+       Printed under each of them that address filled most of the sheet: eleven
+       events, eleven copies of one URL. It is stated once under the day, and
+       only the entries that came from somewhere else carry their own. */
+    var seen = {}, common = null;
+    g.items.forEach(function (e) {
+      var src = sourcesOf(e);
+      if (src.length !== 1) return;          // published twice: it cites both, always
+      seen[src[0].u] = (seen[src[0].u] || 0) + 1;
+      if (!common || seen[src[0].u] > seen[common]) common = src[0].u;
+    });
+    if (!common || seen[common] < 3) common = null;
+
+    var head = '<section class="prday"><h2>' + esc(dayLabel(g.k)) + "</h2>" +
+      (common ? '<p class="prdaycite">Every entry below is cited from ' +
+        esc(common) + "</p>" : "");
+
+    if (parts.long.length) {
+      head += '<p class="prallday"><b>Open most of the day</b> ' +
+        parts.long.map(function (it) {
+          return "<span>" + no[it.ev.__i] + " " + esc(title(it.ev)) + ", " +
+            esc(clock(it.s)) + "–" + esc(clock(it.e)) + "</span>";
+        }).join("") + "</p>";
+    }
+
+    /* How much a box can hold depends on how many have to share the width. Four
+       abreast on an A4 page is about 110pt each and a name fits. Six is 70pt,
+       which fits a number and a time and would chop a name in half, so the boxes
+       keep the shape of the day and the numbered list below carries the names.
+       Past six even that is a smear of hairlines, and the day is better read as
+       a list — which is what it becomes, with the reason printed above it. */
+    if (items.length && lanes <= PR_LANES_MAX) {
+      if (lanes > PR_LANES) {
+        head += '<p class="prwhy">' + lanes + " of these run at once, so the blocks below " +
+          "carry their number and their time; read the names off the numbered list " +
+          "underneath.</p>";
+      }
+      head += printGrid(items, lanes <= PR_LANES);
+    } else if (items.length) {
+      head += '<p class="prwhy">' + lanes + " of these run at the same time. Drawn " +
+        lanes + " abreast each block is a hairline, too narrow to carry even its own " +
+        "number, so this day is written out in time order below rather than drawn.</p>";
+    }
+
+    if (parts.loose.length) {
+      head += '<p class="prloose"><b>No clock time published</b> ' +
+        parts.loose.map(function (e) {
+          return "<span>" + no[e.__i] + " " + esc(title(e)) + "</span>";
+        }).join("") + "</p>";
+    }
+
+    return head + '<div class="prdetail">' +
+      ordered.map(function (e) {
+        return printEntry(e, no[e.__i], cm[dupKey(e)] || [], common);
+      }).join("") + "</div></section>";
   }).join("");
 
   h += '<footer class="prfoot"><p>Printed from the Laurier Orientation Event Finder, ' +
@@ -1969,6 +2170,7 @@ function printHtml() {
     "official ruling.</p></footer></div>";
   return h;
 }
+
 function drawPrint() {
   var n = $("printout");
   if (n) n.innerHTML = printHtml();
@@ -2079,6 +2281,8 @@ function openSheet(i) {
       (e.vr ? "Online — open to all campuses" : esc((e.cp || []).join(", "))) + " &middot; " + esc(e.tm));
   Object.keys(e.si || {}).forEach(function (k) { row(k, esc(e.si[k])); });
 
+  /* Every page this event was published on, and every link any of them carries. */
+  var src = sourcesOf(e);
   var links = linksOf(e);
   /* Registration is the only one of these with a deadline attached, so it leads
      and it is the only filled button. The rest are references. */
@@ -2097,11 +2301,12 @@ function openSheet(i) {
         return { "no-date": "date", "no-time": "time", "no-venue": "venue" }[f] || f;
       }).join(", ") + ".</p>" : "";
 
-  var dupNote = DUP[i] ? '<p class="dupnote"><b>Laurier lists this ' + DUP[i].n +
-    " times</b> with the same day, time and venue. This is copy " + DUP[i].i + ", under " +
-    esc(e.s || "an unnamed section") + "; the other" + (DUP[i].n > 2 ? "s are" : " is") + " under " +
-    esc(DUP[i].others.join("; ")) + ". Nothing is hidden here — the board reproduces " +
-    "Laurier's pages exactly as published.</p>" : "";
+  /* Laurier publishes the same event on several of its schedule pages. It is one
+     event and it is shown once; every place it was published is named below, so
+     a student who found it somewhere else can still see where. */
+  var dupNote = src.length > 1 ? '<p class="dupnote">Laurier publishes this on <b>' +
+    src.length + " of its schedule pages</b>. It is one event, shown once — " +
+    "every page it appears on is listed at the foot of this card.</p>" : "";
 
   /* Where this event sits in its day, and what it runs into. This is the one
      thing a clock can say that a list cannot, so the sheet leads with it. */
@@ -2139,7 +2344,7 @@ function openSheet(i) {
     '<button class="sclose" id="sclose">Close</button>' +
     '<div class="sbody">' +
       '<div class="skick' + (a.ok ? "" : " no") + '">' +
-        (a.ok ? esc(e.a || (e.oa ? "Open to all students" : "You can attend this")) : esc(a.reason)) +
+        (a.ok ? esc(audienceLine(e)) : esc(a.reason)) +
         (e.vr ? " · Online" : "") + "</div>" +
       '<h3 id="sheettitle">' + esc(title(e)) + "</h3>" +
       (e.pt ? '<p class="sparent">Part of ' + esc(e.pt) + "</p>" : "") +
@@ -2156,8 +2361,15 @@ function openSheet(i) {
       (e.x ? '<div class="sdesc">' + paras(e.x).map(function (t) {
           return "<p>" + esc(t) + "</p>";
         }).join("") + "</div>" : "") + flagHtml +
-      '<p class="cite"><strong>Cited from</strong><br><a href="' + esc(e.u) + '" target="_blank" rel="noopener">' +
-        esc(e.u) + "</a><br>Accessed 31 Aug 2026, including the collapsed accordion panels.</p>" +
+      '<p class="cite"><strong>' + (src.length > 1
+          ? "Cited from " + src.length + " Laurier pages"
+          : "Cited from") + "</strong>" +
+        src.map(function (o) {
+          return '<span class="citeone"><a href="' + esc(o.u) + '" target="_blank" rel="noopener">' +
+            esc(o.u) + "</a>" + (o.s ? "<em>" + esc(o.s) + "</em>" : "") + "</span>";
+        }).join("") +
+        "Read on 31 Aug 2026, including the venue, host and registration detail Laurier " +
+        "keeps hidden until you open an event.</p>" +
     "</div>";
   $("sheet").hidden = false; $("scrim").hidden = false;
   document.body.classList.add("locked");
@@ -2186,57 +2398,6 @@ function closeSheet() {
   picked = null;
 }
 
-/* ---- data notes --------------------------------------------------------- */
-function buildNotes() {
-  var notes = [];
-  var undated = EV.filter(function (e) { return !e.d; });
-  if (undated.length) {
-    var byTerm = {};
-    undated.forEach(function (e) { byTerm[e.tm] = (byTerm[e.tm] || 0) + 1; });
-    notes.push(["Events published without a date",
-      undated.length + " events carry no date on Laurier's page (" +
-      Object.keys(byTerm).map(function (t) { return byTerm[t] + " in " + t; }).join(", ") +
-      "). They are listed under “no clock time published” rather than placed on the grid."]);
-  }
-  var spring = EV.filter(function (e) { return e.tm === "Spring 2026" && e.d && e.d.slice(5, 7) === "01"; });
-  if (spring.length) {
-    notes.push(["Spring graduate schedule shows January dates",
-      "The page titled “Laurier Spring Orientation: Graduate Schedule” lists its sessions on Jan. 5, 7 and 9, 2026. " +
-      "January is the winter term at Laurier, so this page appears to be either mislabelled or left over from a previous cycle. " +
-      "Dates are reproduced exactly as published — confirm with aspire@wlu.ca before relying on them."]);
-  }
-  var noTime  = EV.filter(function (e) { return (e.f || []).indexOf("no-time") >= 0; }).length;
-  var noVenue = EV.filter(function (e) { return (e.f || []).indexOf("no-venue") >= 0; }).length;
-  if (noTime || noVenue) {
-    notes.push(["Events without a usable time or venue",
-      noTime + " events have no usable time and " + noVenue + " no usable venue. This counts " +
-      "Laurier's own “TBD” placeholders, not just blank fields."]);
-  }
-  var winter = EV.filter(function (e) { return e.tm === "Winter 2027"; });
-  if (winter.length && winter.every(function (e) { return !e.d; })) {
-    var wVenue = winter.filter(function (e) { return (e.f || []).indexOf("no-venue") === -1; }).length;
-    var wTime = winter.filter(function (e) { return (e.f || []).indexOf("no-time") === -1; }).length;
-    notes.push(["The Winter 2027 schedule is mostly a placeholder",
-      "All " + winter.length + " Winter 2027 events are published without a date, and Laurier states " +
-      "registration opens in October 2026. " +
-      (wVenue ? wVenue + " of them do give a venue (the Virtual sessions state Zoom); the other " +
-                (winter.length - wVenue) + " are TBD. " : "None gives a venue. ") +
-      (wTime ? wTime + " give a time." : "None gives a time.")]);
-  }
-  var prog = EV.filter(function (e) { return e.pg; }).length;
-  if (prog) {
-    notes.push(["Program and faculty welcomes carry no audience on Laurier's page",
-      prog + " events are specific to one program or faculty, but Laurier states no audience " +
-      "restriction on them, so by default they all show. Use the “My program” dropdown to " +
-      "narrow to your own, or choose “Not listed” to hide them all — Laurier does not " +
-      "publish a welcome for every program."]);
-  }
-  if (!notes.length) return;
-  $("noteslist").innerHTML = notes.map(function (n, i) {
-    return "<li><b>" + String(i + 1).padStart(2, "0") + "</b><div><strong>" + n[0] + "</strong><p>" + n[1] + "</p></div></li>";
-  }).join("");
-  $("notes").hidden = false;
-}
 
 /* ---- hash --------------------------------------------------------------- */
 function writeHash() {
@@ -2333,7 +2494,6 @@ function announce() {
   SPOKEN = true;
 }
 redraw();
-buildNotes();
 $("scrim").onclick = closeSheet;
 $("skip").onclick = function () {
   var b = $("board");

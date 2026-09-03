@@ -284,6 +284,8 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   line-height:1.6;color:var(--meta);word-wrap:break-word}
 .cite strong{color:var(--ink);letter-spacing:.1em;text-transform:uppercase;font-size:10.5px}
 .cite a{color:var(--purple)}
+.citeone{display:block;margin:5px 0 7px}
+.citeone em{display:block;font-style:normal;color:var(--ink);font-size:11px}
 
 /* ---- tail sections ----------------------------------------------------- */
 .tail{border-top:1px solid var(--line);background:var(--field);padding:38px 0}
@@ -291,13 +293,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .tailin{max-width:1440px;margin:0 auto;padding:0 26px}
 .tail h2{font-size:22px;font-weight:800;font-stretch:86%;color:var(--purple)}
 .tail .lede{margin-top:8px;font-size:14px;color:var(--meta);max-width:78ch}
-.notelist{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:0}
-.notelist li{display:flex;gap:16px;padding:14px 0;border-top:1px solid var(--line)}
-.notelist b{
-  font-size:11px;font-weight:700;color:var(--gold-d);letter-spacing:.08em;padding-top:3px;flex:0 0 auto;
-}
-.notelist strong{display:block;font-size:14.5px;font-weight:700}
-.notelist p{margin-top:4px;font-size:13.5px;color:var(--meta);max-width:82ch}
 .srcgrid{margin-top:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0 26px}
 .src{padding:11px 0;border-top:1px solid var(--line);font-size:12.5px;min-width:0}
 .src b{display:block;font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--purple)}
@@ -327,28 +322,89 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 }
 
 /* ---- print: the day you are looking at --------------------------------- */
+.idprint{display:none}
+
+/* ---- print: the day you are looking at, still on the clock ---------------
+   This used to flatten the grid: every block set static, the hour gutter and the
+   rules hidden, the day coming out of the printer as a column of paragraphs. The
+   page is called The Timetable and its one argument is the clock, so the printed
+   sheet keeps it — the hours down the left, each event in its slot, overlaps
+   side by side. Everything below is a line weight or a shade of grey, because a
+   sheet that only works out of a colour printer is a sheet that does not work.
+------------------------------------------------------------------------- */
 @media print{
+  @page{margin:12mm 10mm}
   .navstrip,.scrim,.sheet,.tail,.foot,.legend,.ghostbtn,.smore,.dgo,.step,.modebtn,.peak{display:none!important}
-  /* a printed block that clips its own venue is worse than one that runs on */
-  .blk{overflow:visible;height:auto!important;min-height:0;position:static;width:auto!important;
-       left:auto!important;margin-bottom:4pt;border-left-width:3px}
-  .col,.col.wide{height:auto!important}
-  .daygrid{display:block}
-  .gutcol{display:none}
-  .rule,.gapband{display:none}
-  .wb{position:static;height:auto;display:block;width:auto!important;margin-bottom:2pt}
+  html,body{background:#fff;color:#000}
+  body{font-size:10.5pt}
+
+  /* the clock, kept */
+  .gutcol .hr span{color:#333;background:#fff}
+  .rule{border-top-color:#C8C8C8}
+  .gapband{background:#F0F0F0;border-color:#888}
+  .gapband span{color:#333}
+  /* A block that clips its own name is worse than one that runs on: the box is
+     sized by how long the event lasts, not by how much it has to say. */
+  .blk,.blk.clash,.blk.open,.blk.off,.blk.past{
+    background:#fff;border:.5pt solid #000;border-left:2pt solid #000;
+    break-inside:avoid;box-shadow:none;overflow:visible;
+  }
+  /* Print type is smaller than screen type, and the line clamp comes off the
+     title: a block sized by how long an event runs still has to be able to say
+     its whole name. "Group Exercise: Cycle" with the word "Class" clipped off
+     is worse than a tight page. */
+  .blk .bt,.blk.clash .bt,.blk.open .bt,.blk.off .bt{
+    color:#333;font-size:6.4pt;white-space:normal;
+  }
+  .blk .bh,.daygrid.tight .blk .bh{
+    color:#000;font-size:7.8pt;line-height:1.14;font-stretch:100%;
+    display:block;-webkit-line-clamp:none;overflow:visible;
+  }
+  .blk .bw,.daygrid.tight .blk .bw{
+    display:-webkit-box;color:#444;font-size:6.6pt;line-height:1.18;margin-top:1pt;
+    -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  /* on screen these are told apart by colour; on paper by the weight and style
+     of the reading edge, which survives a monochrome laser */
+  .blk.clash{border-left-width:3.5pt}
+  .blk.open{border-left-style:double;border-left-width:4pt}
+  .blk.off{background:#F4F4F4;border-left-style:dotted}
+  .blk.past .bh,.blk.past .bt,.blk.past .bw{color:#666}
+
+  /* the whole-run view has no hours to keep, so it stays a list of bars */
+  .wb{position:static;height:auto;display:block;width:auto!important;margin-bottom:2pt;
+      background:#fff;border:.5pt solid #000}
+  .wbl.out{display:none}
   .wklane{height:auto!important}
   .wkrow{break-inside:avoid}
   .cl{break-inside:avoid}
+
   .mast{background:#fff;color:#000;border-bottom:2px solid #000;break-after:avoid}
   .mast h1{font-size:22pt;color:#000}
   .standfirst,.crest-o{display:none}
   .crest-w{color:#000}
-  .idbar .idrow,.idbar .idrow-2{display:none}
+  .idbar .idrow,.idbar .idrow-2,.idbar .idmore{display:none!important}
+  .idprint{
+    display:block;font-size:11pt;font-weight:700;color:#000;padding:6pt 0 2pt;
+  }
+  /* On screen the reading edge is gold for a collision and lilac for open to
+     all. Printed, both are ink, so the difference is carried by the weight and
+     the style of the edge — and a difference nothing explains is not a signal,
+     so the key is printed with it. */
+  .prkey{
+    display:block;font-size:8.5pt;color:#000;padding:3pt 0 0;line-height:1.6;
+  }
+  .prkey b{font-weight:400}
+  .prkey i{
+    display:inline-block;width:0;height:8pt;vertical-align:-1pt;margin:0 5pt 0 12pt;
+    border-left:2pt solid #000;
+  }
+  .prkey i.k-clash{border-left-width:3.5pt}
+  .prkey i.k-open{border-left-style:double;border-left-width:4pt}
+  .prkey i.k-off{border-left-style:dotted}
   .idfoot{border-top:1px solid #000;padding-top:4pt}
   .tally b{color:#000}
-  body{font-size:11pt}
-  .blk{break-inside:avoid}
+  .dayhead h2{color:#000}
 }
 
 /* ---- all-day ribbons --------------------------------------------------- */
@@ -412,11 +468,7 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .ag.off{background:repeating-linear-gradient(135deg,#fff,#fff 6px,#F4F1F7 6px,#F4F1F7 12px)}
 .ag.off .agb h4{font-weight:500;color:var(--meta)}
 
-/* ---- Laurier's own repeats, named rather than hidden ------------------- */
-.dup{
-  align-self:flex-start;font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--gold-d);border:1px solid #E2C98F;background:#FFF8E8;padding:0 4px;margin-top:3px;
-}
+/* ---- one event Laurier published in more than one place ---------------- */
 .dupnote{
   margin-top:12px;font-size:12.5px;line-height:1.5;color:#5C4B1F;background:#FFF8E8;
   border-left:4px solid var(--gold);padding:9px 12px;
@@ -519,7 +571,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 }
 .wb.open{background:var(--lilac)}
 .wb.clash{border-top-color:var(--gold)}
-.wb.wdup{box-shadow:inset -3px 0 0 var(--gold)}
 .wb.off{background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
 .wb.off .wbl{color:var(--meta)}
 .wb:hover{outline:2px solid var(--ink);outline-offset:0;z-index:4}

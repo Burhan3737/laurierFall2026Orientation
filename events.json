@@ -8852,8 +8852,8 @@
   {
    "title": "Early Move-in (Students Living in Residence Only)",
    "desc": "If you're living in residence and registered for SEEDs Orientation, you can move in early. Move-in begins in the morning, so plan enough time to settle in before orientation starts. Details about the early move-in process will be shared in mid-August.",
-   "where": "Your Residence Building",
-   "when": "TBD to 3 p.m.",
+   "where": "King St. Residence",
+   "when": "9:30 to noon",
    "host": "",
    "cost": "",
    "audience": null,
@@ -8895,7 +8895,7 @@
    "title": "SEEDs Kick-Off!",
    "desc": "You and your family and/or community are invited to kick off SEEDs Orientation at the Indigenous Student Centre (157 Albert St.), where you can meet staff and tour the space.",
    "where": "Indigenous Student Centre",
-   "when": "3:30 to 4 p.m.",
+   "when": "3 to 3:30 p.m.",
    "host": "",
    "cost": "",
    "audience": null,
@@ -8936,8 +8936,8 @@
   {
    "title": "University 101 Session (Students Only)",
    "desc": "Explore university life, including key terminology, online student tools, classroom expectations, and more. Bring your questions; we’re here to help you navigate the university experience!",
-   "where": "TBD",
-   "when": "4 to 5 p.m.",
+   "where": "SB107 | Schlegel Building",
+   "when": "3:30 to 4:30 p.m.",
    "host": "",
    "cost": "",
    "audience": null,
@@ -8973,14 +8973,12 @@
     "Indigenous"
    ],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
-   "title": "Parents/Community Supporters Info Session",
+   "title": "Supporting Your Hawk: Parents/Community Info Session",
    "desc": "Family and community members: Learn how to best support your student's transition to university life.",
-   "where": "TBD",
+   "where": "SB106 | Schlegel Building",
    "when": "4 to 5 p.m.",
    "host": "",
    "cost": "",
@@ -9017,9 +9015,7 @@
     "Indigenous"
    ],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "Dinner Social",
@@ -9147,7 +9143,7 @@
   {
    "title": "Community Building and Getting Organized",
    "desc": "Get to know your fellow Indigenous students and the Indigenous Student Services team through a series of icebreakers. Then, if you need help preparing for your first day of classes, our team will be there to help you get organized and set yourself up for success.",
-   "where": "TBD",
+   "where": "Indigenous Student Centre",
    "when": "10:15 to 11 a.m.",
    "host": "",
    "cost": "",
@@ -9179,14 +9175,12 @@
     "Indigenous"
    ],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "Normalizing Emotional Regulation Workshop",
    "desc": "Starting university, a new program, or transferring to a new university can be an exciting but sometimes stressful transition. We're here to support you. Join Indigenous Student Counsellor Margaret for a workshop focused on managing anxiety and practicing grounding techniques to help you navigate this new chapter with confidence.",
-   "where": "TBD",
+   "where": "Indigenous Student Centre",
    "when": "11 a.m. to Noon",
    "host": "",
    "cost": "",
@@ -9218,14 +9212,12 @@
     "Indigenous"
    ],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "Campus Tour",
    "desc": "Let's find our fall-term classes together and do a bit of a tour of campus!",
-   "where": "TBD",
+   "where": "Indigenous Student Centre",
    "when": "Noon to 1 p.m.",
    "host": "",
    "cost": "",
@@ -9257,9 +9249,7 @@
     "Indigenous"
    ],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "Lunch",
@@ -9301,7 +9291,7 @@
   {
    "title": "Writing in University",
    "desc": "Get prepared for university-level writing in this hands-on workshop with Writing Services.",
-   "where": "TBD",
+   "where": "Indigenous Student Centre",
    "when": "2 to 2:45 p.m.",
    "host": "",
    "cost": "",
@@ -9333,13 +9323,11 @@
     "Indigenous"
    ],
    "open_to_all": false,
-   "flags": [
-    "no-venue"
-   ]
+   "flags": []
   },
   {
-   "title": "Co-op Information Session",
-   "desc": "Learn more about what the co-op program has to offer for Laurier students with staff from the Co-op Office.",
+   "title": "Study Skills Workshop",
+   "desc": "Ready to jump into university? Join one of our Learning Consultants to learn about time management and study strategies that actually work!",
    "where": "Indigenous Student Centre",
    "when": "2:45 to 3:30 p.m.",
    "host": "",
@@ -9377,7 +9365,7 @@
   {
    "title": "Escape Room",
    "desc": "To wrap up our time together, we’ll head to Trapped for an escape room adventure, a fun chance to relax, laugh, and make some final memories together.",
-   "where": "Trapped",
+   "where": "Trapped Escape Rooms",
    "when": "3:30 to 5 p.m.",
    "host": "",
    "cost": "",
@@ -10856,8 +10844,8 @@
    "flags": []
   },
   {
-   "title": "LOCUS Orientation Hub",
-   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "title": "Daily - LOCUS Orientation Hub",
+   "desc": "Monday - Puzzles and Colouring Sheets Tuesday – Watercolour Bookmarks and Board Games Wednesday – Pencil Case Decorating Thursday – Oven-Clay Creations Friday – Puzzles and Colouring Sheets",
    "where": "OM207-10 | One Market",
    "when": "9 a.m. to 4 p.m.",
    "host": "LOCUS",
@@ -10892,7 +10880,7 @@
    "flags": []
   },
   {
-   "title": "Craft Your First Year: Journal Decorating",
+   "title": "Tuesday, Sept. 8 - Craft Your First Year: Journal Decorating",
    "desc": "Your first-year at Laurier is the start of a brand-new chapter of your life‚ so why not design a journal to capture it all? The Laurier Off-Campus University Students (LOCUS) program invites our First-year Off-Campus Students to join them for a fun and relaxing activity, where you can decorate and design a journal that is uniquely yours! Journals and decorating supplies will be provided. Please note that supplies are limited and will be provided on a first-come, first-served basis. We can't wait to see what you create!",
    "where": "Student Commons Lounge | One Market",
    "when": "4 to 6 p.m.",
@@ -10905,7 +10893,7 @@
      "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
     }
    ],
-   "date": "2026-09-07",
+   "date": "2026-09-08",
    "section": "Week of Sept. 7 to 12 (Brantford)",
    "anchor": "sept-7-brantford",
    "level": "undergraduate",
@@ -11538,6 +11526,114 @@
    "flags": []
   },
   {
+   "title": "Sunday, Sept. 6 - LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "Senate and Board Chambers | Above the Fresh Food Company (Dining Hall)",
+   "when": "10 a.m. to 6:30 p.m.",
+   "host": "LOCUS",
+   "cost": "",
+   "audience": null,
+   "links": [
+    {
+     "text": "LOCUS",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-06",
+   "section": "Week of Sept. 6 to 12 (Waterloo)",
+   "anchor": "sept-7-waterloo",
+   "level": "undergraduate",
+   "campus": "Waterloo",
+   "campuses": [
+    "Waterloo"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": "Off-campus (LOCUS)",
+   "source_file": "locus.html",
+   "section_info": {},
+   "section_links": [],
+   "page_links": [],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/locus.html#sept-7-waterloo",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
+   "title": "Sunday, Sept. 6 - Craft Corner",
+   "desc": "Join the LOCUS team for a variety of crafts while connecting with your Off-Campus Advisors, learning more about the LOCUS program, and meeting fellow first-year students.",
+   "where": "Senate and Board Chambers | Above the Fresh Food Company (Dining Hall)",
+   "when": "1 to 3 p.m.",
+   "host": "LOCUS",
+   "cost": "",
+   "audience": null,
+   "links": [
+    {
+     "text": "LOCUS",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-06",
+   "section": "Week of Sept. 6 to 12 (Waterloo)",
+   "anchor": "sept-7-waterloo",
+   "level": "undergraduate",
+   "campus": "Waterloo",
+   "campuses": [
+    "Waterloo"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": "Off-campus (LOCUS)",
+   "source_file": "locus.html",
+   "section_info": {},
+   "section_links": [],
+   "page_links": [],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/locus.html#sept-7-waterloo",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
+   "title": "Sunday, Sept. 6 - Game Zone",
+   "desc": "Join the LOCUS team for a variety of board games, lawn games, and Jackbox while connecting with your Off-Campus Advisors, learning more about the LOCUS program, and meeting fellow first-year students.",
+   "where": "Senate and Board Chambers | Above the Fresh Food Company (Dining Hall)",
+   "when": "4 to 6 p.m.",
+   "host": "LOCUS",
+   "cost": "",
+   "audience": null,
+   "links": [
+    {
+     "text": "LOCUS",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-06",
+   "section": "Week of Sept. 6 to 12 (Waterloo)",
+   "anchor": "sept-7-waterloo",
+   "level": "undergraduate",
+   "campus": "Waterloo",
+   "campuses": [
+    "Waterloo"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": "Off-campus (LOCUS)",
+   "source_file": "locus.html",
+   "section_info": {},
+   "section_links": [],
+   "page_links": [],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/locus.html#sept-7-waterloo",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
    "title": "Monday, Sept. 7 - LOCUS Orientation Hub",
    "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
    "where": "Senate and Board Chambers | Above the Fresh Food Company (Dining Hall)",
@@ -11552,7 +11648,7 @@
     }
    ],
    "date": "2026-09-07",
-   "section": "Week of Sept. 7 to 12 (Waterloo)",
+   "section": "Week of Sept. 6 to 12 (Waterloo)",
    "anchor": "sept-7-waterloo",
    "level": "undergraduate",
    "campus": "Waterloo",
@@ -11588,7 +11684,43 @@
     }
    ],
    "date": "2026-09-07",
-   "section": "Week of Sept. 7 to 12 (Waterloo)",
+   "section": "Week of Sept. 6 to 12 (Waterloo)",
+   "anchor": "sept-7-waterloo",
+   "level": "undergraduate",
+   "campus": "Waterloo",
+   "campuses": [
+    "Waterloo"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": "Off-campus (LOCUS)",
+   "source_file": "locus.html",
+   "section_info": {},
+   "section_links": [],
+   "page_links": [],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/locus.html#sept-7-waterloo",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
+   "title": "Tuesday, Sept. 8 - LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "2A01 Lobby | Arts Building and Senate and Board Chambers | Above the Fresh Food Company (Dining Hall)",
+   "when": "9 a.m. to 1:30 p.m. (Arts Building) and 2 to 6 p.m. (Senate and Board Chambers)",
+   "host": "LOCUS",
+   "cost": "",
+   "audience": null,
+   "links": [
+    {
+     "text": "LOCUS",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-08",
+   "section": "Week of Sept. 6 to 12 (Waterloo)",
    "anchor": "sept-7-waterloo",
    "level": "undergraduate",
    "campus": "Waterloo",
@@ -11624,7 +11756,43 @@
     }
    ],
    "date": "2026-09-08",
-   "section": "Week of Sept. 7 to 12 (Waterloo)",
+   "section": "Week of Sept. 6 to 12 (Waterloo)",
+   "anchor": "sept-7-waterloo",
+   "level": "undergraduate",
+   "campus": "Waterloo",
+   "campuses": [
+    "Waterloo"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": "Off-campus (LOCUS)",
+   "source_file": "locus.html",
+   "section_info": {},
+   "section_links": [],
+   "page_links": [],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/locus.html#sept-7-waterloo",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
+   "title": "Wednesday, Sept. 9 - LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "Senate and Board Chambers | Above the Fresh Food Company (Dining Hall)",
+   "when": "9:30 a.m. to 2:30 p.m.",
+   "host": "LOCUS",
+   "cost": "",
+   "audience": null,
+   "links": [
+    {
+     "text": "LOCUS",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-09",
+   "section": "Week of Sept. 6 to 12 (Waterloo)",
    "anchor": "sept-7-waterloo",
    "level": "undergraduate",
    "campus": "Waterloo",
@@ -11660,7 +11828,7 @@
     }
    ],
    "date": "2026-09-09",
-   "section": "Week of Sept. 7 to 12 (Waterloo)",
+   "section": "Week of Sept. 6 to 12 (Waterloo)",
    "anchor": "sept-7-waterloo",
    "level": "undergraduate",
    "campus": "Waterloo",
@@ -12644,6 +12812,53 @@
    "flags": []
   },
   {
+   "title": "LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "OM207-10 | One Market",
+   "when": "9 a.m. to 4 p.m.",
+   "host": "LOCUS",
+   "cost": "",
+   "audience": "Off-Campus First-Year Students",
+   "links": [
+    {
+     "text": "LOCUS",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-08",
+   "section": "Tuesday, Sept. 8 Events",
+   "anchor": "sept-8",
+   "level": "undergraduate",
+   "campus": "Brantford",
+   "campuses": [
+    "Brantford"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": null,
+   "source_file": "undergraduate__fall-brantford.html",
+   "section_info": {
+    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
+   },
+   "section_links": [],
+   "page_links": [
+    {
+     "text": "campus map",
+     "href": "https://map.concept3d.com/?id=638#!ct/11451,6789,51928?mc/43.473793,-80.527351?z/17?lvl/0"
+    },
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_dmTKuCt50hmm4LA"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-8",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
    "title": "International Students Welcome Breakfast",
    "desc": "Kick off your Laurier journey with good vibes and great food at our International Student Welcome Breakfast! Join us for a great morning with a free breakfast, friendly faces, and fun connections. You’ll get the chance to meet your fellow international students, connect with our awesome team, and finally say hi in person to your International Student Leader! It’s the perfect way to start your day - and your semester. Let us know you're coming! RSVP for Breakfast!",
    "where": "The Belmont Restaurant | One Market",
@@ -13290,8 +13505,8 @@
   },
   {
    "title": "Welcome to the Cheesy-est Club on Campus",
-   "desc": "Curious about cheese? Looking to meet fellow food lovers? Come visit the Laurier Brantford Cheese Enthusiast Club in OM207-1 and learn what we're all about! Stop by to chat with club members, discover upcoming events, and find out how you can get involved. We'll also have snacks, fun activities, and a giveaway for attendees (while supplies last). Whether you're a casual cheese fan or a true connoisseur, there's a place for you in the Laurier Brantford Cheese Enthusiast Club. We can't wait to meet you!",
-   "where": "OM207-1 | One Market",
+   "desc": "Curious about cheese? Looking to meet fellow food lovers? Come visit the Laurier Brantford Cheese Enthusiast Club in OM209 and learn what we're all about! Stop by to chat with club members, discover upcoming events, and find out how you can get involved. We'll also have snacks, fun activities, and a giveaway for attendees (while supplies last). Whether you're a casual cheese fan or a true connoisseur, there's a place for you in the Laurier Brantford Cheese Enthusiast Club. We can't wait to meet you!",
+   "where": "OM209 | One Market",
    "when": "4 to 6 p.m.",
    "host": "Laurier Brantford Cheese Enthusiast Club",
    "cost": "",
@@ -13530,6 +13745,53 @@
    "flags": []
   },
   {
+   "title": "LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "OM207-10 | One Market",
+   "when": "9 a.m. to 4 p.m.",
+   "host": "LOCUS",
+   "cost": "",
+   "audience": "Off-Campus First-Year Students",
+   "links": [
+    {
+     "text": "LOCUS",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-09",
+   "section": "Wednesday, Sept. 9 Events",
+   "anchor": "sept-9",
+   "level": "undergraduate",
+   "campus": "Brantford",
+   "campuses": [
+    "Brantford"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": null,
+   "source_file": "undergraduate__fall-brantford.html",
+   "section_info": {
+    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
+   },
+   "section_links": [],
+   "page_links": [
+    {
+     "text": "campus map",
+     "href": "https://map.concept3d.com/?id=638#!ct/11451,6789,51928?mc/43.473793,-80.527351?z/17?lvl/0"
+    },
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_dmTKuCt50hmm4LA"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-9",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
    "title": "I’ve Got Your Back! Building Community Care at Laurier",
    "desc": "Join award-winning public educator Julie S. Lalonde for a fast-paced and interactive presentation on how we can create a safer Laurier community through bystander intervention. Learn about the importance of consent and the toolkit of ways you can safely de-escalate and intervene sexual violence – IRL and online. Active participation could win you a prize!",
    "where": "Laurier Brantford YMCA (LBYMCA) Double Gym",
@@ -13716,7 +13978,7 @@
   {
    "title": "Intro to Origami",
    "desc": "Community and Connection Programming invites you to choose your own Orientation experience. Running alongside each other, these smaller-scale programs, hosted by campus partners and student groups, will offer a range of opportunities to connect and engage in ways that matter most to you. Whether you’re looking to meet people who share your interests, explore your identity, or join engaging conversations, this programming is designed to help you find your place. Each program will create a welcoming space to build connections with like-minded peers and communities across campus. Follow what sparks your curiosity, find your people, and start building your Laurier community, your way! Learn how to make origami with the Laurier Origami Club! There will be origami models of all levels, so come fold with us:)",
-   "where": "OM207-1 | One Market",
+   "where": "OM207-2 | One Market",
    "when": "5 to 6 p.m.",
    "host": "Laurier Origami Club",
    "cost": "",
@@ -14100,6 +14362,53 @@
    "flags": []
   },
   {
+   "title": "LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "OM207-10 | One Market",
+   "when": "9 a.m. to 4 p.m.",
+   "host": "LOCUS",
+   "cost": "",
+   "audience": "Off-Campus First-Year Students",
+   "links": [
+    {
+     "text": "LOCUS",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-10",
+   "section": "Thursday, Sept. 10 Events",
+   "anchor": "sept-10",
+   "level": "undergraduate",
+   "campus": "Brantford",
+   "campuses": [
+    "Brantford"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": null,
+   "source_file": "undergraduate__fall-brantford.html",
+   "section_info": {
+    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
+   },
+   "section_links": [],
+   "page_links": [
+    {
+     "text": "campus map",
+     "href": "https://map.concept3d.com/?id=638#!ct/11451,6789,51928?mc/43.473793,-80.527351?z/17?lvl/0"
+    },
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_dmTKuCt50hmm4LA"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-10",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
    "title": "World Suicide Awareness Day",
    "desc": "",
    "where": "Harmony Square",
@@ -14374,6 +14683,53 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-10",
    "tags": [],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
+   "title": "LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "OM207-10 | One Market",
+   "when": "9 a.m. to 4 p.m.",
+   "host": "LOCUS",
+   "cost": "",
+   "audience": "Off-Campus First-Year Students",
+   "links": [
+    {
+     "text": "LOCUS",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-11",
+   "section": "Friday, Sept. 11 Events",
+   "anchor": "sept-11",
+   "level": "undergraduate",
+   "campus": "Brantford",
+   "campuses": [
+    "Brantford"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": null,
+   "source_file": "undergraduate__fall-brantford.html",
+   "section_info": {
+    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
+   },
+   "section_links": [],
+   "page_links": [
+    {
+     "text": "campus map",
+     "href": "https://map.concept3d.com/?id=638#!ct/11451,6789,51928?mc/43.473793,-80.527351?z/17?lvl/0"
+    },
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_dmTKuCt50hmm4LA"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-11",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -16258,9 +16614,7 @@
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-waterloo.html",
-   "section_info": {
-    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
-   },
+   "section_info": {},
    "section_links": [],
    "page_links": [
     {
@@ -16309,9 +16663,7 @@
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-waterloo.html",
-   "section_info": {
-    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
-   },
+   "section_info": {},
    "section_links": [],
    "page_links": [
     {
@@ -16360,9 +16712,7 @@
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-waterloo.html",
-   "section_info": {
-    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
-   },
+   "section_info": {},
    "section_links": [],
    "page_links": [
     {
@@ -16409,9 +16759,7 @@
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-waterloo.html",
-   "section_info": {
-    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
-   },
+   "section_info": {},
    "section_links": [],
    "page_links": [
     {
@@ -16454,9 +16802,7 @@
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-waterloo.html",
-   "section_info": {
-    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
-   },
+   "section_info": {},
    "section_links": [],
    "page_links": [
     {
@@ -16501,9 +16847,7 @@
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-waterloo.html",
-   "section_info": {
-    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
-   },
+   "section_info": {},
    "section_links": [],
    "page_links": [
     {
@@ -16548,9 +16892,7 @@
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-waterloo.html",
-   "section_info": {
-    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
-   },
+   "section_info": {},
    "section_links": [],
    "page_links": [
     {
@@ -16617,6 +16959,53 @@
    "flags": [
     "no-time"
    ]
+  },
+  {
+   "title": "LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "Senate and Board Chambers | Above the Fresh Food Company (Dining Hall)",
+   "when": "10 a.m. to 6:30 p.m.",
+   "host": "LOCUS Program",
+   "cost": "",
+   "audience": "Off-Campus First-Year Students",
+   "links": [
+    {
+     "text": "LOCUSProgram",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-06",
+   "section": "Sunday, Sept. 6 Events",
+   "anchor": "sept-6",
+   "level": "undergraduate",
+   "campus": "Waterloo",
+   "campuses": [
+    "Waterloo"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": null,
+   "source_file": "undergraduate__fall-waterloo.html",
+   "section_info": {
+    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
+   },
+   "section_links": [],
+   "page_links": [
+    {
+     "text": "campus map",
+     "href": "https://map.concept3d.com/?id=638#!ct/6784,21459,6789,6779,6787,6781,6785,6783,13903,11451?lvl/0?mc/43.471981304351694,-80.52772310661601?z/17"
+    },
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_dmTKuCt50hmm4LA"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-6",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
   },
   {
    "title": "We Brought What You Forgot",
@@ -17897,6 +18286,53 @@
    "flags": []
   },
   {
+   "title": "LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "Morning - 2A01 Lobby | Arts Building and Afternoon - Senate and Board Chambers | Above the Fresh Food Company (Dining Hall)",
+   "when": "9 a.m. to 1:30 p.m. and 2 to 6 p.m.",
+   "host": "LOCUS Program",
+   "cost": "",
+   "audience": "Off-Campus First-Year Students",
+   "links": [
+    {
+     "text": "LOCUSProgram",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-08",
+   "section": "Tuesday, Sept. 8 Events",
+   "anchor": "sept-8",
+   "level": "undergraduate",
+   "campus": "Waterloo",
+   "campuses": [
+    "Waterloo"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": null,
+   "source_file": "undergraduate__fall-waterloo.html",
+   "section_info": {
+    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
+   },
+   "section_links": [],
+   "page_links": [
+    {
+     "text": "campus map",
+     "href": "https://map.concept3d.com/?id=638#!ct/6784,21459,6789,6779,6787,6781,6785,6783,13903,11451?lvl/0?mc/43.471981304351694,-80.52772310661601?z/17"
+    },
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_dmTKuCt50hmm4LA"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-8",
+   "tags": [
+    "Off-campus (LOCUS)"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
    "title": "Lazaridis School New Student Welcome Reception",
    "desc": "Start your Lazaridis experience by connecting with programs, departments, clubs, services, faculty, and fellow students at an interactive open house-style reception. Enjoy snacks and refreshments, meet upper-year students and Instructional Assistants, participate in a fun engagement activity for a chance to win Lazaridis prize packs, and capture the moment at the Lazaridis photo station. Following the reception, students will gather for a faculty welcome featuring the Dean, Associate Dean(s), and key first-year instructors. Learn about opportunities available through the Lazaridis School, hear advice and personal reflections from faculty members, and discover what you can look forward to in your first year.",
    "where": "Lazaridis Hall Atrium (Reception) and LH1001 (Welcome Remarks)",
@@ -19119,6 +19555,53 @@
    "tags": [
     "Exchange",
     "International"
+   ],
+   "open_to_all": false,
+   "flags": []
+  },
+  {
+   "title": "LOCUS Orientation Hub",
+   "desc": "Looking for a place to hang out between Orientation events? Stop by the LOCUS Orientation Hub! This is a dedicated space for off-campus first-year students to relax, recharge, and meet new people throughout the day. The LOCUS Orientation Hub will be open throughout Orientation, offering casual activities, games, and opportunities to connect with fellow students and your upper-year Off-Campus Advisors (OCAs).",
+   "where": "Senate and Board Chambers | Above the Fresh Food Company (Dining Hall)",
+   "when": "9:32 a.m. to 6:30 p.m.",
+   "host": "LOCUS Program",
+   "cost": "",
+   "audience": "Off-Campus First-Year Students",
+   "links": [
+    {
+     "text": "LOCUSProgram",
+     "href": "https://students.wlu.ca/campus-services/residence-and-off-campus-housing/off-campus-initiatives/locus/index.html"
+    }
+   ],
+   "date": "2026-09-09",
+   "section": "Wednesday, Sept. 9 Events",
+   "anchor": "sept-9",
+   "level": "undergraduate",
+   "campus": "Waterloo",
+   "campuses": [
+    "Waterloo"
+   ],
+   "virtual": false,
+   "term": "Fall 2026",
+   "stream": null,
+   "source_file": "undergraduate__fall-waterloo.html",
+   "section_info": {
+    "Note": "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
+   },
+   "section_links": [],
+   "page_links": [
+    {
+     "text": "campus map",
+     "href": "https://map.concept3d.com/?id=638#!ct/6784,21459,6789,6779,6787,6781,6785,6783,13903,11451?lvl/0?mc/43.471981304351694,-80.52772310661601?z/17"
+    },
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_dmTKuCt50hmm4LA"
+    }
+   ],
+   "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-9",
+   "tags": [
+    "Off-campus (LOCUS)"
    ],
    "open_to_all": false,
    "flags": []
@@ -20932,7 +21415,7 @@
    "title": "Golden Hawks Football vs. Ottawa Gee-Gees in support of Shinerama",
    "desc": "Get ready to cheer on the Golden Hawks as they take on the Ottawa Gee-Gees in an exciting matchup you won't want to miss! BONUS: New Laurier students get into the game free of charge by showing their Orientation Wristband at the East Gate! So come on out, wear your purple and gold, and be part of the electric atmosphere at University Stadium. Join fellow students, alumni, and community members as we fill the stands and celebrate what it means to be a Golden Hawk. Whether you're a dedicated football fan or simply looking for a fun way to connect with friends and classmates, this game is a great opportunity to experience one of Laurier's favourite traditions. While you're at the game, be sure to visit the Shinerama table! The Laurier Students' Union will be at the University Stadium with a donation booth and free airbrush art, all in support of Cystic Fibrosis Canada, Canada's largest post-secondary fundraising movement for CF research and care. Stop by to learn more, donate, and get free airbrush art while showing your support for a cause that makes a difference. Bring your friends, your energy, and your Golden Hawk spirit as we cheer on the home team and support Shinerama together! ENTRANCE DETAILS. New Laurier undergraduate students get free entry to the game by showing their Orientation Wristband. Entry with an Orientation Wristband is only permitted through the East Gate. The East Gate is located towards the end zone closest to Albert St.",
    "where": "University Stadium",
-   "when": "1 p.m. Kickoff",
+   "when": "1 p.m. Kickoff, gates open at noon",
    "host": "Athletics and Recreation",
    "cost": "",
    "audience": null,

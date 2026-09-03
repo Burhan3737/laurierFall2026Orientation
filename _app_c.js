@@ -141,6 +141,111 @@ function dupKey(e) {
   function fold(s) { return String(s || "").replace(/\s+/g, " ").trim().toLowerCase(); }
   return [stripDay(e.t), e.d || "", fold(e.n), fold(e.w)].join(" § ");
 }
+/* ---- one event, however many times Laurier published it -----------------
+   Laurier puts many of these events on more than one of its schedule pages, and
+   a few of them twice on the same page. Listings that agree on title, day, time
+   and venue are one event, so the board shows the event once and its detail
+   names every page it came from. Nothing is dropped; it is merged.
+
+   The listings are not typed identically. One may state the audience, name the
+   host, or carry a link the other leaves out, so which one gets shown matters
+   (see listingRank below), and the links of all of them are joined. Every value
+   on the card still comes from one of Laurier's own listings; nothing is
+   combined into a sentence Laurier never wrote.
+
+   A listing the student cannot attend must never stand in for one they can.
+   Laurier publishes Lane Swim on the undergraduate schedule and again on the
+   Bachelor of Education one; with "show what you cannot attend" turned on, taking
+   whichever listing carried the most detail put "Bachelor of Education students
+   only" against a swim an undergraduate can walk into. An attendable listing
+   wins first, and only then the fuller one.
+
+   Which listings are the same event is a fact about Laurier's pages, not a
+   presentation choice, so this is one implementation shared by every variant. */
+function publishedDetail(e) {
+  return String(e.x || "").length + String(e.a || "").length + String(e.h || "").length +
+         String(e.c || "").length + JSON.stringify(e.si || {}).length +
+         (e.l || []).map(function (l) { return l.href; }).join("").length;
+}
+function attendable(e) { return assess(e).ok; }
+/* Which of Laurier's listings of one event should be the one on the board.
+   Attendable beats not attendable. Then the listing published on the schedule
+   for the student's own level beats one lifted from another level's page,
+   because its "Schedule" line and its citation are the ones that get read: an
+   undergraduate should not be told their event is on the Bachelor of Education
+   schedule when Laurier also published it on theirs. */
+function listingRank(e) {
+  return (attendable(e) ? 2 : 0) + (sel && e.lv === sel.level ? 1 : 0);
+}
+function onePerEvent(list) {
+  var best = {}, order = [];
+  list.forEach(function (e) {
+    var k = dupKey(e);
+    if (!(k in best)) { best[k] = e; order.push(k); return; }
+    var mine = listingRank(e), theirs = listingRank(best[k]);
+    if (mine !== theirs) { if (mine > theirs) best[k] = e; return; }
+    if (publishedDetail(e) > publishedDetail(best[k])) best[k] = e;
+  });
+  return order.map(function (k) { return best[k]; });
+}
+function copiesIn(list, e) {
+  var k = dupKey(e), out = [];
+  (list || []).forEach(function (o) { if (dupKey(o) === k) out.push(o); });
+  return out.length ? out : [e];
+}
+function sourcesOf(e) { return copiesIn(sourcePool(), e); }
+/* Which of Laurier's thirteen schedules something came from. */
+var SRCTITLE = {};
+(META.sources || []).forEach(function (x) {
+  var t = String(x.title || "");
+  var i = t.indexOf(":");
+  SRCTITLE[x.url] = i >= 0 ? t.slice(i + 1).trim() : t;
+});
+function sourceTitle(e) {
+  return SRCTITLE[String(e.u || "").split("#")[0]] || "a Laurier schedule";
+}
+/* Every link Laurier attached to any listing of this event — its own, its
+   section's and its page's, in that order. A link that sits on one listing and
+   not the other is a link the student would lose if only one were read.
+
+   For a single listing this is the incumbent's assembly unchanged, repeated
+   hrefs and all. Laurier gives one LOCUS page two different labels on the same
+   event ("LOCUS Links" and "learn more about each link by clicking here"), so
+   collapsing by address there would drop a label, not a duplicate. Only across
+   listings is a repeated address actually a repeat. */
+function allLinksOf(e, copies) {
+  var links = (e.l || []).slice();
+  function add(l, from) {
+    if (links.some(function (x) { return x.href === l.href; })) return;
+    /* Two of Laurier's schedules each carry a "Register Now!" banner, pointing
+       at two different forms. Brought onto one card they were two buttons with
+       one word between them, and one of them was the wrong level's registration
+       — the defect an earlier round fixed in the parser, returning by another
+       door. A link carried in from another listing names the schedule it came
+       from whenever its label is already taken. */
+    var taken = links.some(function (x) {
+      return String(x.text || "").toLowerCase() === String(l.text || "").toLowerCase();
+    });
+    links.push(taken && from
+      ? { href: l.href, text: l.text + " (on Laurier's " + from + ")" }
+      : l);
+  }
+  (e.sl || []).concat(e.pl || []).forEach(function (l) { add(l, ""); });
+  (copies || []).forEach(function (o) {
+    if (o === e) return;
+    (o.l || []).concat(o.sl || [], o.pl || []).forEach(function (l) { add(l, sourceTitle(o)); });
+  });
+  return links;
+}
+/* What to tell a student who may attend this. Laurier's own words whenever it
+   states an audience, because that is the most accurate thing anyone has.
+   Failing that: open to every Laurier student, or open to you — which means it
+   matches the level, campus, term and streams you gave, not that everyone may
+   come. Saying "open to all" of an event Laurier restricts to undergraduates
+   would be the page inventing a permission. */
+function audienceLine(e) {
+  return e.a || (e.oa ? "Open to all Laurier students" : "Open to you");
+}
 function esc(s) {
   return String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -153,8 +258,11 @@ var built = false;          /* has the document been generated */
 /* Keyed on the event itself, not its position in EV: a shared or bookmarked
    plan must survive events.json being rebuilt. */
 var picks = {};             /* stable key -> true */
+/* Hashed from dupKey, so ticking an event ticks the event and not one of
+   Laurier's listings of it. It used to fold the citation URL in as well, which
+   made the two pages Laurier publishes one session on two separate picks. */
 function keyOf(e) {
-  var raw = [stripDay(e.t), e.d || "", e.n || "", e.u].join("|");
+  var raw = dupKey(e);
   var h = 5381;
   for (var i = 0; i < raw.length; i++) h = ((h * 33) ^ raw.charCodeAt(i)) >>> 0;
   return h.toString(36);
@@ -245,9 +353,13 @@ function livePrograms(s) {
   pool(s).forEach(function (e) { if (e.pg && names.indexOf(e.pg) === -1) names.push(e.pg); });
   return names.sort();
 }
+/* The number promised on the cover and the number of entries in the document
+   have to be the same number. Counting listings while the document wrote out
+   events had the button say 91 over a board of 89 — the first figure a student
+   reads, on the page whose whole claim is fidelity to what Laurier published. */
 function countExact(pick) {
   var prev = sel; sel = pick;
-  var n = EV.filter(function (e) { return assess(e).ok; }).length;
+  var n = onePerEvent(EV.filter(function (e) { return assess(e).ok; })).length;
   sel = prev; return n;
 }
 function settle(s) {
@@ -424,8 +536,22 @@ function reopen() {
 }
 
 /* ---- the document ------------------------------------------------------- */
+var SRCPOOL = null, SRCPOOLKEY = null;
+function sourcePoolKey() {
+  return [sel.level, sel.campus, sel.term, sel.streams.join(","), sel.program].join("|");
+}
+/* Every listing this student may attend, before duplicates are folded, so each
+   entry can cite every Laurier page it was published on. */
+function sourcePool() {
+  var k = sourcePoolKey();
+  if (SRCPOOLKEY !== k) {
+    SRCPOOLKEY = k;
+    SRCPOOL = EV.filter(function (e) { return assess(e).ok; });
+  }
+  return SRCPOOL;
+}
 function mine() {
-  return EV.filter(function (e) { return assess(e).ok; });
+  return onePerEvent(sourcePool());
 }
 function dayKeys(list) {
   var seen = {}, out = [];
@@ -496,30 +622,6 @@ function clashesWith(e) {
   return clashSet(e, Object.keys(picks).map(function (i) { return BYKEY[i]; }));
 }
 
-/* Laurier publishes some events on more than one schedule page, and a few twice
-   on the same page. Nothing is dropped -- the incumbent reproduces every copy
-   and six audit rounds decided that was right -- but the repeat is named. */
-var DUP = {};
-function markDups(list) {
-  DUP = {};
-  var g = {};
-  list.forEach(function (e) {
-    var k = dupKey(e);
-    (g[k] = g[k] || []).push(e);
-  });
-  Object.keys(g).forEach(function (k) {
-    var arr = g[k];
-    if (arr.length < 2) return;
-    arr.forEach(function (e, i) {
-      DUP[e.__i] = { n: arr.length, i: i + 1,
-        // copies Laurier publishes at the same URL are one event to the plan
-        shared: arr.filter(function (o) { return o !== e && keyOf(o) === keyOf(e); }).length,
-        others: arr.filter(function (o) { return o !== e; })
-                   .map(function (o) { return o.s || "another section"; }) };
-    });
-  });
-}
-
 /* Laurier gives several events the same description word for word. Printed in
    full under each of them it is two phone screens of the same prose; the second
    and later copies point at the first instead. */
@@ -553,7 +655,7 @@ function entryHtml(e, full) {
   // venue, host and "part of" are already set in the entry itself; repeating them
   // 91 times in a table underneath is what made this document twice as long as it
   // needed to be.
-  row("Audience", esc(e.a));
+  row("Audience", esc(audienceLine(e)));
   row("Cost", esc(e.c));
   row("Stream", (e.tg || []).length ? esc((e.tg || []).join(", ")) : "");
   if (e.s && /Program and Faculty Welcomes/i.test(e.s))
@@ -568,10 +670,9 @@ function entryHtml(e, full) {
     row(k, esc(e.si[k]));
   });
 
-  var links = (e.l || []).slice();
-  (e.sl || []).concat(e.pl || []).forEach(function (l) {
-    if (!links.some(function (x) { return x.href === l.href; })) links.push(l);
-  });
+  // every page this event was published on, and every link any of them carries
+  var src = sourcesOf(e);
+  var links = allLinksOf(e, src);
   // a campus map is the same campus map every time; it is carried once, above
   links = links.filter(function (l) { return !(GLOBAL_LINK[l.href] && GLOBAL_LINK[l.href] > 3); });
   var PRIMARY = /regist|rsvp|sign ?up|ticket|book now|purchase/i;
@@ -604,20 +705,12 @@ function entryHtml(e, full) {
     "</div>";
 
   if (!full) {
-    return '<article class="entry brief' + (on ? " picked" : "") + '" data-ev-title="' + esc(e.t) +
+    return '<article class="entry brief' + (on ? " picked" : "") + '" data-ev-title="' + esc(title(e)) +
       '" data-id="' + e.__i + '">' + head +
       '<div class="ebody">' +
         '<p class="briefline"><span class="btime">' + timeLine + "</span> " + esc(title(e)) +
           (e.vr ? ' <span class="online">Online</span>' : "") +
-          (DUP[e.__i] ? '<span class="dup">' +
-            (DUP[e.__i].n === 2 ? "listed twice" : "listed " + DUP[e.__i].n + " times") + "</span>" : "") +
         "</p>" +
-        /* Two identical lines in a row read as a rendering fault unless the page
-           says otherwise. The long version of this is in the full entry; the
-           brief one still has to account for itself. */
-        (DUP[e.__i] ? '<p class="dupbrief">Copy ' + DUP[e.__i].i + " of " + DUP[e.__i].n +
-          ". Laurier publishes it once under " + esc(e.s || "an unnamed section") +
-          " and again under " + esc(DUP[e.__i].others.join("; ")) + "; both are kept.</p>" : "") +
         '<p class="ewhere">' + esc(e.w || "Venue not published") +
           (e.h ? ' <span class="edot">\u00b7</span> ' + esc(e.h) : "") + "</p>" +
         (function () {
@@ -630,20 +723,19 @@ function entryHtml(e, full) {
   }
 
   return '<article class="entry' + (on ? " picked" : "") + '" id="ev-' + e.__i +
-      '" data-ev-title="' + esc(e.t) + '" data-id="' + e.__i + '">' + head +
+      '" data-ev-title="' + esc(title(e)) + '" data-id="' + e.__i + '">' + head +
     '<div class="ebody">' +
       '<p class="' + timeCls + '">' + timeLine + (e.vr ? ' <span class="online">Online</span>' : "") + "</p>" +
       "<h4>" + esc(title(e)) + "</h4>" +
       '<p class="ewhere">' + esc(e.w || "Venue not published") +
         (e.h ? ' <span class="edot">\u00b7</span> ' + esc(e.h) : "") + "</p>" +
       (e.pt ? '<p class="epart">Part of ' + esc(e.pt) + "</p>" : "") +
-      (DUP[e.__i] ? '<p class="dupnote"><b>Laurier lists this ' + DUP[e.__i].n + " times</b> with " +
-        "the same day, time and venue. This is copy " + DUP[e.__i].i + ", under " +
-        esc(e.s || "an unnamed section") + "; the other" + (DUP[e.__i].n > 2 ? "s are" : " is") +
-        " under " + esc(DUP[e.__i].others.join("; ")) + ". Nothing is hidden here \u2014 this " +
-        "document reproduces Laurier’s pages exactly as published." +
-        (DUP[e.__i].shared ? " Laurier gives these copies the same page and anchor, so ticking " +
-          "one ticks them all and your plan counts the event once." : "") + "</p>" : "") +
+      /* Laurier publishes the same event on several of its schedule pages. It is
+         one event and it is written out once; every page it came from is cited
+         at the foot of the entry. */
+      (src.length > 1 ? '<p class="dupnote">Laurier publishes this on <b>' + src.length +
+        " of its schedule pages</b>. It is one event, written out once " + DASH +
+        " every page it appears on is cited below.</p>" : "") +
       (a.reason ? '<p class="eopen">' + esc(a.reason) + "</p>" : "") +
       (function () {
         var n = clashesInSchedule(e);
@@ -669,8 +761,10 @@ function entryHtml(e, full) {
         })() : "") +
       '<dl class="efacts">' + facts + "</dl>" +
       linkHtml + flagHtml +
-      '<p class="ecite">Laurier, <a href="' + esc(e.u) + '" target="_blank" rel="noopener">' +
-      esc(citeLabel(e.u)) + "</a></p>" +
+      '<p class="ecite">Laurier, ' + src.map(function (o) {
+        return '<a href="' + esc(o.u) + '" target="_blank" rel="noopener">' +
+          esc(citeLabel(o.u)) + "</a>";
+      }).join('<span class="citesep">&middot;</span>') + "</p>" +
     "</div></article>";
 }
 
@@ -698,11 +792,12 @@ function sharedId(k, v) { return k + " § " + v; }
 
 function drawDoc() {
   var list = mine();
-  markDups(list);
   findShared(list);
   PROSE = {};
   SCHED = list;
-  findGlobalLinks(list);
+  /* Counted over every listing, not only the ones drawn: a link Laurier attached
+     to just one of the two pages an event sits on is still a link to keep. */
+  findGlobalLinks(sourcePool());
   var shown = onlyPicks ? list.filter(function (e) { return picks[keyOf(e)]; }) : list;
   var keys = dayKeys(shown);
   // The day a student is most likely to want is open in full; the rest are
@@ -736,8 +831,9 @@ function drawDoc() {
           ? ", every one written out in full " + DASH + " nothing to unfold."
           : ", listed by title. One day is open in full; open any other from its heading, " +
             "or turn on Full text below.") +
-        " Read from Laurier" + APOS + "s own schedule pages on 31 Aug 2026, including the " +
-        "collapsed accordion panels.</p>"
+        " Read from Laurier" + APOS + "s own schedule pages on 31 Aug 2026, including " +
+        "the venue, host and registration detail Laurier keeps hidden until you open " +
+        "an event.</p>"
       : '<p class="docsum">Laurier publishes <b>no schedule at all</b> for this combination. ' +
         "Change an answer below and the document rebuilds.</p>") +
     (Object.keys(GLOBAL_LINK).length
@@ -1086,7 +1182,7 @@ function buildNotes() {
   if (noTime || noVenue) {
     notes.push(["Events without a usable time or venue",
       noTime + " events have no usable time and " + noVenue + " no usable venue. This counts " +
-      "Laurier's own “TBD” placeholders, not just blank fields."]);
+      "Laurier's own “TBD” placeholders, not only the ones it leaves empty."]);
   }
   var winter = EV.filter(function (e) { return e.tm === "Winter 2027"; });
   if (winter.length && winter.every(function (e) { return !e.d; })) {
@@ -1165,7 +1261,8 @@ function readHash() {
 }
 
 /* ---- go ----------------------------------------------------------------- */
-EV.forEach(function (e, i) { e.__i = i; BYKEY[keyOf(e)] = e; });
+EV.forEach(function (e, i) { e.__i = i; });
+onePerEvent(EV).forEach(function (e) { BYKEY[keyOf(e)] = e; });
 var resumed = readHash();
 buildNotes();
 if (resumed) {

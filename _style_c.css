@@ -373,16 +373,12 @@ ol{margin:0;padding:0;list-style:none}
 }
 
 /* ---- Laurier's own repeats, named rather than hidden ------------------- */
-.dup{
-  display:inline-block;font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--gold-d);border:1px solid #E2C98F;background:#FFF8E8;
-  padding:0 5px;margin-top:5px;
-}
 .dupnote{
   margin-top:11px;font-family:var(--sans);font-size:13.5px;line-height:1.5;color:#5C4B1F;
   background:#FFF8E8;border-left:3px solid var(--gold);padding:8px 12px;
 }
 .dupnote b{color:var(--gold-d)}
+.citesep{margin:0 6px;color:var(--meta)}
 
 @media print{ .dayfull,.planhint{display:none} }
 
@@ -418,7 +414,6 @@ ol{margin:0;padding:0;list-style:none}
 .entry.brief .egut{padding-top:2px}
 .entry.brief .tick{font-size:11px;gap:6px}
 .entry.brief .tbox{width:15px;height:15px}
-.entry.brief .dup{margin:0 0 0 8px}
 
 .dayfull.on{border-bottom-color:var(--purple)}
 .lk.primary{background:var(--gold);color:#2A1B00}
@@ -620,7 +615,3 @@ ol{margin:0;padding:0;list-style:none}
 /* the plan bar is fixed over the foot of the page, so a jump target that lands
    under it lands out of sight */
 html{scroll-padding-bottom:96px}
-.dupbrief{
-  margin-top:3px;font-family:var(--sans);font-size:12.5px;line-height:1.45;color:var(--meta);
-  border-left:2px solid var(--gold);padding-left:9px;max-width:58ch;
-}

@@ -284,6 +284,8 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   line-height:1.6;color:var(--meta);word-wrap:break-word}
 .cite strong{color:var(--ink);letter-spacing:.1em;text-transform:uppercase;font-size:10.5px}
 .cite a{color:var(--purple)}
+.citeone{display:block;margin:5px 0 7px}
+.citeone em{display:block;font-style:normal;color:var(--ink);font-size:11px}
 
 /* ---- tail sections ----------------------------------------------------- */
 .tail{border-top:1px solid var(--line);background:var(--field);padding:38px 0}
@@ -291,13 +293,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .tailin{max-width:1440px;margin:0 auto;padding:0 26px}
 .tail h2{font-size:22px;font-weight:800;font-stretch:86%;color:var(--purple)}
 .tail .lede{margin-top:8px;font-size:14px;color:var(--meta);max-width:78ch}
-.notelist{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:0}
-.notelist li{display:flex;gap:16px;padding:14px 0;border-top:1px solid var(--line)}
-.notelist b{
-  font-size:11px;font-weight:700;color:var(--gold-d);letter-spacing:.08em;padding-top:3px;flex:0 0 auto;
-}
-.notelist strong{display:block;font-size:14.5px;font-weight:700}
-.notelist p{margin-top:4px;font-size:13.5px;color:var(--meta);max-width:82ch}
 .srcgrid{margin-top:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0 26px}
 .src{padding:11px 0;border-top:1px solid var(--line);font-size:12.5px;min-width:0}
 .src b{display:block;font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--purple)}
@@ -394,10 +389,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .ag.off .agb h4{font-weight:500;color:var(--meta)}
 
 /* ---- Laurier's own repeats, named rather than hidden ------------------- */
-.dup{
-  align-self:flex-start;font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--gold-d);border:1px solid #E2C98F;background:#FFF8E8;padding:0 4px;margin-top:3px;
-}
 .dupnote{
   margin-top:12px;font-size:12.5px;line-height:1.5;color:#5C4B1F;background:#FFF8E8;
   border-left:4px solid var(--gold);padding:9px 12px;
@@ -500,7 +491,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 }
 .wb.open{background:var(--lilac)}
 .wb.clash{border-top-color:var(--gold)}
-.wb.wdup{box-shadow:inset -3px 0 0 var(--gold)}
 .wb.off{background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
 .wb.off .wbl{color:var(--meta)}
 .wb:hover{outline:2px solid var(--ink);outline-offset:0;z-index:4}
@@ -680,17 +670,16 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   display:flex;align-items:center;justify-content:center;
   background:var(--gold);color:#2A1B00;font-size:10px;font-weight:800;
 }
-/* Gold already means two things on the clock — .blk.clash borrows the left edge
-   and .wb.wdup the right — so a ticked event does not take a third edge and
-   muddle them. On the clock and the run it is the corner tick and a rule the
-   other markers do not use; where gold carries nothing (the agenda, the chips,
-   the drop-in ribbons) the reading edge is free and is used. */
+/* Gold already means overlap on the clock — .blk.clash borrows the left edge —
+   so a ticked event does not take the same edge and muddle the two. On the clock
+   and the run it is the corner tick and a rule the other markers do not use;
+   where gold carries nothing (the agenda, the chips, the drop-in ribbons) the
+   reading edge is free and is used. */
 .chipev.mine{box-shadow:inset 3px 0 0 var(--gold)}
 /* the agenda row has no left gutter, so the rail is hung outside it rather than
    laid over the first three pixels of the clock */
 .ag.mine{box-shadow:inset 3px 0 0 var(--gold);padding-left:9px;margin-left:-9px}
 .rib.mine{border-left-color:var(--gold)}
-/* an ::after rather than a box-shadow, which .wb.wdup already owns */
 .wb.mine::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;
   background:var(--gold)}
 .clrow.mine .clopt{border-left-color:var(--gold)}
@@ -908,6 +897,59 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
     letter-spacing:.04em;border-bottom:1.5pt solid #000;padding-bottom:2pt;color:#000;
     break-after:avoid;
   }
+
+  /* ---- the day, drawn on the clock ------------------------------------
+     Every rule here is a line weight or a shade of grey: the sheet has to read
+     the same out of a mono laser as it does on screen, so nothing distinguishes
+     one box from another by colour. */
+  .prcal{
+    position:relative;margin:7pt 0 9pt;break-inside:avoid;break-before:avoid;
+    border-left:.5pt solid #000;
+  }
+  .prgap{
+    position:absolute;left:34pt;right:0;background:#F0F0F0;
+    border-top:.4pt dotted #777;border-bottom:.4pt dotted #777;
+  }
+  .prgap span{
+    position:absolute;left:5pt;top:2.5pt;font-size:6.6pt;font-style:italic;color:#444;
+  }
+  .prhr{position:absolute;left:0;right:0;border-top:.4pt solid #B4B4B4}
+  .prhr span{
+    position:absolute;left:1pt;top:1pt;font-size:6.8pt;font-weight:700;
+    letter-spacing:.03em;color:#444;background:#fff;padding-right:2pt;
+  }
+  .prslots{position:absolute;left:34pt;right:0;top:0;bottom:0}
+  .prslot{
+    position:absolute;border:.5pt solid #000;border-left:2pt solid #000;
+    background:#fff;padding:1.2pt 2.5pt;overflow:hidden;line-height:1.15;
+  }
+  .prslot .prno{
+    display:inline-block;min-width:8pt;margin-right:3pt;font-size:7pt;
+    font-weight:800;color:#000;
+  }
+  .prslott{font-size:6.6pt;font-weight:700;color:#333;letter-spacing:.01em}
+  .prslotn{display:block;font-size:7.4pt;font-weight:700;color:#000;margin-top:.5pt}
+  /* a ticked event earns the only heavy edge on the page */
+  .prslot.prmine{border-left-width:4pt}
+  .prwhy{
+    margin:6pt 0 4pt;font-size:8.5pt;line-height:1.4;color:#000;
+    border-left:2pt solid #000;padding-left:6pt;
+  }
+  .prdaycite{
+    margin:3pt 0 0;font-size:7.5pt;color:#444;line-height:1.3;word-break:break-all;
+    break-after:avoid;
+  }
+  .prallday,.prloose{margin:5pt 0 0;font-size:8.5pt;color:#000;line-height:1.5}
+  .prallday{break-after:avoid}
+  .prallday b,.prloose b{
+    text-transform:uppercase;letter-spacing:.08em;font-size:7.5pt;margin-right:5pt;
+  }
+  .prallday span,.prloose span{margin-right:9pt;white-space:nowrap}
+  .prdetail{margin-top:7pt;border-top:.5pt solid #000}
+  .prev .prt .prno{
+    display:inline-block;min-width:11pt;border:.7pt solid #000;text-align:center;
+    font-weight:800;font-size:8pt;margin-right:3pt;
+  }
   .prev{
     display:grid;grid-template-columns:80pt 1fr;gap:0 10pt;
     padding:5pt 0;border-bottom:.4pt solid #999;break-inside:avoid;
@@ -935,5 +977,3 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   }
 }
 
-/* a duplicate must explain itself on paper too */
-.prdup{font-style:italic;font-weight:400}

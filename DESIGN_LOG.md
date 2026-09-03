@@ -848,3 +848,246 @@ duplicate makes the variant render fewer events than the page it must match —
 "a variant that quietly drops or adds events is a failed variant, however good it
 looks." The complaint underneath it is fair, and both pages now answer it in
 words instead: A tags the pair and C explains it in brief as well as in full.
+
+---
+
+## Round 5 — six corrections from the person who has to use it
+
+Six changes, applied to the main page (`_app_a.js` / `_body_a.html` / `_style_a.css`)
+and to A-plus, and to B and C wherever the change is a fact about the data rather
+than a way of showing it.
+
+### 1. The "where this data disagrees with itself" section is gone
+
+Laurier is the source of truth. Cataloguing our disagreements with it is a note to
+ourselves, printed where a student is looking for a room number. The section, its
+list and `buildNotes()` — 3,200 characters of it — are out of main and A-plus,
+along with the `.notelist` rules that dressed it. B and C keep theirs: the change
+named two files, and C's is framed as "before you rely on this", which is a
+different sentence from ours.
+
+### 2. One event, however many times Laurier published it
+
+Laurier puts the same session on two or three of its schedule pages. The board used
+to draw it twice with a "listed twice" badge, which is the page explaining its own
+plumbing. It now draws the event **once**, and the detail names every page it came
+from, with each address written out.
+
+Three things had to be got right, and only one of them was obvious.
+
+**Which listings are the same event** is `dupKey` — title with any day prefix
+stripped, date, published time, venue, the free-text parts case- and
+whitespace-folded. That was already shared by all four scripts and did not need to
+change: it already keeps Lane Swim's 7:30am, noon and 8pm runs apart on 9 Sept,
+Open Climbing's two sittings on 11 Sept, and — the one a previous round got wrong —
+the two Get Involved Fairs at 11am on 11 Sept, which share an hour but sit in the
+Quad and outside the Athletic Complex under different hosts.
+
+**Which listing gets shown**, though, is not free. Laurier does not retype the two
+copies identically: one states "First-Year Off-Campus Students Only" and the other
+says nothing about audience; one names Athletics and Recreation as host and the
+other leaves it blank; the Free Store Pop-up has 187 characters of description on
+one page and 876 on the other. Taking the first would have silently dropped a
+restriction on six events. So `onePerEventPreferring` takes the listing carrying the
+most of what Laurier published — description, audience, host, cost, section notes
+and links, by length — and the links of *all* the listings are joined, because the
+football game's ticket link sits on one copy and not the other. Checked over every
+level x campus x term, with and without every stream: **no audience, host, cost,
+description or section note is lost by that rule anywhere.**
+
+And a listing the student *cannot* attend must never stand in for one they can. With
+"show what you cannot attend" on, the pool includes the Bachelor of Education copy
+of Lane Swim, which is longer, so "most detail" chose it and stamped "Bachelor of
+Education students only" on a swim an undergraduate can walk into. Attendable wins
+first; fullest only breaks the tie. The board caught this at 29 events drawn where
+89 were expected.
+
+**Nothing may be merged across boards.** The fold runs over the listings the student
+is eligible for, never over the whole file, so the Niagara Falls Trip keeps the
+Brantford bus link on the Brantford page and the Waterloo one on Waterloo. Those two
+are never eligible together and are never merged.
+
+Dead weight removed with it: `markDups`/`DUP`/`dupTag` in all four scripts, B's
+fold-behind-a-disclosure row group and its "91 records, 89 distinct events" pair,
+C's "copy 1 of 2" brief line, the week grid's second de-duplication and the clash
+lens's third. The band's own tally counted listings while the board drew events, so
+it said 91 over a day rail adding up to 89; it counts events now.
+
+C's pick key was hashed from the citation URL, which made the two pages Laurier
+publishes one session on into two separate ticks. It is hashed from `dupKey` now.
+
+### The gate had to change, and it had to get stronger
+
+`parity.py`'s rule was that a variant renders the same *multiset* of listings as
+`orientation-classic.html`. That rule now forbids exactly the thing the page is
+supposed to do, so it was rewritten to prove the new property rather than relaxed
+into something that would pass either way. Three claims, in order:
+
+1. **The yardstick is checked too.** Everything else is measured against an
+   eligibility model written in `parity.py`. If that model were wrong every variant
+   could agree with it and the run would come back green. So it is first held
+   against `orientation-classic.html`, which is untouched and renders one `<h3>` per
+   listing: for all 83 selections the model's listings must be exactly what the
+   incumbent draws.
+2. **Same set of distinct events.** A variant renders exactly one entry per
+   `dupKey` — none dropped, none invented, none drawn twice.
+3. **Nothing lost, only merged.** Every entry on the board is *clicked open* and the
+   addresses in the detail that appears are read back out of the DOM. For every
+   listing folded into an entry, that listing's own citation URL must be there.
+
+Claim 3 is what stops claim 2 from being a licence to throw things away, and it is
+proved through the real interface rather than by reading the source. It found the
+first bug it was pointed at: `openSheet` in main declared `var mine` for the source
+list and the overlap ribbon below it declared `var mine` again for a parsed time, so
+the sheet threw on every click — invisible to every other gate, because no other
+gate opens a card.
+
+Negative-tested before being trusted. Against a build that keeps only the first
+listing's sources: twelve failures, naming the events. Against one that draws every
+listing: "170 entries for 157 distinct events; one is drawn more than once".
+Against one that drops a single event: "156 distinct events drawn, 157 expected".
+Against the real build: green.
+
+`plus_check.py` computed `dupKey` in Python by hand, and that split has broken this
+project seven times. There is now no second implementation: `dupkey.py` extracts
+`stripDay` and `dupKey` out of `_app_a.js` and **runs those functions under node**
+against `events.json`. Both gates import it. `shared_logic_check` proves the other
+three scripts carry the same bytes, so deriving from one derives from all four.
+
+Link assembly widened from one listing to all of them, and a widening is where a
+rule quietly stops matching the incumbent's — so `link_core_check` no longer
+compares source text, it *runs* `allLinksOf` over all 508 events one listing at a
+time and requires byte-identical output to `_app.js`'s own assembly. That caught a
+real regression immediately: the first version de-duplicated by address, and Laurier
+gives one LOCUS page two different labels on the same event ("LOCUS Links" and
+"learn more about each link by clicking here"), so collapsing by address dropped a
+label rather than a duplicate. Within one listing the assembly is now the
+incumbent's exactly; only across listings is a repeated address a repeat.
+
+`titles_by_day` had been looking for `class="bar"`, which the week view has never
+emitted, so for four rounds it silently fell through to reading the week view a
+second time and proved nothing. It walks the day pages now, as its own check.
+
+### 3. No implementation vocabulary in anything a student reads
+
+"…including the collapsed accordion panels where Laurier keeps venue, host and
+registration detail" is how we scraped it. It now reads "including the venue, host
+and registration detail Laurier keeps hidden until you open an event", in all three
+body templates and in every citation block. A-plus's search said it matched on
+"panel"; it matches on "what it is part of". B called events *records* in nine
+user-facing strings — the rail note, the empty state, the reading pane, the stepper
+labels and the count in the top bar — and calls them events. Comments are untouched;
+this is about what a student reads.
+
+### 4. The One Day heading says less
+
+The "N run at the same time as something else" line is gone: the Clashes lens
+answers that question properly, naming which events and when, and the heading was
+restating it worse. "This is your busiest day" is gone too — it was gated on "not
+the first day of the run", so it fired on eight days of nine including one with a
+single event on it. The pointer to where orientation actually starts stays.
+
+### 5. The eligibility badge says one of three honest things
+
+It used to say "Open to all students" or "You can attend this". Both are wrong about
+an event Laurier restricts to undergraduates. `audienceLine()` — shared, byte
+identical in all four scripts — says, in order: **Laurier's own words** if it states
+an audience, because that is the most accurate thing anyone has; else **"Open to all
+Laurier students"** for the four *We Brought What You Forgot* listings that really
+are open across levels; else **"Open to you"**, which claims only that it matches the
+level, campus, term and streams you gave. It reads the same in the detail sheet, in
+B's reading pane, in C's facts list and on the printed sheet.
+
+`assess()` is not touched — it is byte-identical to `_app.js` under gate, and the
+badge was never its business.
+
+### 6. Paper gets the clock
+
+The printed schedule was a list of paragraphs, on a page whose whole argument is the
+clock. It is a timetable now.
+
+**A-plus** builds a grid per day: hours down the left, each event a box in its slot,
+as tall as it is long, overlaps side by side. It uses the screen's own piecewise
+axis — occupied stretches to scale, a hole of two hours or more collapsing to a band
+that names the hours it stands for — because drawn to scale one quiet Saturday was
+five inches of ruled nothing and paper does not scroll. `makeScale` took a gap
+height parameter to do it, rather than growing a second copy.
+
+A grid cannot carry a web address, so under each day the same events are written out
+in the same order, numbered to match the boxes, with venue, host, the audience line,
+anything it overlaps, and every registration and citation address in full. That is
+what the list gave that the grid does not.
+
+How much a box can hold depends on how many share the width. Four abreast on A4 is
+about 110pt each and a name fits. Five or six is 70pt: the boxes keep their number
+and their time and the numbered list below carries the names, and the page says so.
+Past six each block is a hairline too narrow for its own number, so that day is
+written out in time order and the page says why. On a Waterloo undergraduate's Fall
+board that is one day of nine — Monday 7 September, seven deep at noon.
+
+**Main** has no printed-document layer and is not getting one; what it has is the
+day you are looking at, and that now prints as the grid rather than being flattened
+into a column. Every distinction that was colour on screen is a line weight or a
+border style on paper — a clash is a heavier reading edge, an open-to-all event a
+double one, an event you cannot attend a dotted one on grey — so the sheet survives
+a monochrome laser. It loses nothing it used to have: its list print carried no
+addresses either.
+
+Verified by rendering real PDFs with Chrome and reading them back with PyMuPDF, page
+images included, not by trusting the CSS.
+
+### Round 5, cycle 1 — the independent review, and what it changed
+
+Given file paths and nothing else. Verdicts: A **restart**, A-plus **ship** (with three
+fixes first), B **revise**, C **revise**. Its ranking for a student planning a week was
+"A+, decisively". It measured its own contrast walk across every state and reported zero
+failures on all four pages.
+
+Six of its findings were the page giving a wrong answer, and five of those were mine.
+
+**C promised 91 events and delivered 89.** The cover counted listings while the document
+wrote out events — the same defect as A's tally, fixed there and missed here, and it sat
+on the first number a stressed student reads. `countExact` folds now, on all three pages
+that have one.
+
+**A-plus's registration checklist stopped disambiguating.** Its own copy says "each is
+labelled with the schedule it was printed on", and both entries had come to carry the
+same pair of schedule names. Cause: I had widened `pageRegLinksOf` to gather across every
+listing of an event, so every event carried both schedules' banners. A banner belongs to
+the page it is printed on and to the listing read from it, not to the event; it is
+gathered from the one listing again.
+
+**B's comparison strip stated a total it was not counting.** I had shortened it to "107
+events between them", next to a header reading 109 — because the strip counts by title,
+day and time (so Waterloo's Shinerama BBQ and Brantford's are one event on two campuses,
+which is the question that view exists to answer) and the header counts by the finer key
+the board folds on. Two different questions, and the shorter sentence implied they were
+the same one. The strip now says what it counts and offers no total.
+
+**The printed board reprinted one address eleven times.** Nearly every event on a day
+comes from the same page of Laurier's site. It is stated once under the day heading, and
+only the entries that came from somewhere else — or from two places — carry their own.
+Thirteen pages to twelve, and the reading is much quieter.
+
+**The printed grid numbered its blocks out of reading order** — the 5pm row ran 18, 14,
+15, 16, 17, because the numbers came from the time sort and the columns from the
+placement. Ties on start time now break by column, so the row reads 14 to 18.
+
+**A's printed sheet did not say whose schedule it was**, and clipped titles. The identity
+band's controls are furniture and are not printed, which left the sheet anonymous; there
+is now a one-line "Undergraduate · Waterloo campus · Fall 2026" that exists only on paper.
+The clipping was `-webkit-line-clamp` on the title: a block sized by how long an event
+lasts still has to be able to say its whole name, so in print the clamp comes off the
+title, the type steps down, and the venue keeps a two-line clamp. Checked by rendering the
+PDF and reading it back against the board: 21 of 21 titles present, none truncated. The
+reviewer also noted that gold-means-clash and lilac-means-open-to-all both print as black
+ink; they are told apart by the weight and style of the reading edge, and a distinction
+nothing explains is not a signal, so the key is now printed beside the tally.
+
+**Held, and recorded.** The review's headline is that A is a subset of A-plus and should be
+replaced rather than restyled. That is a judgement about which variants to keep, not one of
+the six changes asked for here, and acting on it would mean designing a fourth product. It
+is passed on rather than acted on. The same goes for its notes on the whole-run view's
+truncated labels, the phone form of that view, B's venue-pivot sort order and column
+truncation, C's document length and missing clock, and the composition of the two chooser
+screens — all pre-existing, none of them touched by this round.

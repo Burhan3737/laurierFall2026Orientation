@@ -39,6 +39,7 @@ from collections import Counter
 
 import fitz  # PyMuPDF, for reading back the PDF Chrome prints
 
+import dupkey
 from _chrome import chrome_flags
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -67,19 +68,13 @@ def ok(passed, label, detail=""):
 
 
 # --------------------------------------------------------------- the data ---
-def dup_key(e):
-    """The page's own answer to 'are these the same event', in Python."""
-    t = e.get("title") or ""
-    m = DAYRE.match(t)
-    # mirrors dupKey() in the app: the free-text parts are case- and whitespace-folded,
-    # because Laurier retypes the same venue with different capitalisation across pages
-    def fold(x):
-        return re.sub(r"\s+", " ", str(x or "")).strip().lower()
-    return " \u00a7 ".join([t[m.end():] if m else t, e.get("date") or "",
-                            fold(e.get("when")), fold(e.get("where"))])
+# "Are these the same event" is answered by dupKey() in the application scripts.
+# It used to be answered a second time here, transcribed into Python by hand, and
+# a transcription is a copy waiting to drift. dupkey.py runs the page's own
+# function instead, so there is one implementation and no transcription.
+dup_key = dupkey.key_of
 
-
-EV = json.load(open(os.path.join(HERE, "events.json"), encoding="utf-8"))["events"]
+EV = dupkey.events()
 
 
 def copies_of(e):

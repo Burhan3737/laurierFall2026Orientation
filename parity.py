@@ -1,28 +1,53 @@
 REFERENCE = "orientation-classic.html"   # the original build, kept as the parity yardstick
 
-"""Prove the variants show exactly what the incumbent shows.
+"""Prove the variants show exactly the events the incumbent shows — merged, never lost.
 
 Eligibility is the one thing in this project that six audit rounds got right, so a
 variant is only allowed to differ in *how* it presents events, never in *which* events
-it presents. This script drives real Chrome over the real generated pages and compares
-the multiset of event titles rendered for a selection against the incumbent's.
+it presents.
 
-    python parity.py            all variants, ~30 selections
+The rule this script enforces changed once, deliberately. It used to be that a
+variant renders the same *multiset* of listings as orientation-classic.html:
+Laurier publishes one session on two of its schedule pages, the incumbent draws it
+twice, so a variant had to draw it twice too. The variants now draw it once and
+name both pages in its detail, so the rule is now:
+
+  1. the incumbent still renders every listing Laurier publishes for the selection
+     (the reference is checked against the data, so nothing downstream rests on a
+     model of eligibility that was never compared to a real page);
+  2. a variant renders exactly one entry per *distinct event* — same set, no event
+     dropped, none invented, none drawn twice;
+  3. and for every listing folded into an entry, that listing's own source URL is
+     reachable in the entry's detail. Nothing is lost; it is merged.
+
+Rule 3 is what stops rule 2 being a licence to throw things away, and it is proved
+by driving the real interface: every entry on the board is clicked open and the
+addresses in the detail that appears are read back out of the DOM.
+
+"Distinct" is dupKey(), and dupkey.py answers that by running the page's own
+dupKey() rather than re-implementing it, so the Python side of this gate cannot
+drift from the JavaScript side.
+
+    python parity.py            all variants, ~80 selections
     python parity.py a b        only those variants
 
-It also checks two things that would let a drift in by the back door:
+It also checks what would let a drift in by the back door:
 
   * the eligibility core (gatesOf + assess) is byte-identical in every variant script;
+  * so are the functions that decide facts, duplicate identity among them;
+  * link assembly still gathers exactly what the incumbent gathered, per listing;
   * no page raises a JavaScript error while rendering any of the selections.
 
 Extraction, per page:
-  incumbent  every <h3> is an event title, and the default board is "For me"
-  a          the whole-run grid collapses crowded clusters into "+N more" tiles, so
-             its day pages are walked for the days that carry one
+  incumbent  every <h3> is a listing, and the default board is "For me"
+  a, a-plus  the whole-run view carries every entry; the day navigator is walked
+             separately, to prove each is also reachable a day at a time
   b, c       one page renders the whole eligible set
 """
-import json, re, subprocess, sys, os, html, tempfile, shutil, urllib.parse
+import base64, json, re, subprocess, sys, os, html, tempfile, shutil, urllib.parse
 from collections import Counter
+
+import dupkey
 from concurrent.futures import ThreadPoolExecutor
 import atexit, threading
 
@@ -57,11 +82,15 @@ GATES = ["International", "Exchange", "Indigenous", "Off-campus (LOCUS)", "Resid
          "Mature & Transfer", "Accessible Learning", "Virtual"]
 
 # ---------------------------------------------------------------- chrome ----
-def dom(page, frag):
+def dom(page, frag, width=1400):
+    """Read at a desktop width. Chrome headless defaults to 800px, where variant A
+    forces itself out of the whole-run view into a single day — so a check that
+    asked for &view=week got one Tuesday and did not say so."""
     url = "file:///" + at(page).replace("\\", "/").replace(" ", "%20")
     if frag:
         url += "#" + frag
     r = subprocess.run([CHROME, *chrome_flags(), "--headless", "--disable-gpu", "--no-sandbox",
+                        "--window-size=%d,900" % width,
                         "--dump-dom", "--virtual-time-budget=9000", url],
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
     return r.stdout or ""
@@ -90,29 +119,39 @@ def titles_incumbent(s):
 def marked(d):
     return Counter(html.unescape(t) for t in re.findall(r'data-ev-title="([^"]*)"', body_only(d)))
 
+def titles_week(page, s):
+    """The A family in its whole-run view, which carries every entry on the board.
+    That every entry is *also* reachable a day at a time is a separate claim, and
+    day_walk_check() makes it separately rather than folding the two together."""
+    return marked(dom(page, frag_of(s) + "&view=week"))
+
+
 def titles_by_day(page, s):
-    """A-family pages by day, so parity is also a proof that every eligible event
-    is reachable through the day navigator — not merely present in one wide view.
-    Counter union takes the max per title, which would hide a repeated title
-    appearing on several days, so the day pages are summed instead."""
+    """The same board read through the day navigator, one day page at a time.
+    A day the navigator does not offer falls back to the first day, which can only
+    repeat events already counted, so this is compared as a set: what matters is
+    that nothing is reachable in the whole-run view and nowhere else. The old
+    regex here looked for a class the week view has never emitted, so this walk
+    silently fell through to reading the week view a second time."""
     base = frag_of(s)
-    week = body_only(dom(page, base + "&view=week"))
-    days = sorted(set(re.findall(r'class="bar[^"]*" data-day="([^"]+)"', week)))
-    if not days:
-        return marked(dom(page, base + "&view=week"))
-    got = Counter()
+    # the day rail is drawn in every view and names every day on the board
+    nav = body_only(dom(page, base))
+    days = sorted(set(re.findall(r'class="bar[^"]*" data-day="([^"]+)"', nav)))
+    if "TBA" not in days:
+        days.append("TBA")   # Laurier publishes some events with no date at all
+    got = set()
     with ThreadPoolExecutor(max_workers=4) as ex:
         for c in ex.map(lambda k: marked(dom(page, base + "&view=day&day=" + k)), days):
-            got += c
+            got |= set(c)
     return got
 
 
 def titles_a(s):
-    return titles_by_day("orientation-a.html", s)
+    return titles_week("orientation-a.html", s)
 
 
 def titles_a_plus(s):
-    return titles_by_day("orientation-a-plus.html", s)
+    return titles_week("orientation-a-plus.html", s)
 
 def titles_b(s):
     return marked(dom("orientation-b.html", frag_of(s)))
@@ -273,7 +312,9 @@ def shared_logic_check(names):
 
     ok = True
     for name in ("parseWhen", "sentences", "paras", "gatesOf", "assess",
-                 "stripDay", "stripLead", "dupKey", "sameEvent"):
+                 "stripDay", "stripLead", "dupKey", "sameEvent",
+                 "publishedDetail", "listingRank", "onePerEvent",
+                 "attendable", "copiesIn", "sourcesOf", "allLinksOf", "audienceLine"):
         got = {}
         for n in names:
             b = body("_app_%s.js" % n, name)
@@ -285,8 +326,9 @@ def shared_logic_check(names):
             print("  FAIL  %s() differs between %s — the variants can disagree "
                   "about the same fact" % (name, ", ".join(sorted(got))))
             ok = False
-    print("  %s  time parsing, prose breaking, duplicate identity and the "
-          "eligibility core are one implementation everywhere" % ("ok  " if ok else "FAIL"))
+    print("  %s  time parsing, prose breaking, duplicate identity, the fold that "
+          "merges them and the eligibility core are one implementation everywhere"
+          % ("ok  " if ok else "FAIL"))
     return ok
 
 
@@ -421,20 +463,67 @@ def control_check(names):
 
 
 # ------------------------------------------------------- links survive ------
-LINKCORE = re.compile(r"var links = .e\.l \|\| \[\].\.slice\(\);.*?\}\);", re.S)
+LINK_EQUIV = r"""
+const fs = require('fs');
+function body(src, name) {
+  const i = src.indexOf('\nfunction ' + name + '(') + 1;
+  if (i === 0) throw new Error('no ' + name);
+  let k = src.indexOf('{', i) + 1, d = 1;
+  while (d) { if (src[k] === '{') d++; else if (src[k] === '}') d--; k++; }
+  return src.slice(i, k);
+}
+const APP = fs.readFileSync(process.argv[2], 'utf8');
+const META = {sources: []};
+eval(body(APP, 'sourceTitle'));
+var SRCTITLE = {};
+eval(body(APP, 'allLinksOf'));
+/* the incumbent's assembly, lifted out of _app.js as it stands */
+function incumbent(e) {
+  var links = (e.l || []).slice();
+  (e.sl || []).concat(e.pl || []).forEach(function (l) {
+    if (!links.some(function (x) { return x.href === l.href; })) links.push(l);
+  });
+  return links;
+}
+const K = {links:'l', section_links:'sl', page_links:'pl'};
+const rows = JSON.parse(fs.readFileSync(process.argv[3], 'utf8')).events.map(function (e) {
+  const o = {}; for (const l in K) o[K[l]] = e[l]; return o;
+});
+let bad = 0;
+rows.forEach(function (e) {
+  const a = JSON.stringify(allLinksOf(e, [e]).map(function (l) { return l.href; }));
+  const b = JSON.stringify(incumbent(e).map(function (l) { return l.href; }));
+  if (a !== b) bad++;
+});
+process.stdout.write(String(bad) + ' ' + String(rows.length));
+"""
+
 
 def link_core_check(names):
-    """Every variant must assemble the same link set from the same three fields."""
-    def core(path):
-        m = LINKCORE.search(open(at(path), encoding="utf-8").read())
-        return m.group(0) if m else None
-    ref = core("_app.js")
-    ok = ref is not None
-    for n in names:
-        if core("_app_%s.js" % n) != ref:
-            print("  FAIL  _app_%s.js assembles links differently from _app.js" % n)
+    """The variants no longer read one listing's links: they read every listing of
+    the event, because Laurier attaches a registration link to the Brantford copy
+    and not the Waterloo one. That is a widening, and a widening is exactly where
+    a rule quietly stops matching the incumbent's, so it is checked rather than
+    asserted: allLinksOf() is run over every event, one listing at a time, and
+    must return byte-for-byte what _app.js's own assembly returns."""
+    ok = True
+    d = tempfile.mkdtemp(prefix="linkcore-")
+    js = os.path.join(d, "run.js")
+    open(js, "w", encoding="utf-8").write(LINK_EQUIV)
+    r = subprocess.run(["node", js, at("_app_a.js"), os.path.join(HERE, "events.json")],
+                       capture_output=True, text=True, encoding="utf-8")
+    if r.returncode:
+        print("  FAIL  could not run allLinksOf(): %s" % (r.stderr or r.stdout)[:200])
+        ok = False
+    else:
+        bad, total = r.stdout.split()
+        if bad != "0":
+            print("  FAIL  allLinksOf() differs from the incumbent's assembly on %s of %s "
+                  "listings" % (bad, total))
             ok = False
-    print("  %s  link assembly byte-identical in every variant" % ("ok  " if ok else "FAIL"))
+        else:
+            print("  ok    on a single listing, allLinksOf() returns exactly what _app.js "
+                  "assembles, for all %s events" % total)
     # Laurier leaked a CMS authoring URL into a published page. It must stay visible
     # and stay unclickable, in every variant.
     dead = True
@@ -502,6 +591,215 @@ def links_check(sels):
     return bad == 0
 
 
+
+# ------------------------------------------- what the data says is on a board --
+EVENTS = dupkey.events()
+
+
+def listings(s):
+    """Every listing Laurier publishes that this student may attend."""
+    return [e for e in EVENTS if eligible(e, s)]
+
+
+def distinct(s):
+    """One entry per distinct event on that board — what a variant must render."""
+    return dupkey.fold(listings(s))
+
+
+def wanted_titles(s):
+    """The titles a variant must print, one per distinct event. Compared on the
+    title the page actually shows: Laurier writes the day into some of its own
+    titles, the pages strip it before printing, and which listing of an event
+    supplies the string is a presentation choice this gate has no business
+    pinning down."""
+    return Counter(dupkey.shown_title(e) for e in distinct(s))
+
+
+def reference_check(sels, base):
+    """The yardstick has to be checked too.
+
+    Everything below is measured against a model of eligibility written in this
+    file. If that model were wrong, every variant could agree with it and the run
+    would come back green while the board showed the wrong events. So the model is
+    first held against orientation-classic.html, which renders one <h3> per
+    listing and has not been touched: for every selection, the listings the model
+    says are eligible must be exactly the ones the incumbent draws."""
+    bad = 0
+    for s, got in zip(sels, base):
+        want = Counter(e["title"] for e in listings(s))
+        if want != got:
+            bad += 1
+            if bad <= 4:
+                print("  FAIL  %s" % label(s))
+                print("        incumbent draws %d, the data model says %d"
+                      % (sum(got.values()), sum(want.values())))
+                miss, extra = want - got, got - want
+                if miss:
+                    print("        the model expects and the page omits: %s" % list(miss)[:3])
+                if extra:
+                    print("        the page draws and the model omits: %s" % list(extra)[:3])
+    if bad:
+        print("  %d of %d selections differ" % (bad, len(sels)))
+        return False
+    print("  ok    %s renders exactly the listings the eligibility model predicts "
+          "across all %d selections (%d listings)"
+          % (REFERENCE, len(sels), sum(sum(b.values()) for b in base)))
+    return True
+
+
+# ------------------------------------- nothing lost, only merged -------------
+# Every entry on the board is opened and the addresses in its detail are read
+# back. `sel` finds the entries; `detail` is the element the page fills when one
+# is opened, or None where the page writes the detail inline and nothing needs
+# clicking.
+MERGE = {
+    "a":      dict(page="orientation-a.html",      extra="&view=week",
+                   sel="#board [data-id]", detail="#sheet"),
+    "a_plus": dict(page="orientation-a-plus.html", extra="&view=week",
+                   sel="#board [data-id]", detail="#sheet"),
+    "b":      dict(page="orientation-b.html",      extra="",
+                   sel="#results [data-id]", detail="#reader"),
+    "c":      dict(page="orientation-c.html",      extra="&full=1",
+                   sel="#pages [data-id]", detail=None),
+}
+
+HARVEST = """<script>
+setTimeout(function () {
+  var out = {}, nodes = [].slice.call(document.querySelectorAll(%(sel)s));
+  nodes.forEach(function (n) {
+    var box = n;
+    %(open)s
+    var got = [].slice.call(box.querySelectorAll("a[href]")).map(function (a) {
+      return a.getAttribute("href");
+    });
+    var id = n.getAttribute("data-id");
+    out[id] = (out[id] || []).concat(got);
+  });
+  var s = document.createElement("i");
+  s.id = "harvest";
+  s.textContent = btoa(unescape(encodeURIComponent(JSON.stringify(out))));
+  document.body.appendChild(s);
+}, 500);
+</script>"""
+
+OPEN_TMPL = ('n.click(); box = document.querySelector(%s); '
+             'if (!box) { box = document.createElement("div"); }')
+
+
+def harvest(name, s):
+    """Open every entry on the board and collect the addresses in its detail."""
+    cfg = MERGE[name]
+    js = HARVEST % {
+        "sel": json.dumps(cfg["sel"]),
+        "open": OPEN_TMPL % json.dumps(cfg["detail"]) if cfg["detail"] else "",
+    }
+    src = open(at(cfg["page"]), encoding="utf-8").read()
+    tmp = os.path.join(tempfile.gettempdir(), "harvest-" + cfg["page"])
+    open(tmp, "w", encoding="utf-8").write(src.replace("</body>", js + "</body>", 1))
+    url = ("file:///" + tmp.replace("\\", "/").replace(" ", "%20") + "#" +
+           frag_of(s) + cfg["extra"])
+    r = subprocess.run([CHROME, *chrome_flags(), "--headless", "--disable-gpu", "--no-sandbox",
+                        "--window-size=1400,900", "--dump-dom",
+                        "--virtual-time-budget=25000", url],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    os.remove(tmp)
+    m = re.search(r'<i id="harvest">([A-Za-z0-9+/=]*)</i>', r.stdout or "")
+    if not m:
+        return None
+    return json.loads(base64.b64decode(m.group(1)).decode("utf-8"))
+
+
+def merge_check(names, sels):
+    """The rule that keeps "render it once" from meaning "throw one away".
+
+    For each selection: the set of distinct events the page opened must be exactly
+    the set the data says is on that board — no event drawn twice, none missing,
+    none invented — and for every listing folded into an entry, that listing's own
+    citation URL must be present in the entry's detail. A page that merged two
+    listings and kept only one of their sources fails here."""
+    ok = True
+    for name in names:
+        mine = True
+        checked = folded = 0
+        for s in sels:
+            got = harvest(name, s)
+            if got is None:
+                print("  FAIL  %s  %s  ->  the board never reported" % (name, label(s)[:48]))
+                mine = False
+                continue
+            want = listings(s)
+            by_key = {}
+            for e in want:
+                by_key.setdefault(dupkey.key_of(e), []).append(e)
+
+            drawn = {}
+            for sid, hrefs in got.items():
+                e = EVENTS[int(sid)]
+                k = dupkey.key_of(e)
+                drawn.setdefault(k, []).extend(hrefs)
+
+            if set(drawn) != set(by_key):
+                miss = set(by_key) - set(drawn)
+                extra = set(drawn) - set(by_key)
+                print("  FAIL  %s  %s  ->  %d distinct events drawn, %d expected"
+                      % (name, label(s)[:48], len(drawn), len(by_key)))
+                if miss:
+                    print("        never drawn: %s" % [k.split(" § ")[0] for k in list(miss)[:3]])
+                if extra:
+                    print("        drawn but not eligible: %s"
+                          % [k.split(" § ")[0] for k in list(extra)[:3]])
+                mine = False
+                continue
+
+            if len(got) != len(by_key):
+                print("  FAIL  %s  %s  ->  %d entries for %d distinct events; one is "
+                      "drawn more than once" % (name, label(s)[:48], len(got), len(by_key)))
+                mine = False
+                continue
+
+            for k, copies in by_key.items():
+                if len(copies) > 1:
+                    folded += 1
+                seen = set(drawn[k])
+                lost = [o["url"] for o in copies if o["url"] not in seen]
+                if lost:
+                    print("  FAIL  %s  %s  ->  %s was published on %d Laurier pages and "
+                          "the detail reaches %d" % (name, label(s)[:40], copies[0]["title"][:40],
+                                                     len(copies), len(copies) - len(lost)))
+                    print("        unreachable: %s" % lost[:2])
+                    mine = False
+            checked += len(by_key)
+        if checked:
+            print("  %s  %-6s %d entries opened across %d selections; %d of them were "
+                  "published by Laurier more than once, and every page of every one is "
+                  "reachable in its detail" %
+                  ("ok  " if mine else "FAIL", name, checked, len(sels), folded))
+        ok = ok and mine
+    return ok
+
+
+def day_walk_check(names, sels):
+    """Every entry in the whole-run view must also be reachable a day at a time.
+    A variant that drew the run correctly and stranded an event in a day the
+    navigator never offers would pass everything else in this file."""
+    ok = True
+    for name in names:
+        if name not in ("a", "a_plus"):
+            continue
+        mine = True
+        page = PAGE[name]
+        for s in sels:
+            week = set(titles_week(page, s))
+            days = titles_by_day(page, s)
+            if week - days:
+                print("  FAIL  %s  %s  ->  %d entries are in the whole run and on no day "
+                      "page: %s" % (name, label(s)[:44], len(week - days), list(week - days)[:3]))
+                mine = False
+        print("  %s  %-6s every entry reachable through the day navigator, "
+              "%d selections" % ("ok  " if mine else "FAIL", name, len(sels)))
+        ok = ok and mine
+    return ok
+
 # ---------------------------------------------------------------- main ------
 def main():
     names = [a for a in sys.argv[1:] if a in GRAB] or ["a", "b", "c", "a_plus"]
@@ -512,25 +810,27 @@ def main():
     print("Eligibility core")
     core_ok = core_check(names)
 
-    print("\nBaseline: reading the incumbent")
+    print("\nBaseline: the incumbent, held against the data")
     with ThreadPoolExecutor(max_workers=4) as ex:
         base = list(ex.map(titles_incumbent, sels))
     empty = [label(s) for s, b in zip(sels, base) if not b]
-    print("  %d selections, %d..%d events each%s" %
+    print("  %d selections, %d..%d listings each%s" %
           (len(sels), min(sum(b.values()) for b in base), max(sum(b.values()) for b in base),
            ("  (%d render nothing)" % len(empty)) if empty else ""))
+    all_ok = reference_check(sels, base) and core_ok
+    print("  %d listings fold to %d distinct events across the run"
+          % (len(EVENTS), len(dupkey.fold(EVENTS))))
 
-    all_ok = core_ok
     for n in names:
         print("\n%s" % PAGE[n])
         with ThreadPoolExecutor(max_workers=3) as ex:
             got = list(ex.map(GRAB[n], sels))
         fails = 0
-        for s, b, g in zip(sels, base, got):
-            if b != g:
+        for s, g in zip(sels, got):
+            w = wanted_titles(s)
+            if w != g:
                 fails += 1
-                miss = b - g
-                extra = g - b
+                miss, extra = w - g, g - w
                 print("  FAIL  %s" % label(s))
                 if miss:
                     print("        missing %d: %s" % (sum(miss.values()), list(miss)[:4]))
@@ -540,8 +840,25 @@ def main():
             all_ok = False
             print("  %d of %d selections differ" % (fails, len(sels)))
         else:
-            print("  ok    all %d selections match the incumbent exactly "
-                  "(%d event renderings compared)" % (len(sels), sum(sum(b.values()) for b in base)))
+            print("  ok    all %d selections render exactly one entry per distinct event "
+                  "(%d entries compared)"
+                  % (len(sels), sum(sum(wanted_titles(s).values()) for s in sels)))
+
+    # The selections carrying the most of Laurier's repeats, so the merge is
+    # proved where there is something to merge, and on every level.
+    dupey = sorted(sels, key=lambda x: -sum(
+        1 for k, n in Counter(dupkey.keys_of(listings(x))).items() if n > 1))[:3]
+    seen_lv = {x["level"] for x in dupey}
+    for x in sels:
+        if x["level"] not in seen_lv and listings(x):
+            dupey.append(x)
+            seen_lv.add(x["level"])
+
+    print("\nNothing lost, only merged")
+    all_ok = merge_check(names, dupey) and all_ok
+
+    print("\nReachable a day at a time")
+    all_ok = day_walk_check(names, dupey[:2]) and all_ok
 
     print("\nEmpty-board smoke")
     all_ok = smoke_check(names, [x for x in sels if not x["program"]][:14]) and all_ok

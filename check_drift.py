@@ -63,7 +63,13 @@ for path in PAGES:
     for p in removed:
         print("      - %s" % p[:96])
     if not added and not removed:
-        print("      (no panels added or removed - wording or prose changed)")
+        if len(ps) != len(pl):
+            # titles match as a set but not as a multiset: Laurier repeated a panel.
+            # Reporting "no panels added or removed" here would be false.
+            print("      (panel count changed %d -> %d with no new titles: a panel is "
+                  "now published more than once)" % (len(ps), len(pl)))
+        else:
+            print("      (no panels added or removed - wording or prose changed)")
 
     if UPDATE:
         open(local, "wb").write(live)

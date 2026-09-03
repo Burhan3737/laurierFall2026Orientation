@@ -11,3 +11,6 @@ __pycache__/
 *.pyc
 _fonts/
 _runlogs/
+# artefacts plus_check.py leaves behind when it prints and exports
+_plus_print.pdf
+_plus_plan.ics
