@@ -519,10 +519,10 @@ function drawIdbar() {
        " you can attend</span>" +
        '<button class="ghostbtn' + (ghosts ? " on" : "") + '" id="ghostbtn" aria-pressed="' + ghosts + '">' +
        (ghosts ? "Hide" : "Show") + " what you cannot attend</button>" +
-       '<span class="prkey"><i class="k-plain"></i><b>on your board</b>' +
-       '<i class="k-clash"></i><b>runs at the same time as something else</b>' +
-       '<i class="k-open"></i><b>open to all Laurier students</b>' +
-       (ghosts ? '<i class="k-off"></i><b>not open to you</b>' : "") + "</span></div>";
+       /* Printed unconditionally, this key told a reader whose sheet held one
+          event that something on it collided and something on it was open to
+          every Laurier student. It names the states the sheet actually carries. */
+       printKeys(viewStates()) + "</div>";
   h += "</div>";
   $("idbar").innerHTML = h;
 
@@ -662,7 +662,7 @@ function split(list) {
 }
 function ribbonHtml(it) {
   var e = it.ev, a = assess(e), off = !a.ok;
-  return '<button class="rib' + (off ? " off" : "") + '" ' +
+  return '<button class="rib' + (off ? " off" : (e.oa ? " open" : "")) + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="rt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
     '<span class="rh">' + esc(title(e)) + "</span></button>";
@@ -725,12 +725,18 @@ function hourAxis(sc) {
   return h;
 }
 
-function rules(sc) {
+/* `of` names what the empty stretch is empty of. On the board that is what
+   Laurier published; in the plan it is what the student ticked, and saying
+   "nothing published between 1pm and 7pm" over a plan on a day Laurier
+   published fourteen things is the page stating a falsehood about its own
+   source. */
+function rules(sc, of) {
   var h = "";
   sc.blocks.forEach(function (bl) {
     if (bl.gap) {
       h += '<div class="gapband" style="top:' + bl.y + "px;height:" + bl.h + 'px"><span>' +
-           "nothing published between " + clock(bl.a) + " and " + clock(bl.b) + "</span></div>";
+           (of || "nothing published") + " between " + clock(bl.a) + " and " + clock(bl.b) +
+           "</span></div>";
       return;
     }
     for (var m = Math.ceil(bl.a / 60) * 60; m <= bl.b; m += 60)
@@ -759,7 +765,7 @@ function blockHtml(it, sc) {
 }
 function looseHtml(e) {
   var a = assess(e), off = !a.ok;
-  return '<button class="chipev' + (off ? " off" : "") + '" ' +
+  return '<button class="chipev' + (off ? " off" : (e.oa ? " open" : "")) + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="ch">' + esc(title(e)) + "</span>" +
     '<span class="cw">' + esc(off ? a.reason : (e.n || e.w || "Time not published")) + "</span></button>";
@@ -986,8 +992,12 @@ function weekHtml(list, keys) {
   for (var g = lo; g <= hi; g += 60)
     gridlines += '<span class="wl" style="left:' + pc(g) + '%"></span>';
 
-  var h = '<div class="weekwrap"><div class="wkhead"><span class="wklab">The run</span>' +
-    '<div class="wkaxis">' + ticks + "</div></div>";
+  /* The bars carry the same three states the day clock does — purple for an
+     ordinary event, lilac for one open to all Laurier students, a gold cap for a
+     collision — and until now said so nowhere. The rows are built first so the
+     key above them can name the states this run actually contains. */
+  var wentries = [];
+  var body = "";
 
   dated.forEach(function (k) {
     var dt = new Date(k + "T00:00:00"), past = k < NOW;
@@ -1007,7 +1017,9 @@ function weekHtml(list, keys) {
     var shown = items;
     var n = onDay(list, k).length;
 
-    h += '<div class="wkrow' + (past ? " past" : "") + (k === NOW ? " today" : "") + '">' +
+    shown.forEach(function (it) { wentries.push([it.ev, it.ncol > 1, false]); });
+
+    body += '<div class="wkrow' + (past ? " past" : "") + (k === NOW ? " today" : "") + '">' +
       '<button class="wkday" data-day="' + k + '">' +
         '<span class="wdw">' + DOW3[dt.getDay()] + "</span>" +
         '<span class="wdd">' + dt.getDate() + "</span>" +
@@ -1036,9 +1048,19 @@ function weekHtml(list, keys) {
       "</div></div>";
     pt.loose.forEach(function (e) { looseCarry.push([k, e]); });
   });
-  h += "</div>";
+  body += "</div>";
 
   onDay(list, "TBA").forEach(function (e) { looseCarry.push(["TBA", e]); });
+  /* The untimed chips below the run carry the same edges, so they are part of
+     what the key has to account for. */
+  looseCarry.forEach(function (p) { wentries.push([p[1], false, true]); });
+
+  var wkeys = legendKeys(clockStates(wentries, true));
+  /* Above the grid, not between the axis and the first row: put inside, a key
+     reads as part of the ruling it is explaining. */
+  var h = (wkeys ? '<div class="legend legend-run">' + wkeys + "</div>" : "") +
+    '<div class="weekwrap"><div class="wkhead"><span class="wklab">The run</span>' +
+    '<div class="wkaxis">' + ticks + "</div></div>" + body;
   if (looseCarry.length) {
     h += '<div class="loosebar"><h3>No clock time published <span>' + looseCarry.length + "</span></h3>" +
       '<p class="lede">Laurier gives these a day but no usable time, or no date at all. They are listed rather than placed, because guessing would be worse.</p>' +
@@ -1057,16 +1079,18 @@ function weekHtml(list, keys) {
    has nothing left to say. The argument survives the change of form — the hour
    gutter stays, empty stretches are still named rather than drawn, and every
    collision is counted in words. */
-function agendaHtml(items) {
+function agendaHtml(items, of) {
   var prevEnd = null;
   return '<div class="agenda">' + items.map(function (it) {
     var gap = "";
     if (prevEnd !== null && it.s - prevEnd >= GAP_MIN)
-      gap = '<div class="aggap">nothing published between ' + clock(prevEnd) + " and " + clock(it.s) + "</div>";
+      gap = '<div class="aggap">' + (of || "nothing published") + " between " +
+            clock(prevEnd) + " and " + clock(it.s) + "</div>";
     prevEnd = prevEnd === null ? it.de : Math.max(prevEnd, it.de);
     var e = it.ev, a = assess(e), off = !a.ok;
     var clash = items.filter(function (o) { return o !== it && o.s < it.e && it.s < o.e; });
-    return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) + '" ' +
+    return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) +
+      (clash.length ? " clash" : "") + '" ' +
       (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '" tabindex="0">' +
       '<div class="agt">' + clock(it.s) + "<span>" + clock(it.e) + "</span></div>" +
       '<div class="agb"><h4>' + esc(title(e)) + "</h4>" +
@@ -1076,6 +1100,93 @@ function agendaHtml(items) {
                         " at this time</p>" : "") +
       "</div></article>";
   }).join("") + "</div>";
+}
+
+/* ---- what the colours on the clock mean ---------------------------------
+   The key used to be printed whole on every day, so a Tuesday with one event on
+   it asserted that something ran at the same time as something else and that
+   something was open to all Laurier students, and neither was true. A key that
+   names a state nothing on the screen is in is worse than no key: it invites the
+   reader to match a caption to the only edge in front of them.
+
+   The ordinary state had no key at all, which was the other half of the same
+   fault — a plain purple edge sat beside a lilac swatch captioned "open to all
+   Laurier students", two purples one step apart with only one of them named, and
+   a programme-specific welcome was read as open to everybody. The plain state is
+   named now whenever anything else is, and lilac has become a double edge so the
+   difference survives at swatch size and in black and white.
+
+   clockStates() is given [event, doesItCollide] pairs for everything the view
+   actually draws, blocks, ribbons and untimed chips alike, because whether two
+   events collide is a fact about the placement rather than about the list.
+------------------------------------------------------------------------- */
+function clockStates(entries, capped) {
+  var st = { plain: false, open: false, clash: false, off: false };
+  entries.forEach(function (p) {
+    var e = p[0], clash = p[1], aside = p[2];
+    if (!assess(e).ok) { st.off = true; return; }
+    if (clash) st.clash = true;
+    /* The key has to name the colour on the screen, not a property of the
+       event. A reading edge can carry one meaning at a time and a collision
+       takes it, so an event that collides is drawn neither lilac nor purple and
+       the key must not claim that anything is. The whole run draws a collision
+       as a gold cap above a filled bar, where the two do show together, and
+       passes capped. */
+    if (clash && !capped) return;
+    /* An all-day ribbon and an untimed chip sit under their own headings and
+       look nothing like the swatch: a lavender full-bleed strip is not a white
+       box with a purple edge. On a Bachelor of Education Monday every card on
+       the clock was gold and the only purple on the page was two ribbons, and
+       the key still offered "an ordinary event on your board" with a swatch
+       matching nothing. They keep the marked states, which really are the same
+       colour wherever they appear, and give up the unmarked one. */
+    if (aside) { if (e.oa) st.open = true; return; }
+    if (e.oa) st.open = true; else st.plain = true;
+  });
+  return st;
+}
+function legendKeys(st) {
+  var k = "";
+  if (st.clash) k += '<span class="lg lg-clash">runs at the same time as something else</span>';
+  if (st.open) k += '<span class="lg lg-open">open to all Laurier students</span>';
+  if (st.off) k += '<span class="lg lg-off">not open to you</span>';
+  /* On its own, "an ordinary event" tells nobody anything. It earns its place
+     only as the thing the other keys are not. */
+  if (k && st.plain)
+    k = '<span class="lg lg-plain">an ordinary event on your board</span>' + k;
+  return k;
+}
+/* The states the board is about to draw, for the key only paper sees. It is
+   worked out the way each view lays a day out rather than read back off the DOM,
+   because the identity band that carries the printed key is written before the
+   board exists. The Clashes lens gets no key: everything in it collides by
+   definition, and it names "open to all Laurier students" in words already. */
+function viewStates() {
+  if (view === "clash") return { plain: false, open: false, clash: false, off: false };
+  var list = visible(), ent = [];
+  (view === "week" ? dayKeys(list) : [day]).forEach(function (k) {
+    var pt = split(onDay(list, k));
+    ent = ent.concat(dayEntries(pt, view === "week"
+      ? placed(pt.timed.concat(pt.long), 20) : placed(pt.timed, 52)));
+  });
+  return clockStates(ent);
+}
+function printKeys(st) {
+  var k = "";
+  if (st.clash) k += '<i class="k-clash"></i><b>runs at the same time as something else</b>';
+  if (st.open) k += '<i class="k-open"></i><b>open to all Laurier students</b>';
+  if (st.off) k += '<i class="k-off"></i><b>not open to you</b>';
+  if (k && st.plain)
+    k = '<i class="k-plain"></i><b>an ordinary event on your board</b>' + k;
+  return k ? '<span class="prkey">' + k + "</span>" : "";
+}
+/* The entries one day of the clock draws, in the form clockStates() wants:
+   the event, whether it collides, and whether it is drawn beside the clock
+   rather than on it. */
+function dayEntries(pt, items) {
+  return items.map(function (it) { return [it.ev, it.ncol > 1, false]; })
+    .concat(pt.long.map(function (it) { return [it.ev, false, true]; }),
+            pt.loose.map(function (e) { return [e, false, true]; }));
 }
 
 function dayHtml(list, keys) {
@@ -1116,17 +1227,21 @@ function dayHtml(list, keys) {
       '<button class="peakbtn" data-day="' + firstK + '">' + DOW[fdt.getDay()] + " " +
       fdt.getDate() + " " + MON[fdt.getMonth()] + " ›</button></p>" : "") + "</div>" +
     '<button class="step" data-step="1"' + (i >= keys.length - 1 ? " disabled" : "") + ' aria-label="Next day">›</button>' +
-    '</div><div class="legend">' +
-      (listNow ? "" : '<span class="lg lg-clash">runs at the same time as something else</span>' +
-                      '<span class="lg lg-open">open to all Laurier students</span>') +
-      (ghosts ? '<span class="lg lg-off">not open to you</span>' : "") +
-      (narrow || items.length < 2 ? "" :
-        '<button class="modebtn" data-mode="1">' +
-        (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>") +
-      (tight && !asList
-        ? '<span class="lgnote">' + lanes + " run at once here — the clock is tight; " +
-          "the list may read easier</span>" : "") +
-    "</div></div>";
+    "</div>" + (function () {
+      /* The list reads the same events with the same edges, so the key holds in
+         both modes; it is the day that decides what is in it, not the form. */
+      var keys2 = legendKeys(clockStates(dayEntries(parts, items)));
+      var extra =
+        (narrow || items.length < 2 ? "" :
+          '<button class="modebtn" data-mode="1">' +
+          (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>") +
+        (tight && !asList
+          ? '<span class="lgnote">' + lanes + " run at once here — the clock is tight; " +
+            "the list may read easier</span>" : "");
+      /* An empty <div class="legend"> is not nothing: it is 6px of margin and a
+         flex row holding a day apart from its own clock. */
+      return (keys2 || extra) ? '<div class="legend">' + keys2 + extra + "</div>" : "";
+    })() + "</div>";
 
   if (parts.long.length)
     h += '<div class="allday"><h3>Open most of the day <span>' + parts.long.length + '</span></h3>' +
@@ -1240,7 +1355,8 @@ function openSheet(i) {
           esc(clock(x.s) + " " + x.ev.t) + '"></span>';
       }).join("") + '</div><div class="trends"><span>' + clock(lo) + "</span><span>" +
         clock(hi) + '</span></div><p class="trcap">Where this sits in ' +
-        DOW[new Date(e.d + "T00:00:00").getDay()] + "’s run — gold is what it collides with.</p></div>";
+        DOW[new Date(e.d + "T00:00:00").getDay()] + "’s run: purple is this " +
+        "event, gold is what it collides with, grey is everything else that day.</p></div>";
     }
   }
 

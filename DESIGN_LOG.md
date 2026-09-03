@@ -1205,3 +1205,263 @@ prefixes, and fails on the old `stripDay`), `check.py`, `invariants.py`,
 `contrast.py`, `plus_check.py`, `test_regressions.py` 48/48, `check_drift.py`
 clean across 14 pages. Both new assertions were negative-tested against the code
 they were written for before being trusted.
+
+---
+
+## Round 7 — three things the person using it noticed
+
+### 1. A key that named colours the day did not contain, and a colour nobody had named
+
+The report was that "open to all Laurier students" appeared on every event. It does
+not: `audienceLine()` says that of two listings in the whole Fall/Waterloo pool,
+and the sentence is correct. What was on the screen was the **key under the day
+heading**, and it printed both of its captions on every day whether or not the day
+held either state. The screenshot that came with the report is Tuesday 15
+September: one event, no collision, not open to anybody outside its own level, and
+the page underneath it asserting that something ran at the same time as something
+else and that something was open to every Laurier student.
+
+The second half of the fault is why that mattered. `.blk` draws an ordinary event
+with a 4px `--purple` edge and `.blk.open` with a 4px `--lilac` one, and only the
+lilac had a caption. Two purples one step apart, one of them named — so the named
+one is the one a reader reaches for, and a programme-specific welcome was read as
+open to everybody. **A key that names a state nothing on the screen is in is worse
+than no key**, because it invites exactly that match.
+
+Three changes, in A and A-plus:
+
+- **Every key is conditional.** `clockStates()` is handed `[event, doesItCollide]`
+  pairs for everything the view actually draws and reports which of the four states
+  are present; `legendKeys()` writes only those. A day with nothing colliding and
+  nothing open across levels now shows no key at all, and the `<div class="legend">`
+  is not emitted either — empty it is still 6px of margin and a flex row holding a
+  day apart from its own clock.
+- **The ordinary state is named**, whenever anything else is. On its own "an
+  ordinary event on your board" tells nobody anything, so it is drawn only as the
+  thing the other keys are not.
+- **Lilac means one thing and is a different shape.** `.blk.open` is a *double*
+  edge now, which is what the printed sheet has always used to tell the two apart,
+  so the distinction survives at swatch size and through a monochrome laser rather
+  than resting on two purples. The all-day ribbon, which used lilac for "all day",
+  is purple; ribbons and untimed chips carry `.open` and `.off` like everything
+  else; and the agenda — the same day read as a list — carries the same edges, so
+  one key covers both forms instead of the list signalling open-to-all with a
+  slightly different purple on its start time and explaining it nowhere.
+
+`clockStates()` mirrors the stylesheet rather than the data, which is the whole
+point of it. A reading edge carries one meaning at a time and a collision takes it,
+so on the day clock a colliding event is drawn neither lilac nor purple and the key
+must not claim anything is — the first version of this said "open to all Laurier
+students" over a board on which the only such event was gold. The whole-run view
+draws a collision as a gold cap *above* a filled bar, where the two really do show
+together, and passes `capped`.
+
+**The whole-run view had no key at all**, which is the same fault with the caption
+missing rather than wrong: purple bars, lilac bars and gold-capped bars, and
+nothing anywhere saying which was which. It has the same conditional key, with
+filled swatches because that is what it draws.
+
+**And the printed key was on the screen.** `.prkey` in A was styled only inside
+`@media print`, which does not hide it — it merely left it unstyled, so the
+identity band carried "on your boardruns at the same time as something else" in
+running text with no swatches between the captions. It is `display:none` off paper
+now, and on paper it names the states the sheet actually carries: printed
+unconditionally it had been telling a reader whose sheet held one event that
+something on it collided.
+
+`assess()` and `audienceLine()` are untouched. This was never about who may attend.
+
+### 2. Thirteen and fourteen are both true, and the page said only one of them
+
+`check_drift.py` tracks fourteen pages: the thirteen the board is built from and
+the ASPIRE "Laurier Crash Course" page, watched but never parsed. The sources
+section said thirteen, which is true of events and not of tracking, and a reader
+who had seen the fourteen had no way to reconcile them.
+
+Changing 13 to 14 would have been the other false statement, so both are said. The
+schedules keep their count and their grid; under them, **"Watched, not read"**
+states that fourteen pages are checked for change, that the thirteen above are
+where every event came from, and that the rest publish orientation events nothing
+on this board comes from. The watched page gets a card of its own, with Laurier's
+own title for it, its address, and **why it contributes nothing** — every Fall 2026
+session on it has already run, and Laurier says the Winter 2027 sessions go up at
+the beginning of the fall semester, which is now.
+
+That reason is now the third field of `check_drift.py`'s `WATCH`, printed in its
+report and read out of it by `build.py` with `ast.literal_eval` — nothing in
+`check_drift.py` is executed, so a build never touches the network. It is read
+rather than copied for the reason everything else here is: a second copy of a fact
+is a fact waiting to drift, and this project has been bitten by that more than
+once. `{{NWATCHED}}` and `{{NTRACKED}}` join the substitutions, and `META` carries
+`nWatched`, `nTracked` and the watched list, so a variant that wants to say
+something about it does not have to re-derive it.
+
+`orientation-classic.html` is not given the block. It is `parity.py`'s yardstick and
+it is left alone.
+
+### 3. The plan reads as a list or as a calendar, and paper prints one of them
+
+Two faults, one cause. `printHtml()` emitted the calendar grid **and** the numbered
+detail list of the same events underneath it — the whole schedule twice, four
+sheets where two would do — and My plan, on a page whose entire argument is that a
+week is a shape, could only be read as a column of paragraphs.
+
+**My plan has a List / Calendar toggle.** The calendar form is `byDay()` over the
+same picks with the board's own scale, blocks, ribbons and chips, so a ticked event
+looks the same wherever a student meets it. A day too crowded to draw falls back to
+the agenda for that day alone and says why, which is what the day board does and
+what the printed sheet does. The toggle sits with a sentence saying both forms hold
+the same *N* events and that printing follows whichever is being read, because a
+control that sits where a filter sits and leaves the count unmoved is one a student
+reads twice and then stops trusting.
+
+**Paper follows that choice, and prints one document.** Calendar prints grids;
+list prints the written entries. Never both.
+
+**The judgement calls, made rather than dodged:**
+
+- *A grid cannot carry a web address, and paper cannot be clicked.* Dropping the
+  registration links would have been dropping the only way a student actually gets
+  a place. They are collected in **one appendix after the last day** — not under
+  each day, which is how it would have turned back into the second document — in
+  the same numbers as the boxes above, each with its venue, its registration and
+  ticket addresses, any citation the day heading did not already carry, and the
+  note when a pick is no longer on the board. The venue is in it too: it costs one
+  line and a student needs a room more than they need a host.
+- *A day that cannot be drawn is written out in full instead*, keeps the sentence
+  saying why, and is then left out of the appendix — it needs nothing from it and
+  would otherwise be the one day printed twice.
+- *What prints is what was ticked.* If the plan holds anything, the plan is the
+  document; the board is neither appended to it nor set beside it.
+- *The empty case is decided rather than left.* With nothing ticked there is no
+  selection to honour, so the whole eligible board prints — under **"Everything I
+  may attend"**, not "My orientation schedule", with a first line reading "Nothing
+  is ticked, so this is not a chosen schedule". A sheet found on a desk a week
+  later must not be mistaken for one somebody put together.
+- Both documents number a day the same way, so block 3 on the calendar and entry 3
+  in the list are the same event.
+
+### The gates had to learn to count
+
+`plus_check.py` printed one PDF and looked for words in it. Every interesting
+failure here is a *count*: the board leaking into a personal schedule, or both
+documents coming out at once, would each have left every word it looked for in
+place.
+
+Every written entry and every line of the address list carries one `Where:` and
+nothing else on the sheet does, so **`entries_in()` counts them** and the sheet must
+hold exactly the number of events it claims. That one assertion catches both
+failures. Beside it, the events *not* in the plan are named and checked for
+individually — 86 of them — so a leak is reported as which event leaked. Four PDFs
+are printed and read back now instead of one: plan and empty plan, each as a list
+and as a calendar. The address appendix gained its `Where:` label partly so a gate
+can count entries without knowing which document it is holding, and partly because
+a bare address under a title is worse to read than a labelled one.
+
+Negative-tested before being trusted, against four deliberately broken builds:
+both documents printed at once (caught, in both forms, by the count); three events
+off the board leaking into the plan (caught by the count and named by the leak
+check); the calendar dropping its address list (caught); the empty board headed as
+a personal schedule (caught). The one case that correctly did *not* fire is
+"calendar drops its address list" measured against the list form, which has no
+address list to drop.
+
+A new test proves the toggle is a view: the plan is rendered both ways and the
+titles drawn must be the same set, and that set must be every ticked event once.
+Negative-tested by making `planCalHtml()` drop a day — 6 events against 5, caught.
+It also captures `window.onerror` from a listener installed in the head, before the
+application script runs, because an error thrown during the opening redraw is
+exactly the one a probe added at the end of the body arrives too late to see.
+
+One defect the new tests found in themselves: `page_with()` wrote every seeded copy
+to one temp path, so creating the empty-plan page silently replaced the seeded one
+and a full run of assertions passed against the wrong board. The file name is a
+parameter now.
+
+### The independent review, and what it changed
+
+Given file paths and four questions, and nothing about why any of this was being
+done. It reported the conditional key as "a real achievement" and swept every day
+of every level and campus to check it — then found four places where it still
+over-claimed and one where the page said something outright false. Nine of its
+findings were acted on.
+
+**"An ordinary event on your board" over a day with no ordinary event on it.**
+Bachelor of Education, Waterloo, Monday 7 September: eleven cards on the clock,
+every one of them gold, and the key still offering a purple swatch. The purple on
+that page belonged to two all-day ribbons — a lavender full-bleed strip filed
+under its own heading, which is not what the swatch draws. `clockStates()` takes a
+third field now: an entry drawn *beside* the clock rather than on it keeps the
+marked states, which really are the same colour wherever they appear, and gives up
+the unmarked one. Both Bachelor of Education Mondays now show the collision key
+alone, and Graduate Waterloo Sunday 6 shows "open to all Laurier students" alone.
+
+**Gold meant two things in A-plus.** `.ag.mine`, `.rib.mine`, `.chipev.mine` and
+`.clrow.mine .clopt` put a gold reading edge on a *ticked* event, on the stated
+reasoning that gold carried nothing in the agenda, the ribbons and the chips. That
+stopped being true earlier in this same round, when those three started wearing
+the clock's own edges. The reviewer found the result: on a Friday with four drop-in
+sessions, the one in the plan was gold under a key reading "runs at the same time
+as something else" — about sessions this page explicitly never counts as clashing.
+The reading edge is the event's state everywhere now, and a ticked event is the
+corner tick it already was on the clock: a badge, not an edge.
+
+**"Nothing published between 1pm and 7pm", over a plan.** Laurier published
+fourteen things in that window; they were simply not ticked. `rules()`,
+`agendaHtml()` and `printGrid()` take the phrase now, and the plan says "nothing in
+your plan" on screen and "nothing in my plan" on paper. The same string is correct
+on the board and was a plain falsehood in the one place this round added.
+
+**The collision cap on the whole run was one rendered pixel.** 2px of gold on the
+top edge of a 22px bar, and the entire collision signal across an eighty-bar grid.
+It is 4px, and so is the swatch beside it.
+
+**The printed calendar dropped the host and the audience for every event.** Seven
+picks, seven hosts on the list sheet, none on the calendar sheet. The address list
+carries both now, with the cost, because a grid can say when and cannot say who is
+running the thing or who may come.
+
+**A printed Tuesday of twenty-one numbered boxes with no names in them.** `PR_LANES`
+was 4 — a guess at how many boxes fit across a page. Measured: the printed grid is
+about 510pt, so five abreast is 102pt a box and six is 85pt. At five the same
+Tuesday prints all twenty-one names, on a sheet that was 45% white space. The
+height cap went from 430pt to 560pt with it.
+
+**Sheets that came off the stack were anonymous.** Page three of a nine-page board
+opened "6 12pm–3pm Shinerama BBQ" and ran ten more entries before naming a day.
+A true running head needs a fixed element repeated per page, and Chrome's print
+pipeline placed one over the content on two of three attempts, so it is not used.
+The identity rides the day headings instead, which is deterministic, and **every
+entry now carries its own day** in the time column — three words, and no sheet is
+anonymous whatever it starts in the middle of.
+
+**Printing an empty plan was an eight-page document or a ten-page one, decided by a
+switch the empty screen did not show.** The empty panel carries the toggle now,
+labelled "Print as", with a line saying what Ctrl+P would produce and that it comes
+out headed as the board rather than as a schedule anyone chose.
+
+**"Switching to Calendar takes the controls away."** It does not — every block
+opens the same card, which holds the links, the calendar file and the tick that
+removes it — but a reader who cannot see them is entitled to think otherwise, and
+the page now says so above the first day.
+
+**And the detail sheet's own strip named one of its three inks.** "Gold is what it
+collides with" left `#330072` unexplained forty pixels from a key where the same
+purple means "does not collide". It names all three.
+
+**Held.** The reviewer's headline is that A is A-plus with the useful half removed
+and should be replaced by a phone-first variant. That is a decision about which
+products to keep, not a defect, and is passed on rather than acted on. So are its
+findings on B's comparison arithmetic, B's collision caption surviving a pivot into
+a view where "at this time" is not the axis, B's truncated host column, C's
+12,000px scroll with no sticky day band, C's gate whitespace, C's URLs breaking
+mid-token, A's day axis being flattened by one seven-hour event, the diagonal hatch
+carrying six meanings, and the shared link that comes back as a list when `ghosts`
+is on. All are real; none is one of the three things this round was asked to fix,
+and each would need its own round.
+
+One point it raised was argued and kept: on the whole run, a bar that is both open
+to all levels and colliding shows lilac *and* a gold cap, so the key offering both
+is not over-claiming — the run draws collisions as a cap above a filled bar, which
+is why `clockStates()` takes `capped`. Making the cap visible was the fix that
+mattered there.

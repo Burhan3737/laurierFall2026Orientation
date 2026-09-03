@@ -285,7 +285,8 @@ ol{margin:0;padding:0;list-style:none}
 @media print{
   @page{margin:16mm}
   body{background:#fff;font-size:10.5pt}
-  .ask,.planbar,.contents,.docacts,.endnote .srcgrid{display:none!important}
+  .ask,.planbar,.contents,.docacts,.endnote .srcgrid,
+  .endnote .srcsub,.endnote .srcsub+.lede{display:none!important}
   .doc{max-width:none;padding:0}
   .dochead{padding-top:0;border-bottom:2px solid #000}
   .dochead h1{font-size:30pt;color:#000}
@@ -615,3 +616,20 @@ ol{margin:0;padding:0;list-style:none}
 /* the plan bar is fixed over the foot of the page, so a jump target that lands
    under it lands out of sight */
 html{scroll-padding-bottom:96px}
+
+/* ---- the page that is watched, but never read --------------------------
+   The sources section used to state one true number and imply a false one:
+   every event here comes from the schedules listed above, but that is not
+   everything being tracked. Both numbers are said now, and the page that
+   contributes nothing to the board says on its own card why it contributes
+   nothing, so a reader is not left wondering what is missing. */
+.srcsub{
+  margin-top:30px;font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--purple);
+}
+.watchgrid{grid-template-columns:1fr}
+.watchgrid .src{max-width:76ch}
+.src.watched b{color:var(--gold-d)}
+.src em{
+  display:block;margin:4px 0 5px;font-style:normal;color:var(--meta);font-size:12px;line-height:1.5;
+}

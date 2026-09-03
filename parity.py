@@ -293,7 +293,13 @@ def shared_logic_check(names):
     where the same bug can be fixed once and left standing twice, so the
     functions that decide *facts* — when an event runs, which listings are the
     same event, how prose is broken — must be byte-identical wherever they
-    appear. Presentation may differ; facts may not."""
+    appear. Presentation may differ; facts may not.
+
+    clockStates() and legendKeys() are the one exception, and they are here for
+    the same reason. They decide what the key under a day is allowed to claim
+    about the colours beside it, and a key that claims something the day does not
+    contain is a page telling a student something false. Two copies of that rule
+    drifting is precisely the failure this list exists to prevent."""
     def body(path, name):
         src = open(at(path), encoding="utf-8").read()
         m = re.search(r"^function %s\(" % name, src, re.M)
@@ -314,7 +320,8 @@ def shared_logic_check(names):
     for name in ("parseWhen", "sentences", "paras", "gatesOf", "assess",
                  "stripDay", "stripLead", "dupKey", "sameEvent",
                  "publishedDetail", "listingRank", "onePerEvent",
-                 "attendable", "copiesIn", "sourcesOf", "allLinksOf", "audienceLine"):
+                 "attendable", "copiesIn", "sourcesOf", "allLinksOf", "audienceLine",
+                 "clockStates", "legendKeys", "dayEntries"):
         got = {}
         for n in names:
             b = body("_app_%s.js" % n, name)

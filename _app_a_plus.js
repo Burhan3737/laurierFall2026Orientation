@@ -822,6 +822,9 @@ var MORE = null;        // null until the refinements row is folded or unfolded 
 var ghosts = false;     // draw events this student may not attend
 var picked = null;      // index of the event open in the sheet
 var asList = false;     // read the day as an agenda instead of a clock
+/* How the plan is read, and therefore how it prints. A view, never a filter:
+   both forms hold every ticked event, and neither adds one. */
+var planCal = false;    // read the plan on the clock instead of as a list
 
 /* Past five concurrent events a day column gets tight, so the blocks tighten:
    smaller type, venue dropped. The clock is not given up — abandoning it on the
@@ -1215,7 +1218,7 @@ function split(list) {
 }
 function ribbonHtml(it) {
   var e = it.ev, a = assess(e), off = !a.ok;
-  return '<button class="rib' + (off ? " off" : "") + (isPicked(e) ? " mine" : "") + '" ' +
+  return '<button class="rib' + (off ? " off" : (e.oa ? " open" : "")) + (isPicked(e) ? " mine" : "") + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="rt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
     '<span class="rh">' + esc(title(e)) + "</span>" +
@@ -1280,12 +1283,18 @@ function hourAxis(sc) {
   return h;
 }
 
-function rules(sc) {
+/* `of` names what the empty stretch is empty of. On the board that is what
+   Laurier published; in the plan it is what the student ticked, and saying
+   "nothing published between 1pm and 7pm" over a plan on a day Laurier
+   published fourteen things is the page stating a falsehood about its own
+   source. */
+function rules(sc, of) {
   var h = "";
   sc.blocks.forEach(function (bl) {
     if (bl.gap) {
       h += '<div class="gapband" style="top:' + bl.y + "px;height:" + bl.h + 'px"><span>' +
-           "nothing published between " + clock(bl.a) + " and " + clock(bl.b) + "</span></div>";
+           (of || "nothing published") + " between " + clock(bl.a) + " and " + clock(bl.b) +
+           "</span></div>";
       return;
     }
     for (var m = Math.ceil(bl.a / 60) * 60; m <= bl.b; m += 60)
@@ -1315,10 +1324,11 @@ function blockHtml(it, sc) {
 }
 function looseHtml(e) {
   var a = assess(e), off = !a.ok;
-  return '<button class="chipev' + (off ? " off" : "") + (isPicked(e) ? " mine" : "") + '" ' +
+  return '<button class="chipev' + (off ? " off" : (e.oa ? " open" : "")) + (isPicked(e) ? " mine" : "") + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="ch">' + esc(title(e)) + "</span>" +
-    '<span class="cw">' + esc(off ? a.reason : (e.n || e.w || "Time not published")) + "</span></button>";
+    '<span class="cw">' + esc(off ? a.reason : (e.n || e.w || "Time not published")) + "</span>" +
+    (isPicked(e) ? '<span class="mymark" aria-hidden="true">✓</span>' : "") + "</button>";
 }
 
 /* ---- the board ---------------------------------------------------------- */
@@ -1552,8 +1562,12 @@ function weekHtml(list, keys) {
   for (var g = lo; g <= hi; g += 60)
     gridlines += '<span class="wl" style="left:' + pc(g) + '%"></span>';
 
-  var h = '<div class="weekwrap"><div class="wkhead"><span class="wklab">The run</span>' +
-    '<div class="wkaxis">' + ticks + "</div></div>";
+  /* The bars carry the same three states the day clock does — purple for an
+     ordinary event, lilac for one open to all Laurier students, a gold cap for a
+     collision — and until now said so nowhere. The rows are built first so the
+     key above them can name the states this run actually contains. */
+  var wentries = [];
+  var body = "";
 
   dated.forEach(function (k) {
     var dt = new Date(k + "T00:00:00"), past = k < NOW;
@@ -1573,7 +1587,9 @@ function weekHtml(list, keys) {
     var shown = items;
     var n = onDay(list, k).length;
 
-    h += '<div class="wkrow' + (past ? " past" : "") + (k === NOW ? " today" : "") + '">' +
+    shown.forEach(function (it) { wentries.push([it.ev, it.ncol > 1, false]); });
+
+    body += '<div class="wkrow' + (past ? " past" : "") + (k === NOW ? " today" : "") + '">' +
       '<button class="wkday" data-day="' + k + '">' +
         '<span class="wdw">' + DOW3[dt.getDay()] + "</span>" +
         '<span class="wdd">' + dt.getDate() + "</span>" +
@@ -1603,9 +1619,19 @@ function weekHtml(list, keys) {
       "</div></div>";
     pt.loose.forEach(function (e) { looseCarry.push([k, e]); });
   });
-  h += "</div>";
+  body += "</div>";
 
   onDay(list, "TBA").forEach(function (e) { looseCarry.push(["TBA", e]); });
+  /* The untimed chips below the run carry the same edges, so they are part of
+     what the key has to account for. */
+  looseCarry.forEach(function (p) { wentries.push([p[1], false, true]); });
+
+  var wkeys = legendKeys(clockStates(wentries, true));
+  /* Above the grid, not between the axis and the first row: put inside, a key
+     reads as part of the ruling it is explaining. */
+  var h = (wkeys ? '<div class="legend legend-run">' + wkeys + "</div>" : "") +
+    '<div class="weekwrap"><div class="wkhead"><span class="wklab">The run</span>' +
+    '<div class="wkaxis">' + ticks + "</div></div>" + body;
   if (looseCarry.length) {
     h += '<div class="loosebar"><h3>No clock time published <span>' + looseCarry.length + "</span></h3>" +
       '<p class="lede">Laurier gives these a day but no usable time, or no date at all. They are listed rather than placed, because guessing would be worse.</p>' +
@@ -1624,16 +1650,18 @@ function weekHtml(list, keys) {
    has nothing left to say. The argument survives the change of form — the hour
    gutter stays, empty stretches are still named rather than drawn, and every
    collision is counted in words. */
-function agendaHtml(items) {
+function agendaHtml(items, of) {
   var prevEnd = null;
   return '<div class="agenda">' + items.map(function (it) {
     var gap = "";
     if (prevEnd !== null && it.s - prevEnd >= GAP_MIN)
-      gap = '<div class="aggap">nothing published between ' + clock(prevEnd) + " and " + clock(it.s) + "</div>";
+      gap = '<div class="aggap">' + (of || "nothing published") + " between " +
+            clock(prevEnd) + " and " + clock(it.s) + "</div>";
     prevEnd = prevEnd === null ? it.de : Math.max(prevEnd, it.de);
     var e = it.ev, a = assess(e), off = !a.ok;
     var clash = items.filter(function (o) { return o !== it && o.s < it.e && it.s < o.e; });
     return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) +
+      (clash.length ? " clash" : "") +
       (isPicked(e) ? " mine" : "") + '" ' +
       (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '" tabindex="0">' +
       '<div class="agt">' + clock(it.s) + "<span>" + clock(it.e) + "</span></div>" +
@@ -1643,8 +1671,73 @@ function agendaHtml(items) {
         (off ? '<p class="agx">' + esc(a.reason) + "</p>" : "") +
         (clash.length ? '<p class="agc">' + clash.length + " other" + (clash.length === 1 ? "" : "s") +
                         " at this time</p>" : "") +
-      "</div>" + '<div class="agp">' + pickBtn(e, "ag") + "</div></article>";
+      "</div>" + '<div class="agp">' + pickBtn(e, "ag") + "</div>" +
+      (isPicked(e) ? '<span class="mymark" aria-hidden="true">✓</span>' : "") +
+      "</article>";
   }).join("") + "</div>";
+}
+
+/* ---- what the colours on the clock mean ---------------------------------
+   The key used to be printed whole on every day, so a Tuesday with one event on
+   it asserted that something ran at the same time as something else and that
+   something was open to all Laurier students, and neither was true. A key that
+   names a state nothing on the screen is in is worse than no key: it invites the
+   reader to match a caption to the only edge in front of them.
+
+   The ordinary state had no key at all, which was the other half of the same
+   fault — a plain purple edge sat beside a lilac swatch captioned "open to all
+   Laurier students", two purples one step apart with only one of them named, and
+   a programme-specific welcome was read as open to everybody. The plain state is
+   named now whenever anything else is, and lilac has become a double edge so the
+   difference survives at swatch size and in black and white.
+
+   clockStates() is given [event, doesItCollide] pairs for everything the view
+   actually draws, blocks, ribbons and untimed chips alike, because whether two
+   events collide is a fact about the placement rather than about the list.
+------------------------------------------------------------------------- */
+function clockStates(entries, capped) {
+  var st = { plain: false, open: false, clash: false, off: false };
+  entries.forEach(function (p) {
+    var e = p[0], clash = p[1], aside = p[2];
+    if (!assess(e).ok) { st.off = true; return; }
+    if (clash) st.clash = true;
+    /* The key has to name the colour on the screen, not a property of the
+       event. A reading edge can carry one meaning at a time and a collision
+       takes it, so an event that collides is drawn neither lilac nor purple and
+       the key must not claim that anything is. The whole run draws a collision
+       as a gold cap above a filled bar, where the two do show together, and
+       passes capped. */
+    if (clash && !capped) return;
+    /* An all-day ribbon and an untimed chip sit under their own headings and
+       look nothing like the swatch: a lavender full-bleed strip is not a white
+       box with a purple edge. On a Bachelor of Education Monday every card on
+       the clock was gold and the only purple on the page was two ribbons, and
+       the key still offered "an ordinary event on your board" with a swatch
+       matching nothing. They keep the marked states, which really are the same
+       colour wherever they appear, and give up the unmarked one. */
+    if (aside) { if (e.oa) st.open = true; return; }
+    if (e.oa) st.open = true; else st.plain = true;
+  });
+  return st;
+}
+function legendKeys(st) {
+  var k = "";
+  if (st.clash) k += '<span class="lg lg-clash">runs at the same time as something else</span>';
+  if (st.open) k += '<span class="lg lg-open">open to all Laurier students</span>';
+  if (st.off) k += '<span class="lg lg-off">not open to you</span>';
+  /* On its own, "an ordinary event" tells nobody anything. It earns its place
+     only as the thing the other keys are not. */
+  if (k && st.plain)
+    k = '<span class="lg lg-plain">an ordinary event on your board</span>' + k;
+  return k;
+}
+/* The entries one day of the clock draws, in the form clockStates() wants:
+   the event, whether it collides, and whether it is drawn beside the clock
+   rather than on it. */
+function dayEntries(pt, items) {
+  return items.map(function (it) { return [it.ev, it.ncol > 1, false]; })
+    .concat(pt.long.map(function (it) { return [it.ev, false, true]; }),
+            pt.loose.map(function (e) { return [e, false, true]; }));
 }
 
 function dayHtml(list, keys) {
@@ -1685,17 +1778,21 @@ function dayHtml(list, keys) {
       '<button class="peakbtn" data-day="' + firstK + '">' + DOW[fdt.getDay()] + " " +
       fdt.getDate() + " " + MON[fdt.getMonth()] + " ›</button></p>" : "") + "</div>" +
     '<button class="step" data-step="1"' + (i >= keys.length - 1 ? " disabled" : "") + ' aria-label="Next day">›</button>' +
-    '</div><div class="legend">' +
-      (listNow ? "" : '<span class="lg lg-clash">runs at the same time as something else</span>' +
-                      '<span class="lg lg-open">open to all Laurier students</span>') +
-      (ghosts ? '<span class="lg lg-off">not open to you</span>' : "") +
-      (narrow || items.length < 2 ? "" :
-        '<button class="modebtn" data-mode="1">' +
-        (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>") +
-      (tight && !asList
-        ? '<span class="lgnote">' + lanes + " run at once here — the clock is tight; " +
-          "the list may read easier</span>" : "") +
-    "</div></div>";
+    "</div>" + (function () {
+      /* The list reads the same events with the same edges, so the key holds in
+         both modes; it is the day that decides what is in it, not the form. */
+      var keys2 = legendKeys(clockStates(dayEntries(parts, items)));
+      var extra =
+        (narrow || items.length < 2 ? "" :
+          '<button class="modebtn" data-mode="1">' +
+          (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>") +
+        (tight && !asList
+          ? '<span class="lgnote">' + lanes + " run at once here — the clock is tight; " +
+            "the list may read easier</span>" : "");
+      /* An empty <div class="legend"> is not nothing: it is 6px of margin and a
+         flex row holding a day apart from its own clock. */
+      return (keys2 || extra) ? '<div class="legend">' + keys2 + extra + "</div>" : "";
+    })() + "</div>";
 
   if (parts.long.length)
     h += '<div class="allday"><h3>Open most of the day <span>' + parts.long.length + '</span></h3>' +
@@ -1762,6 +1859,68 @@ function regRow(e) {
    the detail sheet and the Clashes lens use — so the plan cannot tell a student
    something the rest of the page contradicts.
 ------------------------------------------------------------------------- */
+/* ---- the plan, drawn on the clock ---------------------------------------
+   The plan was a column of paragraphs on a page whose whole argument is that a
+   week is a shape, not a list. This is the same plan with the same events in it
+   — byDay() over the same picks, one day at a time, using the board's own
+   scale, blocks, ribbons and chips, so a ticked event looks the same wherever a
+   student meets it.
+
+   A day too crowded to draw falls back to the agenda for that day alone and
+   says why, which is what the day board does and what the printed sheet does;
+   surrendering the clock quietly would leave a student wondering what happened
+   to it.
+------------------------------------------------------------------------- */
+function planCalHtml(picks) {
+  var narrow = window.innerWidth < 700;
+  var all = [];
+  var body = byDay(picks).map(function (g) {
+    var pt = split(g.items);
+    var items = placed(pt.timed, 52);
+    var lanes = items.reduce(function (m, it) { return Math.max(m, it.ncol); }, 0);
+    var sc = items.length ? makeScale(items, 1.15) : null;
+    var tooDeep = lanes > MAX_LANES;
+    all = all.concat(dayEntries(pt, items));
+
+    var h = '<section class="pday pcalday' + (g.k !== "TBA" && g.k < NOW ? " past" : "") +
+      '"><h3 class="pdayh">' + esc(dayLabel(g.k)) +
+      '<span class="pdayn">' + g.items.length + "</span></h3>";
+
+    if (pt.long.length)
+      h += '<div class="allday"><h4>Open most of the day <span>' + pt.long.length +
+               "</span></h4><div class=\"ribs wide\">" + pt.long.map(ribbonHtml).join("") + "</div></div>";
+
+    if (pt.loose.length)
+      h += '<div class="loosebar tight"><h4>Time not published <span>' + pt.loose.length +
+               "</span></h4><div class=\"chips\">" + pt.loose.map(looseHtml).join("") + "</div></div>";
+
+    if (items.length && (narrow || tooDeep)) {
+      h += '<p class="lgnote">' + (narrow
+        ? "The clock is too narrow to draw here, so this day is read in time order."
+        : lanes + " of these run at once, which is more than the clock can draw and " +
+          "still be read, so this day is written out in time order.") + "</p>";
+      h += agendaHtml(items, "nothing in your plan");
+    } else if (items.length) {
+      h += '<div class="daygrid"><div class="gutcol"><div class="gut" style="height:' +
+        sc.H + 'px">' + hourAxis(sc) + '</div></div><div class="col wide" style="height:' +
+        sc.H + 'px">' + rules(sc, "nothing in your plan") +
+        items.map(function (it) { return blockHtml(it, sc); }).join("") + "</div></div>";
+    }
+    return h + "</section>";
+  }).join("");
+
+  /* The list carries a Details button, a calendar file and a Remove beside
+     every event; the clock has room for none of them, and a reader who cannot
+     see them may reasonably think this form has taken them away. It has not:
+     every block opens the same card, which holds all three. */
+  var keys = legendKeys(clockStates(all));
+  return '<p class="pcalnote">Every block, ribbon and chip below opens its own ' +
+    "card \u2014 that is where the venue, the links, the calendar file and the tick " +
+    "that removes it from your plan live. Nothing here is only readable.</p>" +
+    (keys ? '<div class="legend plegend">' + keys + "</div>" : "") +
+    '<div class="planlist plancal">' + body + "</div>";
+}
+
 function planHtml() {
   var picks = planEvents();
   if (!picks.length) {
@@ -1770,7 +1929,22 @@ function planHtml() {
       "detail card — and it collects here.</p>" +
       "<p>The plan is kept in this browser, on this device. Close the page and come back " +
       "tomorrow and it is still here. Nothing is sent anywhere and Laurier is not told.</p>" +
-      '<p><button class="pbtn" data-view="day">Go and pick some events ›</button></p></div>';
+      '<p><button class="pbtn" data-view="day">Go and pick some events ›</button></p>' +
+      /* Printing with nothing ticked produces the whole board, and which of the
+         two forms it comes out in is decided by this switch. Hidden here, it was
+         an eight-page document and a ten-page one behind a control the reader
+         had no way to see or set. */
+      '<div class="pviews" role="group" aria-label="How this would print">' +
+        '<span class="pvlab">Print as</span>' +
+        '<button class="pv' + (planCal ? "" : " on") + '" data-planview="list" ' +
+          'aria-pressed="' + (!planCal) + '">List</button>' +
+        '<button class="pv' + (planCal ? " on" : "") + '" data-planview="cal" ' +
+          'aria-pressed="' + planCal + '">Calendar</button>' +
+        '<span class="pvnote">With nothing ticked there is no plan to print, so ' +
+          "Ctrl+P prints every event you may attend — as " +
+          (planCal ? "a calendar of the whole board" : "a written list") +
+          ", headed as the board rather than as a schedule you chose.</span>" +
+      "</div></div>";
   }
   var cm = clashMap(), t = icsTally(picks);
   var offBoard = picks.filter(function (e) { return !assess(e).ok; });
@@ -1791,9 +1965,26 @@ function planHtml() {
       "walk up to them whenever suits you. They are marked below; nothing else is hidden.</p>"
       : "") +
     lostNote() +
+    /* The plan is the one place this page lets a student read their own week,
+       and until now it could only be read as a column of paragraphs on a page
+       whose whole argument is the clock. The toggle is a view and not a filter:
+       both forms hold exactly these events, and the sentence beside it says so,
+       because a control that looks like a filter beside a count that does not
+       move is a control a student stops trusting. */
+    '<div class="pviews" role="group" aria-label="How to show the plan">' +
+      '<span class="pvlab">Show as</span>' +
+      '<button class="pv' + (planCal ? "" : " on") + '" data-planview="list" ' +
+        'aria-pressed="' + (!planCal) + '">List</button>' +
+      '<button class="pv' + (planCal ? " on" : "") + '" data-planview="cal" ' +
+        'aria-pressed="' + planCal + '">Calendar</button>' +
+      '<span class="pvnote">Both hold the same ' + picks.length + " event" +
+        (picks.length === 1 ? "" : "s") + " — this changes how they are drawn, " +
+        "not which ones are here. Printing follows whichever you are reading.</span>" +
+    "</div>" +
     '<div class="planacts">' +
       '<button class="abtn" id="dlplan">Add all to my calendar (.ics)</button>' +
-      '<button class="abtn" id="printplan">Print my schedule</button>' +
+      '<button class="abtn" id="printplan">Print my schedule' +
+        (planCal ? " (as a calendar)" : " (as a list)") + "</button>" +
       '<button class="abtn ghost" id="clearplan">Empty the plan</button>' +
     "</div>" +
     '<p class="acct">The calendar file will carry <b>' + t.timed + '</b> timed entr' +
@@ -1805,7 +1996,7 @@ function planHtml() {
         "is not a thing. " + (t.none === 1 ? "It is" : "They are") + " listed below, unexported." : ".") +
     "</p></div></div>";
 
-  h += '<div class="planlist">' + byDay(picks).map(function (g) {
+  h += planCal ? planCalHtml(picks) : '<div class="planlist">' + byDay(picks).map(function (g) {
     return '<section class="pday' + (g.k !== "TBA" && g.k < NOW ? " past" : "") + '">' +
       '<h3 class="pdayh">' + esc(dayLabel(g.k)) +
       '<span class="pdayn">' + g.items.length + "</span></h3>" +
@@ -1975,6 +2166,7 @@ function printRegHtml() {
   var wide = pageRegGroups(mine);
   var done = own.filter(isDone).length;
 
+  PRWHAT = "What I still have to book";
   var h = '<div class="prsheet"><header class="prhead">' +
     '<p class="prcrest">Wilfrid Laurier University · Orientation</p>' +
     "<h1>What I still have to book</h1>" +
@@ -1999,6 +2191,7 @@ function printRegHtml() {
   }
   h += byDay(own).map(function (g) {
     return '<section class="prday"><h2>' + esc(dayLabel(g.k)) + "</h2>" +
+      printRunHead() +
       g.items.map(function (e) {
         var m = mapFor(e), d = isDone(e);
         return '<div class="prev prreg-ev' + (d ? " prdone" : "") + '">' +
@@ -2040,13 +2233,18 @@ function printRegHtml() {
    to the written list on its own, and the page says why rather than printing a
    grid nobody can read.
 ------------------------------------------------------------------------- */
-var PR_LANES = 4;      // the most a printed day can stack and still name its events
+/* Measured rather than assumed. The printed grid is the page width less the
+   hour gutter: on A4 with 12mm margins that is about 510pt, so five abreast is
+   102pt a box and six is 85pt. Four was a guess, and it cost a Tuesday its
+   twenty-one names on a sheet that was 45% white space — a key with no lock,
+   with the reader sent three pages on to find out what any of it was. */
+var PR_LANES = 5;      // the most a printed day can stack and still name its events
 var PR_LANES_MAX = 6;  // past that a box holds a number and a time, and nothing else
 var PR_PT_HOUR = 30;   // points per hour at full scale
 var PR_PT_GAP = 13;    // a collapsed stretch of nothing, named rather than drawn
-var PR_PT_MAX = 430;   // the tallest grid that still leaves the page room to breathe
+var PR_PT_MAX = 560;   // the tallest grid that still leaves the page room to breathe
 
-function printGrid(items, named) {
+function printGrid(items, named, of) {
   /* The same piecewise axis the screen uses: occupied stretches run to scale,
      and a hole of two hours or more collapses to a band that names the hours it
      stands for. Drawn to scale, one quiet Saturday was five inches of ruled
@@ -2057,8 +2255,8 @@ function printGrid(items, named) {
   sc.blocks.forEach(function (bl) {
     if (bl.gap) {
       h += '<div class="prgap" style="top:' + bl.y.toFixed(1) + "pt;height:" +
-        bl.h.toFixed(1) + 'pt"><span>nothing published between ' + esc(clock(bl.a)) +
-        " and " + esc(clock(bl.b)) + "</span></div>";
+        bl.h.toFixed(1) + 'pt"><span>' + esc(of || "nothing published") + " between " +
+        esc(clock(bl.a)) + " and " + esc(clock(bl.b)) + "</span></div>";
       return;
     }
     for (var m = Math.ceil(bl.a / 60) * 60; m <= bl.b; m += 60) {
@@ -2080,6 +2278,16 @@ function printGrid(items, named) {
   return h;
 }
 
+/* A printed sheet that starts in the middle of a day used to run ten entries
+   before naming one, because the date lived only in the heading above. Every
+   entry carries its own day now: three words in the time column, and no sheet
+   of a nine-page schedule is anonymous. */
+function shortDay(k) {
+  if (!k || k === "TBA") return "No date";
+  var dt = new Date(k + "T00:00:00");
+  return DOW3[dt.getDay()] + " " + dt.getDate() + " " + MON[dt.getMonth()];
+}
+
 /* One event, written out. The grid says when; this says everything else, and it
    is the only place a printed page can put a web address. */
 function printEntry(e, no, hit, common) {
@@ -2091,7 +2299,9 @@ function printEntry(e, no, hit, common) {
   bits.push(audienceLine(e));
   if (e.c) bits.push("Cost: " + e.c);
   return '<div class="prev">' +
-    '<p class="prt"><span class="prno">' + no + "</span> " + esc(whenLabel(e)) + "</p>" +
+    '<p class="prt"><span class="prno">' + no + "</span> " +
+      '<span class="prday-lab">' + esc(shortDay(e.d)) + "</span> " +
+      esc(whenLabel(e)) + "</p>" +
     '<div class="prbody">' +
       '<p class="prn">' + esc(title(e)) + "</p>" +
       '<p class="prw"><b>Where:</b> ' +
@@ -2116,28 +2326,109 @@ function printEntry(e, no, hit, common) {
     "</div></div>";
 }
 
+/* Who the sheet is for and what is on it, in the two lines that make a printed
+   page unambiguous once it is off the screen. The heading differs deliberately
+   between the two cases: a board printed because nothing was ticked must not be
+   mistaken for a schedule somebody chose. */
+/* Repeated under every day heading, so no sheet of a multi-page schedule is
+   anonymous once it is separated from the others. */
+var PRWHAT = "";
+function printRunHead() {
+  return PRWHAT ? '<p class="prrun"><b>' + esc(PRWHAT) + "</b> · " +
+    esc(printWho()) + "</p>" : "";
+}
+
+function printSheetHead(usingPlan, list) {
+  PRWHAT = usingPlan ? "My orientation schedule" : "Everything I may attend";
+  return '<div class="prsheet"><header class="prhead">' +
+    '<p class="prcrest">Wilfrid Laurier University · Orientation</p>' +
+    "<h1>" + (usingPlan ? "My orientation schedule" : "Everything I may attend") + "</h1>" +
+    '<p class="prwho">' + esc(printWho()) + "</p>" +
+    '<p class="prwhat">' + (usingPlan
+      ? "The " + list.length + " event" + (list.length === 1 ? "" : "s") +
+        " I ticked, and nothing else — this is my plan, not the whole board."
+      : "Nothing is ticked, so this is not a chosen schedule: it is every event I am " +
+        "eligible for" + (q ? ' matching the search "' + esc(q) + '"' : "") + ", " +
+        list.length + " in all.") + " " +
+    (planCal
+      ? "Drawn on the clock, a day at a time; the venues and the web addresses are " +
+        "collected at the end, because a grid has room for neither."
+      : "Written out in time order, with the venue, the host and every web address " +
+        "against each event.") +
+    " Compiled from Laurier’s published schedules on 31 Aug 2026.</p></header>";
+}
+
+/* ---- the addresses a grid cannot carry ----------------------------------
+   A calendar is a shape. It has no room for a room name and none at all for a
+   web address, and paper cannot be clicked, so the registration links — which
+   are how a student actually gets a place — would simply be gone. They are
+   collected here instead, in the same numbers as the boxes above, each with its
+   venue and any citation the day's own line did not already cover. Nothing the
+   grid or the day heading has already said is repeated. */
+function printAddresses(days) {
+  if (!days.length) return "";
+  var body = days.map(function (d) {
+    return '<section class="pradday"><h3>' + esc(dayLabel(d.k)) + "</h3>" +
+      printRunHead() +
+      d.entries.map(function (e) {
+        var m = mapFor(e), src = sourcesOf(e), a = assess(e);
+        var covered = d.common && src.length === 1 && src[0].u === d.common;
+        /* The grid can say when. It cannot say who is running the thing or
+           what Laurier says about who may come, and a sheet that drops both is
+           a sheet a student has to go back to a laptop for. */
+        var bits = [];
+        if (e.h) bits.push("Host: " + e.h);
+        bits.push(audienceLine(e));
+        if (e.c) bits.push("Cost: " + e.c);
+        return '<p class="prad"><span class="prno">' + d.no[e.__i] + "</span> " +
+          '<span class="prday-lab">' + esc(shortDay(e.d)) + "</span> " +
+          esc(whenLabel(e)) + " · <b>" + esc(title(e)) + "</b><br>" +
+          /* Labelled the way the written entries label it, so one line of a
+             printed sheet means the same thing in both documents — and so a
+             gate can count entries without knowing which document it is
+             holding. */
+          "<b>Where:</b> " +
+          esc(e.w || (e.vr ? "Online" : "Venue not published by Laurier")) +
+          (m && m.tail ? " · " + esc(m.tail) : "") +
+          "<br>" + esc(bits.join(" · ")) +
+          (a.ok ? "" : "<br>Not on the board I was looking at — " + esc(a.reason) + ".") +
+          regLinksOf(e).map(function (l) {
+            return "<br>Register (" + esc(l.text) + "): " + esc(l.href);
+          }).join("") +
+          (covered ? "" : "<br>Cited from " +
+            src.map(function (o) { return esc(o.u); }).join("; ")) +
+          "</p>";
+      }).join("") + "</section>";
+  }).join("");
+  return '<section class="praddr"><h2>Where each one is, and how to book it</h2>' +
+    '<p class="prlede">The numbers are the numbers in the boxes above. Every venue, ' +
+    "every registration and ticket address, and every citation a day heading did not " +
+    "already carry.</p>" + body + "</section>";
+}
+
+/* ---- the printed schedule -----------------------------------------------
+   One document, never two. This used to print the calendar grid and then the
+   numbered list of the same events underneath it — the whole schedule twice,
+   and four sheets of paper where two would do. The reader has already said how
+   they read their plan; paper follows that choice rather than hedging.
+
+   And what prints is what was ticked. If the plan holds anything, the plan is
+   the document: the board is neither appended to it nor set beside it, because
+   a sheet that mixes the two is a sheet a student cannot trust to be their own.
+   With nothing ticked there is no choice to honour, so the whole eligible board
+   prints — under a heading that says plainly that is what it is, so it cannot
+   be mistaken later for a schedule somebody put together.
+------------------------------------------------------------------------- */
 function printHtml() {
   if (view === "reg") return printRegHtml();
   var picks = planEvents();
   var usingPlan = picks.length > 0;
   var list = usingPlan ? picks : sortRun(visible().filter(function (e) { return assess(e).ok; }));
   var cm = usingPlan ? clashMap() : {};
-  var who = printWho();
+
+  var h = printSheetHead(usingPlan, list);
 
   var wide = pageRegGroups(list);
-
-  var h = '<div class="prsheet"><header class="prhead">' +
-    '<p class="prcrest">Wilfrid Laurier University · Orientation</p>' +
-    "<h1>" + (usingPlan ? "My orientation schedule" : "My orientation board") + "</h1>" +
-    '<p class="prwho">' + esc(who) + "</p>" +
-    '<p class="prwhat">' + (usingPlan
-      ? list.length + " event" + (list.length === 1 ? "" : "s") + " I have ticked."
-      : "Every event I am eligible for" + (q ? ' matching the search "' + esc(q) + '"' : "") +
-        " — " + list.length + " in all. Nothing was ticked, so the whole board is printed.") +
-    " Drawn on the clock, a day at a time; the numbered notes under each day carry " +
-    "the venues and the web addresses. Compiled from Laurier's published schedules " +
-    "on 31 Aug 2026.</p></header>";
-
   if (wide.length) {
     h += '<section class="prreg"><h2>Register for orientation itself</h2>' +
       wide.map(function (x) {
@@ -2151,6 +2442,8 @@ function printHtml() {
     h += '<p class="prnone">There is nothing to print: no event on this board.</p>';
   }
 
+  var appendix = [];
+
   h += byDay(list).map(function (g) {
     var parts = split(g.items);
     var items = placed(parts.timed, 30);
@@ -2158,7 +2451,9 @@ function printHtml() {
 
     /* Numbered down the day and, within one start time, left to right across
        the grid — the 5pm row read 18, 14, 15, 16, 17 when the numbers came from
-       the time sort alone and the columns came from the placement. */
+       the time sort alone and the columns came from the placement. Both
+       documents number the same way, so block 3 on the calendar and entry 3 in
+       the list are the same event. */
     var col = {};
     items.forEach(function (it) { col[it.ev.__i] = it.col; });
     var ordered = sortRun(g.items).slice().sort(function (a, b) {
@@ -2186,6 +2481,7 @@ function printHtml() {
     if (!common || seen[common] < 3) common = null;
 
     var head = '<section class="prday"><h2>' + esc(dayLabel(g.k)) + "</h2>" +
+      printRunHead() +
       (common ? '<p class="prdaycite">Every entry below is cited from ' +
         esc(common) + "</p>" : "");
 
@@ -2197,37 +2493,48 @@ function printHtml() {
         }).join("") + "</p>";
     }
 
+    var loose = parts.loose.length
+      ? '<p class="prloose"><b>No clock time published</b> ' +
+        parts.loose.map(function (e) {
+          return "<span>" + no[e.__i] + " " + esc(title(e)) + "</span>";
+        }).join("") + "</p>"
+      : "";
+
+    var written = '<div class="prdetail">' + ordered.map(function (e) {
+      return printEntry(e, no[e.__i], cm[dupKey(e)] || [], common);
+    }).join("") + "</div>";
+
+    if (!planCal) return head + loose + written + "</section>";
+
     /* How much a box can hold depends on how many have to share the width. Four
        abreast on an A4 page is about 110pt each and a name fits. Six is 70pt,
        which fits a number and a time and would chop a name in half, so the boxes
-       keep the shape of the day and the numbered list below carries the names.
-       Past six even that is a smear of hairlines, and the day is better read as
-       a list — which is what it becomes, with the reason printed above it. */
+       keep the shape of the day and the address list at the end carries the
+       names. Past six even that is a smear of hairlines, and the day is better
+       read as a list — which is what it becomes, with the reason printed above. */
+    var drew = false;
     if (items.length && lanes <= PR_LANES_MAX) {
       if (lanes > PR_LANES) {
         head += '<p class="prwhy">' + lanes + " of these run at once, so the blocks below " +
-          "carry their number and their time; read the names off the numbered list " +
-          "underneath.</p>";
+          "carry their number and their time; read the names off the list at the end.</p>";
       }
-      head += printGrid(items, lanes <= PR_LANES);
+      head += printGrid(items, lanes <= PR_LANES,
+        usingPlan ? "nothing in my plan" : "nothing published");
+      drew = true;
     } else if (items.length) {
       head += '<p class="prwhy">' + lanes + " of these run at the same time. Drawn " +
         lanes + " abreast each block is a hairline, too narrow to carry even its own " +
-        "number, so this day is written out in time order below rather than drawn.</p>";
+        "number, so this day alone is written out in time order rather than drawn.</p>";
     }
 
-    if (parts.loose.length) {
-      head += '<p class="prloose"><b>No clock time published</b> ' +
-        parts.loose.map(function (e) {
-          return "<span>" + no[e.__i] + " " + esc(title(e)) + "</span>";
-        }).join("") + "</p>";
-    }
-
-    return head + '<div class="prdetail">' +
-      ordered.map(function (e) {
-        return printEntry(e, no[e.__i], cm[dupKey(e)] || [], common);
-      }).join("") + "</div></section>";
+    /* The stated fallback writes that one day out in full, so it needs nothing
+       from the address list and would otherwise be printed twice. */
+    if (!drew && items.length) return head + loose + written + "</section>";
+    appendix.push({ k: g.k, entries: ordered, no: no, common: common });
+    return head + loose + "</section>";
   }).join("");
+
+  if (planCal) h += printAddresses(appendix);
 
   h += '<footer class="prfoot"><p>Printed from the Laurier Orientation Event Finder, ' +
     "compiled 31 Aug 2026 from " + META.nSources + " published Laurier schedules. " +
@@ -2302,6 +2609,12 @@ function wireDoing() {
   });
   [].slice.call(document.querySelectorAll("#board [data-view]")).forEach(function (b) {
     b.onclick = function () { view = b.dataset.view; redraw(); window.scrollTo({ top: 0 }); };
+  });
+  [].slice.call(document.querySelectorAll("[data-planview]")).forEach(function (b) {
+    b.onclick = function () {
+      planCal = b.dataset.planview === "cal";
+      redraw();
+    };
   });
   var dl = $("dlplan");
   if (dl) dl.onclick = function () {
@@ -2394,7 +2707,8 @@ function openSheet(i) {
           esc(clock(x.s) + " " + x.ev.t) + '"></span>';
       }).join("") + '</div><div class="trends"><span>' + clock(lo) + "</span><span>" +
         clock(hi) + '</span></div><p class="trcap">Where this sits in ' +
-        DOW[new Date(e.d + "T00:00:00").getDay()] + "’s run — gold is what it collides with.</p></div>";
+        DOW[new Date(e.d + "T00:00:00").getDay()] + "’s run: purple is this " +
+        "event, gold is what it collides with, grey is everything else that day.</p></div>";
     }
   }
 
@@ -2479,6 +2793,7 @@ function writeHash() {
      friend was sending a different page from the one they were looking at. */
   if (ghosts) p += "&ghosts=1";
   if (asList) p += "&list=1";
+  if (planCal) p += "&plan=cal";
   if (q) p += "&q=" + encodeURIComponent(q);
   LASTHASH = "#" + p;
   history.replaceState(null, "", LASTHASH);
@@ -2502,6 +2817,7 @@ function readHash() {
   q = p.q || "";
   ghosts = p.ghosts === "1";
   asList = ghosts || p.list === "1";
+  planCal = p.plan === "cal";
   /* a week grid is no use on a phone; the clash list reads fine there */
   if (window.innerWidth < 900 && view === "week") view = "day";
   if (p.day) { day = p.day; if (p.view !== "week") view = "day"; }

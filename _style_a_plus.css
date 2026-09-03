@@ -180,9 +180,9 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .bx{font-size:11px;color:var(--meta);font-style:italic}
 .blk.tiny .bh{font-size:11.5px;line-height:1.15;font-stretch:88%}
 .blk.tiny .bt{font-size:9.5px}
-.blk.open{border-left-color:var(--lilac)}
+.blk.open{border-left:6px double var(--lilac)}
 .blk.open .bt{color:#6E2C86}
-.blk.clash{border-left-color:var(--gold)}
+.blk.clash{border-left:4px solid var(--gold)}
 .blk.clash .bt{color:var(--gold-d)}
 .blk.off{background:repeating-linear-gradient(135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px);
   border-left:4px dotted var(--line-h);border-color:var(--line)}
@@ -225,6 +225,7 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .chipev:hover{border-color:var(--purple);box-shadow:2px 2px 0 rgba(51,0,114,.18)}
 .chipev .ch{font-size:13px;font-weight:600;line-height:1.2}
 .chipev .cw{font-size:11.5px;color:var(--meta)}
+.chipev.open{border-left:6px double var(--lilac)}
 .chipev.off{border-left:4px dotted var(--line-h);background:repeating-linear-gradient(
   135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px)}
 .chipev.off .ch{font-weight:500;color:var(--meta)}
@@ -343,13 +344,14 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   color:var(--meta);text-align:right;line-height:1.15}
 .rib{
   display:flex;align-items:baseline;gap:6px;width:100%;height:22px;padding:0 7px;
-  background:#EDE6F4;border-left:4px solid var(--lilac);text-align:left;overflow:hidden;
+  background:#EDE6F4;border-left:4px solid var(--purple);text-align:left;overflow:hidden;
 }
 .rib:hover{background:#E2D6EE}
 .rib:focus-visible{outline:2px solid var(--gold);outline-offset:-1px}
 .rt{font-size:9.5px;font-weight:700;color:#5B2A8C;white-space:nowrap;flex:0 0 auto}
 .rh{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   font-stretch:88%;color:var(--ink)}
+.rib.open{border-left:6px double var(--lilac)}
 .rib.off{background:repeating-linear-gradient(135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px);
   border-left:4px dotted var(--line-h)}
 .rib.off .rh,.rib.off .rt{color:var(--meta);font-weight:500}
@@ -376,10 +378,19 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 
 /* ---- a phone reads the day as an agenda -------------------------------- */
 .agenda{margin-top:14px;border-top:2px solid var(--purple)}
+/* The list is the same day with the same events in it, so it carries the same
+   reading edges as the clock and is covered by the same key. Before this the
+   only sign that something was open to all Laurier students was a slightly
+   different purple on its start time, explained nowhere. */
 .ag{
-  display:grid;grid-template-columns:66px minmax(0,1fr);gap:0 12px;padding:11px 0 12px;
-  border-bottom:1px solid var(--line);cursor:pointer;
+  display:grid;grid-template-columns:66px minmax(0,1fr);gap:0 12px;padding:11px 0 12px 9px;
+  border-bottom:1px solid var(--line);border-left:4px solid var(--purple);cursor:pointer;
 }
+.ag.open{border-left:6px double var(--lilac);padding-left:7px}
+/* the same order the clock resolves them in: a collision takes the edge, and
+   an event you cannot attend takes it back */
+.ag.clash{border-left:4px solid var(--gold);padding-left:9px}
+.ag.off{border-left:4px dotted var(--line-h);padding-left:9px}
 .ag:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .agt{
   font-size:12px;font-weight:700;color:var(--purple);line-height:1.35;
@@ -426,9 +437,18 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .lg::before{content:"";width:14px;height:11px;background:#fff;border:1px solid var(--line-h);
   border-left:4px solid var(--purple);flex:0 0 auto}
 .lg-clash::before{border-left-color:var(--gold)}
-.lg-open::before{border-left-color:var(--lilac)}
+.lg-open::before{border-left:6px double var(--lilac)}
 .lg-off::before{border-left:4px dotted var(--line-h);
   background:repeating-linear-gradient(135deg,#fff,#fff 3px,#F2EFF6 3px,#F2EFF6 6px)}
+/* The whole-run view draws filled bars rather than edged boxes, so its key
+   shows filled swatches: a swatch that does not look like the thing it names is
+   one more thing to decode. */
+.legend-run{padding-left:0;margin:10px 0 2px}
+.legend-run .lg::before{background:var(--purple);border-left:0}
+.legend-run .lg-open::before{background:var(--lilac);border-left:0}
+.legend-run .lg-clash::before{background:var(--purple);border-top:4px solid var(--gold)}
+.legend-run .lg-off::before{border-left:0;
+  background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
 
 /* ---- this event, in its day -------------------------------------------- */
 .tribbon{margin-top:16px;padding:12px 14px;background:var(--field);border-left:4px solid var(--purple)}
@@ -487,10 +507,13 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .wklane{position:relative;background:var(--field);min-height:26px}
 .wkrow.past .wklane{background:repeating-linear-gradient(135deg,#F4F1F7,#F4F1F7 5px,#EDE8F3 5px,#EDE8F3 10px)}
 .wl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line)}
+/* The cap is the entire collision signal across a nine-day, eighty-bar grid.
+   At 2px it rendered as one pixel on a standard display: legible only to a
+   reader who already knew to look for it. */
 .wb{
   position:absolute;height:22px;background:var(--purple);border:0;padding:0 5px;
   display:flex;align-items:center;overflow:hidden;min-width:3px;
-  border-top:2px solid transparent;
+  border-top:4px solid transparent;
 }
 .wbl{
   font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;
@@ -677,19 +700,24 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   display:flex;align-items:center;justify-content:center;
   background:var(--gold);color:#2A1B00;font-size:10px;font-weight:800;
 }
-/* Gold already means overlap on the clock — .blk.clash borrows the left edge —
-   so a ticked event does not take the same edge and muddle the two. On the clock
-   and the run it is the corner tick and a rule the other markers do not use;
-   where gold carries nothing (the agenda, the chips, the drop-in ribbons) the
-   reading edge is free and is used. */
-.chipev.mine{box-shadow:inset 3px 0 0 var(--gold)}
-/* the agenda row has no left gutter, so the rail is hung outside it rather than
-   laid over the first three pixels of the clock */
-.ag.mine{box-shadow:inset 3px 0 0 var(--gold);padding-left:9px;margin-left:-9px}
-.rib.mine{border-left-color:var(--gold)}
+/* Gold means overlap on the clock, and it has to mean only that. This used to
+   put a gold reading edge on a ticked agenda row, chip, ribbon and clash option
+   too, on the reasoning that gold carried nothing there — which stopped being
+   true the moment the agenda and the ribbons started wearing the same edges as
+   the clock. On a Friday with four drop-in sessions, the one in the plan was
+   gold under a key reading "runs at the same time as something else", about
+   sessions this page explicitly never counts as clashing.
+
+   The reading edge is now the event's own state everywhere, and a ticked event
+   is the corner tick it already was on the clock: a badge, not an edge. */
+/* the corner tick is 15px square and sits over the top right of whatever it
+   marks, so anything wearing one keeps that corner clear */
+.mymark{z-index:3}
+.chipev,.rib,.clopt{position:relative}
+.chipev.mine{padding-right:24px}
+.ag.mine .agb{padding-right:20px}
 .wb.mine::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;
   background:var(--gold)}
-.clrow.mine .clopt{border-left-color:var(--gold)}
 .ag{position:relative}
 .agp{grid-column:2;padding:0 0 2px}
 .clrow{display:flex;align-items:flex-start;gap:8px}
@@ -746,6 +774,49 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .planhead .lede,.reghead .lede{margin-top:7px;font-size:13.5px;color:var(--meta);line-height:1.5}
 .planhead .lede b,.reghead .lede b{color:var(--purple);font-weight:800}
 .warnn{color:var(--gold-d)}
+/* ---- how the plan is read ----------------------------------------------
+   A segmented pair, not a filter chip row: it changes the form of the plan and
+   never its contents, and the note beside it says so, because a control that
+   sits where a filter sits and leaves the count unmoved is a control a student
+   reads twice and then distrusts. */
+.pviews{display:flex;flex-wrap:wrap;align-items:center;gap:0 9px;margin-top:14px}
+.pvlab{
+  font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--meta);
+}
+.pv{
+  font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--purple);background:#fff;border:1px solid var(--purple);padding:5px 13px;
+  margin-right:-1px;
+}
+.pv:hover{background:var(--field)}
+.pv.on{background:var(--purple);color:#fff}
+.pv:focus-visible{outline:3px solid var(--gold);outline-offset:1px;z-index:2}
+.pvnote{
+  flex-basis:100%;margin-top:7px;font-size:12.5px;color:var(--meta);line-height:1.5;
+  max-width:76ch;
+}
+/* Said once above the whole plan, because a reader who has just pressed
+   Calendar is entitled to know the cards did not go away. */
+.pcalnote{
+  margin-top:14px;font-size:12.5px;color:var(--meta);line-height:1.5;max-width:76ch;
+  border-left:3px solid var(--line-h);padding-left:11px;
+}
+.plegend{padding-left:0;margin:14px 0 0}
+.plancal{margin-top:2px}
+.pcalday{margin-top:20px}
+.pcalday .daygrid{margin-top:10px}
+.pcalday .allday,.pcalday .loosebar{margin-top:12px}
+.pcalday .agenda{margin-top:10px}
+/* the ribbon and chip groups inside a day of the plan sit one heading deeper
+   than they do on the board, and read the same */
+.allday h4,.loosebar h4{
+  font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--purple);display:flex;align-items:center;gap:8px;
+}
+.allday h4 span,.loosebar h4 span{
+  background:var(--purple);color:#fff;font-size:11px;padding:1px 6px;letter-spacing:0;
+}
 .planacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
 .acct{
   margin-top:10px;font-size:12.5px;color:var(--meta);line-height:1.5;
@@ -758,6 +829,7 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   font-size:22px;font-weight:800;font-stretch:82%;text-transform:uppercase;color:var(--purple);
 }
 .planempty p{margin-top:9px;font-size:14px;color:var(--meta);line-height:1.55}
+.planempty .pviews{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
 
 .planlist{margin-top:4px}
 .pday{margin-top:26px}
@@ -877,6 +949,8 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
    On screen it is not there at all. On paper it is the only thing there.
 ------------------------------------------------------------------------- */
 .printout{display:none}
+/* the running head is furniture for paper and has no business on screen */
+.prrun{display:none}
 
 @media print{
   @page{margin:14mm 12mm}
@@ -885,6 +959,18 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   body>*:not(.printout){display:none!important}
   .printout{display:block!important}
 
+  /* Page two of a printed schedule opened "6 12pm-3pm Shinerama BBQ" and ran
+     ten more entries before naming a day; a sheet that comes off the stack on
+     its own has to say whose it is. A true running head needs a fixed element
+     repeated per page, and Chrome's own print pipeline places one so
+     unpredictably that it landed over the content on two of three attempts. So
+     the identity rides the day headings instead, which is deterministic: every
+     day block on every sheet names the document and the student it is for. */
+  .prrun{
+    display:block;margin:1.5pt 0 0;font-size:6.8pt;letter-spacing:.05em;color:#555;
+    break-after:avoid;
+  }
+  .prrun b{font-weight:700;color:#333}
   .prhead{border-bottom:2.5pt solid #000;padding-bottom:6pt;margin-bottom:12pt}
   .prcrest{font-size:8pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#000}
   .prhead h1{
@@ -962,6 +1048,8 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
     padding:5pt 0;border-bottom:.4pt solid #999;break-inside:avoid;
   }
   .prt{font-size:9.5pt;font-weight:700;letter-spacing:.01em;color:#000;line-height:1.3}
+  .prday-lab{display:block;font-size:7pt;font-weight:700;letter-spacing:.07em;color:#555}
+  .prad .prday-lab{display:inline;margin-right:2pt}
   .prbody{min-width:0}
   .prn{font-size:11.5pt;font-weight:700;color:#000;line-height:1.2}
   .prbox{
@@ -978,9 +1066,51 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   .proff b{text-transform:uppercase;letter-spacing:.08em;font-size:8pt}
   .prurl{margin-top:2pt;font-size:9pt;color:#000;line-height:1.3;word-break:break-all}
   .prcite{margin-top:2pt;font-size:7.5pt;color:#444;line-height:1.25;word-break:break-all}
+  /* ---- what the grid could not carry ----------------------------------
+     Printed after the last day rather than under each one, so it reads as an
+     appendix and not as a second copy of the schedule. */
+  .praddr{margin-top:16pt;break-before:auto}
+  .praddr h2{
+    font-size:11.5pt;font-weight:800;font-stretch:86%;text-transform:uppercase;
+    letter-spacing:.04em;border-bottom:1.5pt solid #000;padding-bottom:2pt;color:#000;
+    break-after:avoid;
+  }
+  .prlede{
+    margin-top:3pt;font-size:8.5pt;color:#333;line-height:1.4;break-after:avoid;
+  }
+  .pradday{margin-top:8pt;break-inside:auto}
+  .pradday h3{
+    font-size:9pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:#000;border-bottom:.5pt solid #000;padding-bottom:1.5pt;break-after:avoid;
+  }
+  .prad{
+    margin-top:4pt;font-size:8.5pt;color:#000;line-height:1.35;
+    word-break:break-word;break-inside:avoid;
+  }
+  .prad .prno{
+    display:inline-block;min-width:11pt;border:.7pt solid #000;text-align:center;
+    font-weight:800;font-size:8pt;margin-right:3pt;
+  }
+  .prad b{font-size:9.5pt}
   .prfoot{
     margin-top:16pt;padding-top:6pt;border-top:1pt solid #000;font-size:8pt;
     color:#333;line-height:1.45;
   }
 }
 
+/* ---- the page that is watched, but never read --------------------------
+   The sources section used to state one true number and imply a false one:
+   every event here comes from the schedules listed above, but that is not
+   everything being tracked. Both numbers are said now, and the page that
+   contributes nothing to the board says on its own card why it contributes
+   nothing, so a reader is not left wondering what is missing. */
+.srcsub{
+  margin-top:30px;font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--purple);
+}
+.watchgrid{grid-template-columns:1fr}
+.watchgrid .src{max-width:76ch}
+.src.watched b{color:var(--gold-d)}
+.src em{
+  display:block;margin:4px 0 5px;font-style:normal;color:var(--meta);font-size:12px;line-height:1.5;
+}

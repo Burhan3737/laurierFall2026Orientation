@@ -116,6 +116,12 @@ a{color:var(--purple)}
 }
 .ghostbtn:hover{color:var(--purple);border-bottom-color:var(--purple)}
 .ghostbtn.on{color:var(--purple);border-bottom-color:var(--gold)}
+/* The key that exists for paper. It was styled only inside @media print, which
+   meant that on screen it was not hidden but merely unstyled: three captions
+   with no swatches between them, running into each other in the identity band
+   as "on your boardruns at the same time as something else". It belongs to the
+   printed sheet, so on screen it is not there at all. */
+.prkey{display:none}
 
 /* ---- day-density navigator --------------------------------------------- */
 .navstrip{position:sticky;top:0;z-index:40;background:var(--paper);
@@ -196,9 +202,9 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .bx{font-size:11px;color:var(--meta);font-style:italic}
 .blk.tiny .bh{font-size:11.5px;line-height:1.15;font-stretch:88%}
 .blk.tiny .bt{font-size:9.5px}
-.blk.open{border-left-color:var(--lilac)}
+.blk.open{border-left:6px double var(--lilac)}
 .blk.open .bt{color:#6E2C86}
-.blk.clash{border-left-color:var(--gold)}
+.blk.clash{border-left:4px solid var(--gold)}
 .blk.clash .bt{color:var(--gold-d)}
 .blk.off{background:repeating-linear-gradient(135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px);
   border-left:4px dotted var(--line-h);border-color:var(--line)}
@@ -241,6 +247,7 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .chipev:hover{border-color:var(--purple);box-shadow:2px 2px 0 rgba(51,0,114,.18)}
 .chipev .ch{font-size:13px;font-weight:600;line-height:1.2}
 .chipev .cw{font-size:11.5px;color:var(--meta)}
+.chipev.open{border-left:6px double var(--lilac)}
 .chipev.off{border-left:4px dotted var(--line-h);background:repeating-linear-gradient(
   135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px)}
 .chipev.off .ch{font-weight:500;color:var(--meta)}
@@ -439,13 +446,14 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   color:var(--meta);text-align:right;line-height:1.15}
 .rib{
   display:flex;align-items:baseline;gap:6px;width:100%;height:22px;padding:0 7px;
-  background:#EDE6F4;border-left:4px solid var(--lilac);text-align:left;overflow:hidden;
+  background:#EDE6F4;border-left:4px solid var(--purple);text-align:left;overflow:hidden;
 }
 .rib:hover{background:#E2D6EE}
 .rib:focus-visible{outline:2px solid var(--gold);outline-offset:-1px}
 .rt{font-size:9.5px;font-weight:700;color:#5B2A8C;white-space:nowrap;flex:0 0 auto}
 .rh{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   font-stretch:88%;color:var(--ink)}
+.rib.open{border-left:6px double var(--lilac)}
 .rib.off{background:repeating-linear-gradient(135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px);
   border-left:4px dotted var(--line-h)}
 .rib.off .rh,.rib.off .rt{color:var(--meta);font-weight:500}
@@ -472,10 +480,19 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 
 /* ---- a phone reads the day as an agenda -------------------------------- */
 .agenda{margin-top:14px;border-top:2px solid var(--purple)}
+/* The list is the same day with the same events in it, so it carries the same
+   reading edges as the clock and is covered by the same key. Before this the
+   only sign that something was open to all Laurier students was a slightly
+   different purple on its start time, explained nowhere. */
 .ag{
-  display:grid;grid-template-columns:66px minmax(0,1fr);gap:0 12px;padding:11px 0 12px;
-  border-bottom:1px solid var(--line);cursor:pointer;
+  display:grid;grid-template-columns:66px minmax(0,1fr);gap:0 12px;padding:11px 0 12px 9px;
+  border-bottom:1px solid var(--line);border-left:4px solid var(--purple);cursor:pointer;
 }
+.ag.open{border-left:6px double var(--lilac);padding-left:7px}
+/* the same order the clock resolves them in: a collision takes the edge, and
+   an event you cannot attend takes it back */
+.ag.clash{border-left:4px solid var(--gold);padding-left:9px}
+.ag.off{border-left:4px dotted var(--line-h);padding-left:9px}
 .ag:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .agt{
   font-size:12px;font-weight:700;color:var(--purple);line-height:1.35;
@@ -522,9 +539,18 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .lg::before{content:"";width:14px;height:11px;background:#fff;border:1px solid var(--line-h);
   border-left:4px solid var(--purple);flex:0 0 auto}
 .lg-clash::before{border-left-color:var(--gold)}
-.lg-open::before{border-left-color:var(--lilac)}
+.lg-open::before{border-left:6px double var(--lilac)}
 .lg-off::before{border-left:4px dotted var(--line-h);
   background:repeating-linear-gradient(135deg,#fff,#fff 3px,#F2EFF6 3px,#F2EFF6 6px)}
+/* The whole-run view draws filled bars rather than edged boxes, so its key
+   shows filled swatches: a swatch that does not look like the thing it names is
+   one more thing to decode. */
+.legend-run{padding-left:0;margin:10px 0 2px}
+.legend-run .lg::before{background:var(--purple);border-left:0}
+.legend-run .lg-open::before{background:var(--lilac);border-left:0}
+.legend-run .lg-clash::before{background:var(--purple);border-top:4px solid var(--gold)}
+.legend-run .lg-off::before{border-left:0;
+  background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
 
 /* ---- this event, in its day -------------------------------------------- */
 .tribbon{margin-top:16px;padding:12px 14px;background:var(--field);border-left:4px solid var(--purple)}
@@ -583,10 +609,13 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .wklane{position:relative;background:var(--field);min-height:26px}
 .wkrow.past .wklane{background:repeating-linear-gradient(135deg,#F4F1F7,#F4F1F7 5px,#EDE8F3 5px,#EDE8F3 10px)}
 .wl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line)}
+/* The cap is the entire collision signal across a nine-day, eighty-bar grid.
+   At 2px it rendered as one pixel on a standard display: legible only to a
+   reader who already knew to look for it. */
 .wb{
   position:absolute;height:22px;background:var(--purple);border:0;padding:0 5px;
   display:flex;align-items:center;overflow:hidden;min-width:3px;
-  border-top:2px solid transparent;
+  border-top:4px solid transparent;
 }
 .wbl{
   font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;
@@ -704,10 +733,27 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   .standfirst{display:none}
 }
 
+/* ---- the page that is watched, but never read --------------------------
+   The sources section used to state one true number and imply a false one:
+   every event here comes from the schedules listed above, but that is not
+   everything being tracked. Both numbers are said now, and the page that
+   contributes nothing to the board says on its own card why it contributes
+   nothing, so a reader is not left wondering what is missing. */
+.srcsub{
+  margin-top:30px;font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--purple);
+}
+.watchgrid{grid-template-columns:1fr}
+.watchgrid .src{max-width:76ch}
+.src.watched b{color:var(--gold-d)}
+.src em{
+  display:block;margin:4px 0 5px;font-style:normal;color:var(--meta);font-size:12px;line-height:1.5;
+}
+
 </style>
 </head>
 <body>
-<script>const META = {"levels":["undergraduate","graduate","bachelor-of-education"],"levelLabels":{"undergraduate":"Undergraduate","graduate":"Graduate","bachelor-of-education":"Bachelor of Education"},"campuses":["Waterloo","Brantford","Milton"],"terms":["Fall 2026","Spring 2026","Winter 2027"],"streams":["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence","Mature & Transfer","Accessible Learning","Virtual"],"nEvents":520,"nDistinct":353,"nSources":13,"pageTitles":{"bachelor-of-education.html":"Laurier Orientation:Bachelor of Education Students Schedule","graduate__fall-brantford.html":"Laurier Fall Orientation:Brantford Graduate Schedule","graduate__fall-virtual.html":"Laurier Fall Orientation:Virtual Graduate Schedule","graduate__fall-waterloo.html":"Laurier Fall Orientation:Waterloo Graduate Schedule","graduate__spring.html":"Laurier Spring Orientation:Graduate Schedule","graduate__winter.html":"Laurier Winter Orientation:Graduate Schedule","indigenous.html":"Laurier Orientation:Indigenous Students Schedule","international.html":"Laurier Orientation:International and Exchange Students Schedule","locus.html":"Laurier Orientation:LOCUS Schedule","undergraduate__fall-brantford.html":"Laurier Fall Orientation:Brantford Undergraduate Schedule","undergraduate__fall-milton.html":"Laurier Fall Orientation:Milton Undergraduate Schedule","undergraduate__fall-virtual.html":"Laurier Fall Orientation:Virtual Undergraduate Schedule","undergraduate__fall-waterloo.html":"Laurier Fall Orientation:Waterloo Undergraduate Schedule"},"sources":[{"file":"bachelor-of-education.html","title":"Laurier Orientation:Bachelor of Education Students Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html"},{"file":"graduate__fall-brantford.html","title":"Laurier Fall Orientation:Brantford Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-brantford.html"},{"file":"graduate__fall-virtual.html","title":"Laurier Fall Orientation:Virtual Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-virtual.html"},{"file":"graduate__fall-waterloo.html","title":"Laurier Fall Orientation:Waterloo Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-waterloo.html"},{"file":"graduate__spring.html","title":"Laurier Spring Orientation:Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/spring.html"},{"file":"graduate__winter.html","title":"Laurier Winter Orientation:Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/winter.html"},{"file":"indigenous.html","title":"Laurier Orientation:Indigenous Students Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html"},{"file":"international.html","title":"Laurier Orientation:International and Exchange Students Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html"},{"file":"locus.html","title":"Laurier Orientation:LOCUS Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/locus.html"},{"file":"undergraduate__fall-brantford.html","title":"Laurier Fall Orientation:Brantford Undergraduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html"},{"file":"undergraduate__fall-milton.html","title":"Laurier Fall Orientation:Milton Undergraduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-milton.html"},{"file":"undergraduate__fall-virtual.html","title":"Laurier Fall Orientation:Virtual Undergraduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-virtual.html"},{"file":"undergraduate__fall-waterloo.html","title":"Laurier Fall Orientation:Waterloo Undergraduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html"}]};</script>
+<script>const META = {"levels":["undergraduate","graduate","bachelor-of-education"],"levelLabels":{"undergraduate":"Undergraduate","graduate":"Graduate","bachelor-of-education":"Bachelor of Education"},"campuses":["Waterloo","Brantford","Milton"],"terms":["Fall 2026","Spring 2026","Winter 2027"],"streams":["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence","Mature & Transfer","Accessible Learning","Virtual"],"nEvents":520,"nDistinct":353,"nSources":13,"nWatched":1,"nTracked":14,"pageTitles":{"bachelor-of-education.html":"Laurier Orientation:Bachelor of Education Students Schedule","graduate__fall-brantford.html":"Laurier Fall Orientation:Brantford Graduate Schedule","graduate__fall-virtual.html":"Laurier Fall Orientation:Virtual Graduate Schedule","graduate__fall-waterloo.html":"Laurier Fall Orientation:Waterloo Graduate Schedule","graduate__spring.html":"Laurier Spring Orientation:Graduate Schedule","graduate__winter.html":"Laurier Winter Orientation:Graduate Schedule","indigenous.html":"Laurier Orientation:Indigenous Students Schedule","international.html":"Laurier Orientation:International and Exchange Students Schedule","locus.html":"Laurier Orientation:LOCUS Schedule","undergraduate__fall-brantford.html":"Laurier Fall Orientation:Brantford Undergraduate Schedule","undergraduate__fall-milton.html":"Laurier Fall Orientation:Milton Undergraduate Schedule","undergraduate__fall-virtual.html":"Laurier Fall Orientation:Virtual Undergraduate Schedule","undergraduate__fall-waterloo.html":"Laurier Fall Orientation:Waterloo Undergraduate Schedule"},"sources":[{"file":"bachelor-of-education.html","title":"Laurier Orientation:Bachelor of Education Students Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html"},{"file":"graduate__fall-brantford.html","title":"Laurier Fall Orientation:Brantford Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-brantford.html"},{"file":"graduate__fall-virtual.html","title":"Laurier Fall Orientation:Virtual Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-virtual.html"},{"file":"graduate__fall-waterloo.html","title":"Laurier Fall Orientation:Waterloo Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-waterloo.html"},{"file":"graduate__spring.html","title":"Laurier Spring Orientation:Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/spring.html"},{"file":"graduate__winter.html","title":"Laurier Winter Orientation:Graduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/winter.html"},{"file":"indigenous.html","title":"Laurier Orientation:Indigenous Students Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/indigenous.html"},{"file":"international.html","title":"Laurier Orientation:International and Exchange Students Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html"},{"file":"locus.html","title":"Laurier Orientation:LOCUS Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/locus.html"},{"file":"undergraduate__fall-brantford.html","title":"Laurier Fall Orientation:Brantford Undergraduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html"},{"file":"undergraduate__fall-milton.html","title":"Laurier Fall Orientation:Milton Undergraduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-milton.html"},{"file":"undergraduate__fall-virtual.html","title":"Laurier Fall Orientation:Virtual Undergraduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-virtual.html"},{"file":"undergraduate__fall-waterloo.html","title":"Laurier Fall Orientation:Waterloo Undergraduate Schedule","url":"https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html"}],"watched":[{"title":"Incoming Graduate Student Support | ASPIRE","url":"https://students.wlu.ca/academics/graduate-and-postdoctoral-studies/aspire/incoming-student-support.html","why":"Laurier publishes its graduate 'Laurier Crash Course' webinars here, dated and registrable, in the same accordions as the schedules. Every Fall 2026 session has already run, so none of them belongs on a board for the term ahead. Laurier says the Winter 2027 sessions go up at the beginning of the fall semester, which is now, so the page is checked for them rather than assumed to be empty."}]};</script>
 
 <header class="mast">
   <div class="mastin">
@@ -753,6 +799,12 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
     <div class="src"><b>undergraduate / fall-milton</b><span>Laurier Fall Orientation:Milton Undergraduate Schedule</span><a href="https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-milton.html" target="_blank" rel="noopener">students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-milton.html</a></div>
     <div class="src"><b>undergraduate / fall-virtual</b><span>Laurier Fall Orientation:Virtual Undergraduate Schedule</span><a href="https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-virtual.html" target="_blank" rel="noopener">students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-virtual.html</a></div>
     <div class="src"><b>undergraduate / fall-waterloo</b><span>Laurier Fall Orientation:Waterloo Undergraduate Schedule</span><a href="https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html" target="_blank" rel="noopener">students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html</a></div>
+    </div>
+
+    <h3 class="srcsub">Watched, not read</h3>
+    <p class="lede">14 Laurier pages are checked for change whenever this board is audited: the 13 above, which every event here was taken from, and 1 watched but never read. A watched page publishes orientation events that nothing on this board comes from; it is checked so the decision to leave it off can be revisited when the page changes, rather than never. Each card below says why.</p>
+    <div class="srcgrid watchgrid">
+    <div class="src watched"><b>Watched &middot; not read</b><span>Incoming Graduate Student Support | ASPIRE</span><em>Laurier publishes its graduate 'Laurier Crash Course' webinars here, dated and registrable, in the same accordions as the schedules. Every Fall 2026 session has already run, so none of them belongs on a board for the term ahead. Laurier says the Winter 2027 sessions go up at the beginning of the fall semester, which is now, so the page is checked for them rather than assumed to be empty.</em><a href="https://students.wlu.ca/academics/graduate-and-postdoctoral-studies/aspire/incoming-student-support.html" target="_blank" rel="noopener">students.wlu.ca/academics/graduate-and-postdoctoral-studies/aspire/incoming-student-support.html</a></div>
     </div>
   </div>
 </section>
@@ -1290,10 +1342,10 @@ function drawIdbar() {
        " you can attend</span>" +
        '<button class="ghostbtn' + (ghosts ? " on" : "") + '" id="ghostbtn" aria-pressed="' + ghosts + '">' +
        (ghosts ? "Hide" : "Show") + " what you cannot attend</button>" +
-       '<span class="prkey"><i class="k-plain"></i><b>on your board</b>' +
-       '<i class="k-clash"></i><b>runs at the same time as something else</b>' +
-       '<i class="k-open"></i><b>open to all Laurier students</b>' +
-       (ghosts ? '<i class="k-off"></i><b>not open to you</b>' : "") + "</span></div>";
+       /* Printed unconditionally, this key told a reader whose sheet held one
+          event that something on it collided and something on it was open to
+          every Laurier student. It names the states the sheet actually carries. */
+       printKeys(viewStates()) + "</div>";
   h += "</div>";
   $("idbar").innerHTML = h;
 
@@ -1433,7 +1485,7 @@ function split(list) {
 }
 function ribbonHtml(it) {
   var e = it.ev, a = assess(e), off = !a.ok;
-  return '<button class="rib' + (off ? " off" : "") + '" ' +
+  return '<button class="rib' + (off ? " off" : (e.oa ? " open" : "")) + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="rt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
     '<span class="rh">' + esc(title(e)) + "</span></button>";
@@ -1496,12 +1548,18 @@ function hourAxis(sc) {
   return h;
 }
 
-function rules(sc) {
+/* `of` names what the empty stretch is empty of. On the board that is what
+   Laurier published; in the plan it is what the student ticked, and saying
+   "nothing published between 1pm and 7pm" over a plan on a day Laurier
+   published fourteen things is the page stating a falsehood about its own
+   source. */
+function rules(sc, of) {
   var h = "";
   sc.blocks.forEach(function (bl) {
     if (bl.gap) {
       h += '<div class="gapband" style="top:' + bl.y + "px;height:" + bl.h + 'px"><span>' +
-           "nothing published between " + clock(bl.a) + " and " + clock(bl.b) + "</span></div>";
+           (of || "nothing published") + " between " + clock(bl.a) + " and " + clock(bl.b) +
+           "</span></div>";
       return;
     }
     for (var m = Math.ceil(bl.a / 60) * 60; m <= bl.b; m += 60)
@@ -1530,7 +1588,7 @@ function blockHtml(it, sc) {
 }
 function looseHtml(e) {
   var a = assess(e), off = !a.ok;
-  return '<button class="chipev' + (off ? " off" : "") + '" ' +
+  return '<button class="chipev' + (off ? " off" : (e.oa ? " open" : "")) + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="ch">' + esc(title(e)) + "</span>" +
     '<span class="cw">' + esc(off ? a.reason : (e.n || e.w || "Time not published")) + "</span></button>";
@@ -1757,8 +1815,12 @@ function weekHtml(list, keys) {
   for (var g = lo; g <= hi; g += 60)
     gridlines += '<span class="wl" style="left:' + pc(g) + '%"></span>';
 
-  var h = '<div class="weekwrap"><div class="wkhead"><span class="wklab">The run</span>' +
-    '<div class="wkaxis">' + ticks + "</div></div>";
+  /* The bars carry the same three states the day clock does — purple for an
+     ordinary event, lilac for one open to all Laurier students, a gold cap for a
+     collision — and until now said so nowhere. The rows are built first so the
+     key above them can name the states this run actually contains. */
+  var wentries = [];
+  var body = "";
 
   dated.forEach(function (k) {
     var dt = new Date(k + "T00:00:00"), past = k < NOW;
@@ -1778,7 +1840,9 @@ function weekHtml(list, keys) {
     var shown = items;
     var n = onDay(list, k).length;
 
-    h += '<div class="wkrow' + (past ? " past" : "") + (k === NOW ? " today" : "") + '">' +
+    shown.forEach(function (it) { wentries.push([it.ev, it.ncol > 1, false]); });
+
+    body += '<div class="wkrow' + (past ? " past" : "") + (k === NOW ? " today" : "") + '">' +
       '<button class="wkday" data-day="' + k + '">' +
         '<span class="wdw">' + DOW3[dt.getDay()] + "</span>" +
         '<span class="wdd">' + dt.getDate() + "</span>" +
@@ -1807,9 +1871,19 @@ function weekHtml(list, keys) {
       "</div></div>";
     pt.loose.forEach(function (e) { looseCarry.push([k, e]); });
   });
-  h += "</div>";
+  body += "</div>";
 
   onDay(list, "TBA").forEach(function (e) { looseCarry.push(["TBA", e]); });
+  /* The untimed chips below the run carry the same edges, so they are part of
+     what the key has to account for. */
+  looseCarry.forEach(function (p) { wentries.push([p[1], false, true]); });
+
+  var wkeys = legendKeys(clockStates(wentries, true));
+  /* Above the grid, not between the axis and the first row: put inside, a key
+     reads as part of the ruling it is explaining. */
+  var h = (wkeys ? '<div class="legend legend-run">' + wkeys + "</div>" : "") +
+    '<div class="weekwrap"><div class="wkhead"><span class="wklab">The run</span>' +
+    '<div class="wkaxis">' + ticks + "</div></div>" + body;
   if (looseCarry.length) {
     h += '<div class="loosebar"><h3>No clock time published <span>' + looseCarry.length + "</span></h3>" +
       '<p class="lede">Laurier gives these a day but no usable time, or no date at all. They are listed rather than placed, because guessing would be worse.</p>' +
@@ -1828,16 +1902,18 @@ function weekHtml(list, keys) {
    has nothing left to say. The argument survives the change of form — the hour
    gutter stays, empty stretches are still named rather than drawn, and every
    collision is counted in words. */
-function agendaHtml(items) {
+function agendaHtml(items, of) {
   var prevEnd = null;
   return '<div class="agenda">' + items.map(function (it) {
     var gap = "";
     if (prevEnd !== null && it.s - prevEnd >= GAP_MIN)
-      gap = '<div class="aggap">nothing published between ' + clock(prevEnd) + " and " + clock(it.s) + "</div>";
+      gap = '<div class="aggap">' + (of || "nothing published") + " between " +
+            clock(prevEnd) + " and " + clock(it.s) + "</div>";
     prevEnd = prevEnd === null ? it.de : Math.max(prevEnd, it.de);
     var e = it.ev, a = assess(e), off = !a.ok;
     var clash = items.filter(function (o) { return o !== it && o.s < it.e && it.s < o.e; });
-    return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) + '" ' +
+    return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) +
+      (clash.length ? " clash" : "") + '" ' +
       (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '" tabindex="0">' +
       '<div class="agt">' + clock(it.s) + "<span>" + clock(it.e) + "</span></div>" +
       '<div class="agb"><h4>' + esc(title(e)) + "</h4>" +
@@ -1847,6 +1923,93 @@ function agendaHtml(items) {
                         " at this time</p>" : "") +
       "</div></article>";
   }).join("") + "</div>";
+}
+
+/* ---- what the colours on the clock mean ---------------------------------
+   The key used to be printed whole on every day, so a Tuesday with one event on
+   it asserted that something ran at the same time as something else and that
+   something was open to all Laurier students, and neither was true. A key that
+   names a state nothing on the screen is in is worse than no key: it invites the
+   reader to match a caption to the only edge in front of them.
+
+   The ordinary state had no key at all, which was the other half of the same
+   fault — a plain purple edge sat beside a lilac swatch captioned "open to all
+   Laurier students", two purples one step apart with only one of them named, and
+   a programme-specific welcome was read as open to everybody. The plain state is
+   named now whenever anything else is, and lilac has become a double edge so the
+   difference survives at swatch size and in black and white.
+
+   clockStates() is given [event, doesItCollide] pairs for everything the view
+   actually draws, blocks, ribbons and untimed chips alike, because whether two
+   events collide is a fact about the placement rather than about the list.
+------------------------------------------------------------------------- */
+function clockStates(entries, capped) {
+  var st = { plain: false, open: false, clash: false, off: false };
+  entries.forEach(function (p) {
+    var e = p[0], clash = p[1], aside = p[2];
+    if (!assess(e).ok) { st.off = true; return; }
+    if (clash) st.clash = true;
+    /* The key has to name the colour on the screen, not a property of the
+       event. A reading edge can carry one meaning at a time and a collision
+       takes it, so an event that collides is drawn neither lilac nor purple and
+       the key must not claim that anything is. The whole run draws a collision
+       as a gold cap above a filled bar, where the two do show together, and
+       passes capped. */
+    if (clash && !capped) return;
+    /* An all-day ribbon and an untimed chip sit under their own headings and
+       look nothing like the swatch: a lavender full-bleed strip is not a white
+       box with a purple edge. On a Bachelor of Education Monday every card on
+       the clock was gold and the only purple on the page was two ribbons, and
+       the key still offered "an ordinary event on your board" with a swatch
+       matching nothing. They keep the marked states, which really are the same
+       colour wherever they appear, and give up the unmarked one. */
+    if (aside) { if (e.oa) st.open = true; return; }
+    if (e.oa) st.open = true; else st.plain = true;
+  });
+  return st;
+}
+function legendKeys(st) {
+  var k = "";
+  if (st.clash) k += '<span class="lg lg-clash">runs at the same time as something else</span>';
+  if (st.open) k += '<span class="lg lg-open">open to all Laurier students</span>';
+  if (st.off) k += '<span class="lg lg-off">not open to you</span>';
+  /* On its own, "an ordinary event" tells nobody anything. It earns its place
+     only as the thing the other keys are not. */
+  if (k && st.plain)
+    k = '<span class="lg lg-plain">an ordinary event on your board</span>' + k;
+  return k;
+}
+/* The states the board is about to draw, for the key only paper sees. It is
+   worked out the way each view lays a day out rather than read back off the DOM,
+   because the identity band that carries the printed key is written before the
+   board exists. The Clashes lens gets no key: everything in it collides by
+   definition, and it names "open to all Laurier students" in words already. */
+function viewStates() {
+  if (view === "clash") return { plain: false, open: false, clash: false, off: false };
+  var list = visible(), ent = [];
+  (view === "week" ? dayKeys(list) : [day]).forEach(function (k) {
+    var pt = split(onDay(list, k));
+    ent = ent.concat(dayEntries(pt, view === "week"
+      ? placed(pt.timed.concat(pt.long), 20) : placed(pt.timed, 52)));
+  });
+  return clockStates(ent);
+}
+function printKeys(st) {
+  var k = "";
+  if (st.clash) k += '<i class="k-clash"></i><b>runs at the same time as something else</b>';
+  if (st.open) k += '<i class="k-open"></i><b>open to all Laurier students</b>';
+  if (st.off) k += '<i class="k-off"></i><b>not open to you</b>';
+  if (k && st.plain)
+    k = '<i class="k-plain"></i><b>an ordinary event on your board</b>' + k;
+  return k ? '<span class="prkey">' + k + "</span>" : "";
+}
+/* The entries one day of the clock draws, in the form clockStates() wants:
+   the event, whether it collides, and whether it is drawn beside the clock
+   rather than on it. */
+function dayEntries(pt, items) {
+  return items.map(function (it) { return [it.ev, it.ncol > 1, false]; })
+    .concat(pt.long.map(function (it) { return [it.ev, false, true]; }),
+            pt.loose.map(function (e) { return [e, false, true]; }));
 }
 
 function dayHtml(list, keys) {
@@ -1887,17 +2050,21 @@ function dayHtml(list, keys) {
       '<button class="peakbtn" data-day="' + firstK + '">' + DOW[fdt.getDay()] + " " +
       fdt.getDate() + " " + MON[fdt.getMonth()] + " ›</button></p>" : "") + "</div>" +
     '<button class="step" data-step="1"' + (i >= keys.length - 1 ? " disabled" : "") + ' aria-label="Next day">›</button>' +
-    '</div><div class="legend">' +
-      (listNow ? "" : '<span class="lg lg-clash">runs at the same time as something else</span>' +
-                      '<span class="lg lg-open">open to all Laurier students</span>') +
-      (ghosts ? '<span class="lg lg-off">not open to you</span>' : "") +
-      (narrow || items.length < 2 ? "" :
-        '<button class="modebtn" data-mode="1">' +
-        (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>") +
-      (tight && !asList
-        ? '<span class="lgnote">' + lanes + " run at once here — the clock is tight; " +
-          "the list may read easier</span>" : "") +
-    "</div></div>";
+    "</div>" + (function () {
+      /* The list reads the same events with the same edges, so the key holds in
+         both modes; it is the day that decides what is in it, not the form. */
+      var keys2 = legendKeys(clockStates(dayEntries(parts, items)));
+      var extra =
+        (narrow || items.length < 2 ? "" :
+          '<button class="modebtn" data-mode="1">' +
+          (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>") +
+        (tight && !asList
+          ? '<span class="lgnote">' + lanes + " run at once here — the clock is tight; " +
+            "the list may read easier</span>" : "");
+      /* An empty <div class="legend"> is not nothing: it is 6px of margin and a
+         flex row holding a day apart from its own clock. */
+      return (keys2 || extra) ? '<div class="legend">' + keys2 + extra + "</div>" : "";
+    })() + "</div>";
 
   if (parts.long.length)
     h += '<div class="allday"><h3>Open most of the day <span>' + parts.long.length + '</span></h3>' +
@@ -2011,7 +2178,8 @@ function openSheet(i) {
           esc(clock(x.s) + " " + x.ev.t) + '"></span>';
       }).join("") + '</div><div class="trends"><span>' + clock(lo) + "</span><span>" +
         clock(hi) + '</span></div><p class="trcap">Where this sits in ' +
-        DOW[new Date(e.d + "T00:00:00").getDay()] + "’s run — gold is what it collides with.</p></div>";
+        DOW[new Date(e.d + "T00:00:00").getDay()] + "’s run: purple is this " +
+        "event, gold is what it collides with, grey is everything else that day.</p></div>";
     }
   }
 

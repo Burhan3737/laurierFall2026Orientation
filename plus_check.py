@@ -22,9 +22,13 @@ every other gate stayed green:
   4. the calendar file         CRLF throughout, folded under 75 octets, balanced
                                components, one VEVENT per dated pick, none for an
                                undated one, and the count of those stated
-  5. the printed page          a real PDF: every picked event, every registration
-                               and citation URL spelled out in full, and none of
-                               the chooser, navigator, search or view buttons
+  5. the printed page          real PDFs, in both forms the reader can choose
+                               between and with the plan both full and empty:
+                               exactly the ticked events and no others, counted
+                               rather than sampled; every registration and
+                               citation URL spelled out in full; the calendar and
+                               the written list never printed together; and none
+                               of the chooser, navigator, search or view buttons
   6. the venue mapper          a query for every venue that names a place, and no
                                query invented for one that does not
 """
@@ -115,8 +119,13 @@ def own_reg_links(e):
 
 
 # ------------------------------------------------------------- the browser --
-def page_with(picks, done=None, inject_head="", inject_body=""):
-    """A copy of the page with a plan already in localStorage."""
+def page_with(picks, done=None, inject_head="", inject_body="", name="plus-probe"):
+    """A copy of the page with a plan already in localStorage.
+
+    The file name is a parameter because two seeded copies now exist at once — a
+    plan and an empty one — and writing both to one path meant the second silently
+    became the first. Every assertion about the seeded sheet passed against an
+    empty board for one run before this was noticed."""
     src = open(PAGE, encoding="utf-8").read()
     seed = ("<script>try{localStorage.setItem(%s,%s);localStorage.setItem(%s,%s);}"
             "catch(e){}</script>"
@@ -125,7 +134,7 @@ def page_with(picks, done=None, inject_head="", inject_body=""):
     src = src.replace("<head>", "<head>" + seed + inject_head, 1)
     if inject_body:
         src = src.replace("</body>", inject_body + "</body>", 1)
-    tmp = os.path.join(tempfile.gettempdir(), "plus-probe.html")
+    tmp = os.path.join(tempfile.gettempdir(), name + ".html")
     open(tmp, "w", encoding="utf-8").write(src)
     return tmp
 
@@ -331,77 +340,179 @@ def test_ics(picks, chosen):
     ok(not noreg, "every registration link is written into the description", str(noreg[:3]))
 
 
-def test_print(picks, chosen):
-    print("\nThe printed schedule, read back out of a real PDF")
-    seeded = page_with(picks)
-    out = os.path.join(HERE, "_plus_print.pdf")
+# The plan is read on screen as a list or as a calendar, and paper follows that
+# choice. Both documents are printed and read back here, because "it prints the
+# right thing" was true of one of them and the interesting failures — the board
+# leaking into a personal schedule, or both documents coming out at once — show
+# up as a count rather than as a missing word.
+PRINT_MODES = (("list", ""), ("calendar", "&plan=cal"))
+
+
+def print_text(seeded, frag, name):
+    """Print the page to a real PDF and read the text back out of it."""
+    out = os.path.join(HERE, name)
     subprocess.run([CHROME, *chrome_flags(), "--headless", "--disable-gpu", "--no-sandbox",
                     "--window-size=1400,1000", "--no-pdf-header-footer",
                     "--print-to-pdf=" + out, "--virtual-time-budget=15000",
-                    url_of(seeded, BOARD + "&view=plan")],
-                   capture_output=True)
-    if not ok(os.path.exists(out) and os.path.getsize(out) > 4000, "Chrome printed a PDF"):
-        return
+                    url_of(seeded, frag)], capture_output=True)
+    if not os.path.exists(out) or os.path.getsize(out) < 4000:
+        return None
     doc = fitz.open(out)
     txt = "\n".join(p.get_text() for p in doc)
     doc.close()
-    open(os.path.join(HERE, "_plus_print.txt"), "w", encoding="utf-8").write(txt)
-    flatten = re.sub(r"\s+", " ", txt)
+    return txt
 
-    ok("MY ORIENTATION SCHEDULE" in txt.upper(), "it is headed as a personal schedule")
+
+def board_events():
+    """The distinct events the BOARD selection can attend, in Python."""
+    seen, out = set(), []
+    for e in EV:
+        if not eligible_here(e):
+            continue
+        k = dup_key(e)
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(e)
+    return out
+
+
+def entries_in(txt):
+    """How many events a printed sheet actually holds.
+
+    Every written entry and every line of the calendar's address list carries
+    one "Where:", and nothing else on the sheet does. Counting them is the only
+    assertion here that catches both of the failures worth catching: an event
+    that was never ticked appearing on a personal schedule, and the calendar and
+    the written list both being printed, which doubles the count.
+    """
+    return re.sub(r"\s+", " ", txt).count("Where:")
+
+
+def check_one_print(txt, label, want, others, mode, usingPlan):
+    flat = re.sub(r"\s+", " ", txt)
+    up = txt.upper()
+
+    ok(("MY ORIENTATION SCHEDULE" in up) == usingPlan and
+       ("EVERYTHING I MAY ATTEND" in up) == (not usingPlan),
+       "%s: the heading says which document this is" % label)
     ok("Undergraduate" in txt and "Waterloo campus" in txt and "Fall 2026" in txt,
-       "it says who it is for")
+       "%s: it says who it is for" % label)
 
     absent = [w for w in ("Show what you cannot attend", "Search title, venue, host",
                           "events you can attend", "Whole run", "To register",
                           "Every published orientation event", "Sources", "Data notes",
                           "Empty the plan", "Print my schedule")
-              if w.lower() in flatten.lower()]
-    ok(not absent, "nothing that only works on a screen is on the paper", str(absent))
+              if w.lower() in flat.lower()]
+    ok(not absent, "%s: nothing that only works on a screen is on the paper" % label,
+       str(absent))
 
-    titles = [dupkey.shown_title(e) for _, e in chosen]
-    lost = [t[:44] for t in titles if re.sub(r"\s+", " ", t) not in flatten]
-    ok(not lost, "every event in the plan is printed (%d)" % len(titles), str(lost[:3]))
+    lost = [t[:44] for t in want if re.sub(r"\s+", " ", t) not in flat]
+    ok(not lost, "%s: every event that should be printed is (%d)" % (label, len(want)),
+       str(lost[:3]))
 
-    flat_nospace = flatten.replace(" ", "")
-    want = []
-    for _, e in chosen:
-        want.append(("citation for " + e["title"][:30], cite_urls(e)))
-        for l in own_reg_links(e):
-            want.append(("registration for " + e["title"][:30], {l["href"]}))
-    cut = [label for label, group in want
-           if not any(u.replace(" ", "") in flat_nospace for u in group)]
-    ok(not cut, "every citation and registration URL is spelled out in full (%d)" % len(want),
-       str(cut[:2]))
+    # Exactly these, and no others. A count rather than a spot check: if the
+    # board were appended to a plan, or the calendar and the written list both
+    # came out, this is the number that would move.
+    n = entries_in(txt)
+    ok(n == len(want), "%s: the sheet holds exactly %d entries, no more" % (label, len(want)),
+       "counted %d" % n)
 
-    venues = [e["where"] for _, e in chosen if e.get("where")]
-    novenue = [v[:40] for v in venues if re.sub(r"\s+", " ", v) not in flatten]
-    ok(not novenue, "every venue is printed", str(novenue[:3]))
-    ok("Cited from" in txt, "each entry names where it was cited from")
-    ok(len(doc if False else txt) > 1500, "the page is not blank")
+    # And named: which event leaked, not just that one did. A title that is a
+    # substring of something legitimately on the sheet cannot be told apart from
+    # it in flat text, so those are excluded rather than reported as leaks.
+    leak = [t[:40] for t in others
+            if re.sub(r"\s+", " ", t) in flat
+            and not any(re.sub(r"\s+", " ", t) in re.sub(r"\s+", " ", w) for w in want)]
+    ok(not leak, "%s: no event outside it is on the sheet (%d others checked)"
+       % (label, len(others)), str(leak[:3]))
+
+    # The two documents are alternatives, never both. The calendar collects its
+    # addresses at the end; the written list carries them against each event and
+    # draws no grid at all.
+    appendix = "WHERE EACH ONE IS" in up
+    grid = bool(re.search(r"nothing published between|\bnoon\b|\b\d{1,2}(am|pm)\b", flat))
+    if mode == "calendar":
+        ok(appendix, "%s: the addresses a grid cannot carry are collected after it" % label)
+        ok("Drawn on the clock" in flat, "%s: and it says that is what it is" % label)
+        ok(grid, "%s: a clock is actually drawn" % label)
+    else:
+        ok(not appendix, "%s: no address appendix \u2014 the entries carry their own" % label)
+        ok("Written out in time order" in flat, "%s: and it says that is what it is" % label)
+
+
+def test_print(picks, chosen):
+    print("\nThe printed schedule, read back out of a real PDF, in both forms")
+    seeded = page_with(picks)
+    empty = page_with([], name="plus-empty")
+    board = board_events()
+    board_titles = [dupkey.shown_title(e) for e in board]
+    plan_titles = [dupkey.shown_title(e) for _, e in chosen]
+    off_plan = [t for t in board_titles
+                if re.sub(r"\s+", " ", t) not in
+                [re.sub(r"\s+", " ", x) for x in plan_titles]]
+
+    for mode, frag in PRINT_MODES:
+        txt = print_text(seeded, BOARD + "&view=plan" + frag, "_plus_print_%s.pdf" % mode)
+        if not ok(txt is not None, "Chrome printed a %s PDF" % mode):
+            continue
+        open(os.path.join(HERE, "_plus_print_%s.txt" % mode), "w",
+             encoding="utf-8").write(txt)
+        flat = re.sub(r"\s+", " ", txt)
+        check_one_print(txt, "plan as a " + mode, plan_titles, off_plan, mode, True)
+
+        # every address, in both forms: a calendar that quietly dropped the
+        # registration link would still look like a schedule
+        flat_nospace = flat.replace(" ", "")
+        want = []
+        for _, e in chosen:
+            want.append(("citation for " + e["title"][:30], cite_urls(e)))
+            for l in own_reg_links(e):
+                want.append(("registration for " + e["title"][:30], {l["href"]}))
+        cut = [lab for lab, group in want
+               if not any(u.replace(" ", "") in flat_nospace for u in group)]
+        ok(not cut, "plan as a %s: every citation and registration URL is spelled out "
+           "in full (%d)" % (mode, len(want)), str(cut[:2]))
+
+        venues = [e["where"] for _, e in chosen if e.get("where")]
+        novenue = [v[:40] for v in venues if re.sub(r"\s+", " ", v) not in flat]
+        ok(not novenue, "plan as a %s: every venue is printed" % mode, str(novenue[:3]))
+
+    # Nothing ticked: there is no selection to honour, so the whole eligible
+    # board prints under a heading that cannot be mistaken for a chosen plan.
+    for mode, frag in PRINT_MODES:
+        txt = print_text(empty, BOARD + "&view=plan" + frag, "_plus_empty_%s.pdf" % mode)
+        if not ok(txt is not None, "Chrome printed an empty-plan %s PDF" % mode):
+            continue
+        check_one_print(txt, "empty plan as a " + mode, board_titles, [], mode, False)
+        ok("this is not a chosen schedule" in re.sub(r"\s+", " ", txt),
+           "empty plan as a %s: it says plainly that it is not a plan" % mode)
 
 
 def test_print_is_the_same_from_any_view(picks, chosen):
     """A student who hits Ctrl+P while looking at the whole run must get the same
     schedule as one who presses the button in the plan. The printed document is
-    built from the plan, not from whatever happens to be on the screen."""
+    built from the plan, not from whatever happens to be on the screen \u2014 but it
+    does follow the one thing the reader chose about it, which is its form."""
     print("\nThe printed schedule does not depend on the view it was printed from")
     seeded = page_with(picks)
-    texts = {}
-    for frag in (BOARD + "&view=plan", BOARD + "&view=week",
-                 BOARD + "&view=day&day=2026-09-08"):
-        out = os.path.join(tempfile.gettempdir(), "plus-view-%d.pdf" % len(texts))
-        subprocess.run([CHROME, *chrome_flags(), "--headless", "--disable-gpu", "--no-sandbox",
-                        "--window-size=1400,1000", "--no-pdf-header-footer",
-                        "--print-to-pdf=" + out, "--virtual-time-budget=15000",
-                        url_of(seeded, frag)], capture_output=True)
-        doc = fitz.open(out)
-        texts[frag.split("&")[-1]] = re.sub(r"\s+", " ",
-                                            "\n".join(p.get_text() for p in doc))
-        doc.close()
-    vals = list(texts.values())
-    ok(len(set(vals)) == 1, "the same paper comes out of all three views",
-       str({k: len(v) for k, v in texts.items()}))
+    for mode, mfrag in PRINT_MODES:
+        texts = {}
+        for frag in (BOARD + "&view=plan", BOARD + "&view=week",
+                     BOARD + "&view=day&day=2026-09-08"):
+            out = os.path.join(tempfile.gettempdir(), "plus-view-%d.pdf" % len(texts))
+            subprocess.run([CHROME, *chrome_flags(), "--headless", "--disable-gpu",
+                            "--no-sandbox", "--window-size=1400,1000",
+                            "--no-pdf-header-footer", "--print-to-pdf=" + out,
+                            "--virtual-time-budget=15000",
+                            url_of(seeded, frag + mfrag)], capture_output=True)
+            doc = fitz.open(out)
+            texts[frag.split("&")[-1]] = re.sub(r"\s+", " ",
+                                                "\n".join(p.get_text() for p in doc))
+            doc.close()
+        vals = list(texts.values())
+        ok(len(set(vals)) == 1, "the same %s comes out of all three views" % mode,
+           str({k: len(v) for k, v in texts.items()}))
 
     # ...except the registration list, which is its own piece of paper
     out = os.path.join(tempfile.gettempdir(), "plus-reg.pdf")
@@ -414,12 +525,54 @@ def test_print_is_the_same_from_any_view(picks, chosen):
     doc.close()
     ok("WHAT I STILL HAVE TO BOOK" in reg.upper(),
        "printing from To register prints the booking checklist, not the schedule")
-    ok(reg not in vals and vals[0] not in reg, "and it is a different document")
+    ok("MY ORIENTATION SCHEDULE" not in reg.upper(), "and it is a different document")
     wanted = [l["href"] for e in EV if eligible_here(e) and own_reg_links(e)
               for l in own_reg_links(e)]
     missed = [u for u in set(wanted) if u.replace(" ", "") not in reg.replace(" ", "")]
     ok(not missed, "every booking URL on the board is written out in full (%d)"
        % len(set(wanted)), str(missed[:2]))
+
+
+# The plan reads as a list or as a calendar. Both are drawings of one plan, and
+# a toggle that quietly dropped an event, or drew one twice, would be a filter
+# wearing a view's clothes — and neither the printing tests nor parity.py would
+# see it, because neither of them opens the plan.
+PLAN_TITLES = ("(function(){var t=[];[].forEach.call("
+               "document.querySelectorAll('#board .pl h4, #board [data-ev-title],"
+               " #board [data-ev-off]'), function (n) {"
+               "t.push(n.getAttribute('data-ev-title')||n.getAttribute('data-ev-off')"
+               "||n.textContent);});return JSON.stringify(t.sort());})()")
+
+ERRHEAD = ("<script>window.__err=[];window.addEventListener('error',function(e){"
+           "window.__err.push(String(e.message||e.type))});</script>")
+
+
+def console_errors(picks, frag, width):
+    """Errors thrown from the first paint onwards. The listener is installed in
+    the head, before the application script runs, because an error during the
+    opening redraw is exactly the one a probe added at the end of the body would
+    arrive too late to see."""
+    p = page_with(picks, inject_head=ERRHEAD, name="plus-err")
+    got = report(p, frag, "window.__err.length + '|' + window.__err.join(' / ')",
+                 width=width)
+    return got or "no report"
+
+
+def test_plan_toggle_is_a_view(picks):
+    print("\nThe plan's List/Calendar toggle changes the drawing, not the plan")
+    seeded = page_with(picks, name="plus-toggle")
+    a = b64_report(seeded, BOARD + "&view=plan", PLAN_TITLES)
+    b = b64_report(seeded, BOARD + "&view=plan&plan=cal", PLAN_TITLES)
+    if not ok(bool(a) and bool(b), "both forms of the plan render"):
+        return
+    la, lb = json.loads(a), json.loads(b)
+    ok(la == lb, "the two forms draw the same events (%d and %d)" % (len(la), len(lb)),
+       str(sorted(set(la) ^ set(lb))[:4]))
+    ok(len(la) == len(picks), "and that is every ticked event, once each (%d)" % len(picks),
+       "drew %d" % len(la))
+    for w in (1400, 420):
+        e = console_errors(picks, BOARD + "&view=plan&plan=cal", w)
+        ok(e.startswith("0|"), "the calendar form runs clean at %dpx" % w, e)
 
 
 def test_venue_map():
@@ -512,6 +665,7 @@ def main():
     test_picking_and_searching_change_nothing(picks)
     test_plan_persists(picks)
     test_ics(picks, chosen)
+    test_plan_toggle_is_a_view(picks)
     test_print(picks, chosen)
     test_print_is_the_same_from_any_view(picks, chosen)
     test_venue_map()

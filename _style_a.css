@@ -100,6 +100,12 @@ a{color:var(--purple)}
 }
 .ghostbtn:hover{color:var(--purple);border-bottom-color:var(--purple)}
 .ghostbtn.on{color:var(--purple);border-bottom-color:var(--gold)}
+/* The key that exists for paper. It was styled only inside @media print, which
+   meant that on screen it was not hidden but merely unstyled: three captions
+   with no swatches between them, running into each other in the identity band
+   as "on your boardruns at the same time as something else". It belongs to the
+   printed sheet, so on screen it is not there at all. */
+.prkey{display:none}
 
 /* ---- day-density navigator --------------------------------------------- */
 .navstrip{position:sticky;top:0;z-index:40;background:var(--paper);
@@ -180,9 +186,9 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .bx{font-size:11px;color:var(--meta);font-style:italic}
 .blk.tiny .bh{font-size:11.5px;line-height:1.15;font-stretch:88%}
 .blk.tiny .bt{font-size:9.5px}
-.blk.open{border-left-color:var(--lilac)}
+.blk.open{border-left:6px double var(--lilac)}
 .blk.open .bt{color:#6E2C86}
-.blk.clash{border-left-color:var(--gold)}
+.blk.clash{border-left:4px solid var(--gold)}
 .blk.clash .bt{color:var(--gold-d)}
 .blk.off{background:repeating-linear-gradient(135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px);
   border-left:4px dotted var(--line-h);border-color:var(--line)}
@@ -225,6 +231,7 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .chipev:hover{border-color:var(--purple);box-shadow:2px 2px 0 rgba(51,0,114,.18)}
 .chipev .ch{font-size:13px;font-weight:600;line-height:1.2}
 .chipev .cw{font-size:11.5px;color:var(--meta)}
+.chipev.open{border-left:6px double var(--lilac)}
 .chipev.off{border-left:4px dotted var(--line-h);background:repeating-linear-gradient(
   135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px)}
 .chipev.off .ch{font-weight:500;color:var(--meta)}
@@ -423,13 +430,14 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   color:var(--meta);text-align:right;line-height:1.15}
 .rib{
   display:flex;align-items:baseline;gap:6px;width:100%;height:22px;padding:0 7px;
-  background:#EDE6F4;border-left:4px solid var(--lilac);text-align:left;overflow:hidden;
+  background:#EDE6F4;border-left:4px solid var(--purple);text-align:left;overflow:hidden;
 }
 .rib:hover{background:#E2D6EE}
 .rib:focus-visible{outline:2px solid var(--gold);outline-offset:-1px}
 .rt{font-size:9.5px;font-weight:700;color:#5B2A8C;white-space:nowrap;flex:0 0 auto}
 .rh{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   font-stretch:88%;color:var(--ink)}
+.rib.open{border-left:6px double var(--lilac)}
 .rib.off{background:repeating-linear-gradient(135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px);
   border-left:4px dotted var(--line-h)}
 .rib.off .rh,.rib.off .rt{color:var(--meta);font-weight:500}
@@ -456,10 +464,19 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 
 /* ---- a phone reads the day as an agenda -------------------------------- */
 .agenda{margin-top:14px;border-top:2px solid var(--purple)}
+/* The list is the same day with the same events in it, so it carries the same
+   reading edges as the clock and is covered by the same key. Before this the
+   only sign that something was open to all Laurier students was a slightly
+   different purple on its start time, explained nowhere. */
 .ag{
-  display:grid;grid-template-columns:66px minmax(0,1fr);gap:0 12px;padding:11px 0 12px;
-  border-bottom:1px solid var(--line);cursor:pointer;
+  display:grid;grid-template-columns:66px minmax(0,1fr);gap:0 12px;padding:11px 0 12px 9px;
+  border-bottom:1px solid var(--line);border-left:4px solid var(--purple);cursor:pointer;
 }
+.ag.open{border-left:6px double var(--lilac);padding-left:7px}
+/* the same order the clock resolves them in: a collision takes the edge, and
+   an event you cannot attend takes it back */
+.ag.clash{border-left:4px solid var(--gold);padding-left:9px}
+.ag.off{border-left:4px dotted var(--line-h);padding-left:9px}
 .ag:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .agt{
   font-size:12px;font-weight:700;color:var(--purple);line-height:1.35;
@@ -506,9 +523,18 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .lg::before{content:"";width:14px;height:11px;background:#fff;border:1px solid var(--line-h);
   border-left:4px solid var(--purple);flex:0 0 auto}
 .lg-clash::before{border-left-color:var(--gold)}
-.lg-open::before{border-left-color:var(--lilac)}
+.lg-open::before{border-left:6px double var(--lilac)}
 .lg-off::before{border-left:4px dotted var(--line-h);
   background:repeating-linear-gradient(135deg,#fff,#fff 3px,#F2EFF6 3px,#F2EFF6 6px)}
+/* The whole-run view draws filled bars rather than edged boxes, so its key
+   shows filled swatches: a swatch that does not look like the thing it names is
+   one more thing to decode. */
+.legend-run{padding-left:0;margin:10px 0 2px}
+.legend-run .lg::before{background:var(--purple);border-left:0}
+.legend-run .lg-open::before{background:var(--lilac);border-left:0}
+.legend-run .lg-clash::before{background:var(--purple);border-top:4px solid var(--gold)}
+.legend-run .lg-off::before{border-left:0;
+  background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
 
 /* ---- this event, in its day -------------------------------------------- */
 .tribbon{margin-top:16px;padding:12px 14px;background:var(--field);border-left:4px solid var(--purple)}
@@ -567,10 +593,13 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .wklane{position:relative;background:var(--field);min-height:26px}
 .wkrow.past .wklane{background:repeating-linear-gradient(135deg,#F4F1F7,#F4F1F7 5px,#EDE8F3 5px,#EDE8F3 10px)}
 .wl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line)}
+/* The cap is the entire collision signal across a nine-day, eighty-bar grid.
+   At 2px it rendered as one pixel on a standard display: legible only to a
+   reader who already knew to look for it. */
 .wb{
   position:absolute;height:22px;background:var(--purple);border:0;padding:0 5px;
   display:flex;align-items:center;overflow:hidden;min-width:3px;
-  border-top:2px solid transparent;
+  border-top:4px solid transparent;
 }
 .wbl{
   font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;
@@ -686,4 +715,21 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 @media (max-width:700px){
   /* the standfirst has done its work by the time you have read it once */
   .standfirst{display:none}
+}
+
+/* ---- the page that is watched, but never read --------------------------
+   The sources section used to state one true number and imply a false one:
+   every event here comes from the schedules listed above, but that is not
+   everything being tracked. Both numbers are said now, and the page that
+   contributes nothing to the board says on its own card why it contributes
+   nothing, so a reader is not left wondering what is missing. */
+.srcsub{
+  margin-top:30px;font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--purple);
+}
+.watchgrid{grid-template-columns:1fr}
+.watchgrid .src{max-width:76ch}
+.src.watched b{color:var(--gold-d)}
+.src em{
+  display:block;margin:4px 0 5px;font-style:normal;color:var(--meta);font-size:12px;line-height:1.5;
 }

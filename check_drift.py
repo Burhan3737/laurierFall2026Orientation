@@ -35,10 +35,20 @@ PAGES = [
 # from the board today. The page states that the Winter 2027 sessions go up "at
 # the beginning of the fall semester", which is now, and until this existed
 # nothing would have told us when they did.
+# The third field is why the page is watched and why nothing on it is on the
+# board. It is data rather than a comment because the built page says the same
+# thing to a student reading the sources section, and two copies of a reason
+# drift apart the way two copies of a rule do. build.py reads this list.
 WATCH = [
     ("https://students.wlu.ca/academics/graduate-and-postdoctoral-studies/aspire/"
      "incoming-student-support.html",
-     "_watch/aspire__incoming-student-support.html"),
+     "_watch/aspire__incoming-student-support.html",
+     "Laurier publishes its graduate 'Laurier Crash Course' webinars here, dated "
+     "and registrable, in the same accordions as the schedules. Every Fall 2026 "
+     "session has already run, so none of them belongs on a board for the term "
+     "ahead. Laurier says the Winter 2027 sessions go up at the beginning of the "
+     "fall semester, which is now, so the page is checked for them rather than "
+     "assumed to be empty."),
 ]
 
 CTX = ssl.create_default_context()
@@ -106,9 +116,10 @@ for path in PAGES:
 
 print()
 print("Watched, not on the board:")
-for url, local in WATCH:
+for url, local, why in WATCH:
     name = url.split("/aspire/")[-1] if "/aspire/" in url else url.rsplit("/", 1)[-1]
     bad, a, r = check(url, local, name, "  (watched only)")
+    print("      why: %s" % why)
     total_added += a
     total_removed += r
     if bad:

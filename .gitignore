@@ -12,7 +12,12 @@ __pycache__/
 _fonts/
 _runlogs/
 # artefacts plus_check.py leaves behind when it prints and exports
-_plus_print.pdf
+_plus_print_list.pdf
+_plus_print_list.txt
+_plus_print_calendar.pdf
+_plus_print_calendar.txt
+_plus_empty_list.pdf
+_plus_empty_calendar.pdf
 _plus_plan.ics
 # watched-only snapshots: pages we are told about but do not parse
 _watch/

@@ -12,8 +12,9 @@ _ap = argparse.ArgumentParser(description=__doc__)
 _ap.add_argument('--css', default='_style_a.css', help='stylesheet to inline')
 _ap.add_argument('--js',  default='_app_a.js', help='application script to inline')
 _ap.add_argument('--body', default='_body_a.html',
-                 help='alternate body template; {{META}}, {{SRCGRID}}, {{NSOURCES}}, '
-                      '{{NEVENTS}}, {{NDISTINCT}} are substituted')
+                 help='alternate body template; {{META}}, {{SRCGRID}}, {{WATCHGRID}}, '
+                      '{{NSOURCES}}, {{NWATCHED}}, {{NTRACKED}}, {{NEVENTS}}, '
+                      '{{NDISTINCT}} are substituted')
 _ap.add_argument('--out', default='orientation.html', help='page to write')
 ARGS = _ap.parse_args()
 
@@ -53,10 +54,49 @@ STREAMS  = ["International","Exchange","Indigenous","Off-campus (LOCUS)","Reside
 SOURCES = sorted({(e['source_file'], e['url'].split('#')[0]) for e in EV})
 PAGE_TITLES = d['page_titles']
 
+def esc_html(s):
+    return str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+def short(u):
+    return u.replace('https://students.wlu.ca', 'students.wlu.ca')
+
 src_html = "\n".join(
   '    <div class="src"><b>%s</b><span>%s</span><a href="%s" target="_blank" rel="noopener">%s</a></div>'
-  % (f.replace('__',' / ').replace('.html',''), PAGE_TITLES.get(f, f), u, u.replace('https://students.wlu.ca','students.wlu.ca'))
+  % (f.replace('__',' / ').replace('.html',''), PAGE_TITLES.get(f, f), u, short(u))
   for f, u in SOURCES)
+
+# ---- the page that is watched but never read ------------------------------
+# Laurier publishes orientation events in one more place that nothing on this
+# board comes from. check_drift.py watches it so that the decision not to parse
+# it can be revisited when the page changes rather than never, and the sources
+# section has to say so: "13 pages" and "14 pages tracked" are both true, and a
+# section stating only one of them leaves a reader holding the wrong number.
+#
+# The list is read out of check_drift.py rather than copied into here. A second
+# copy of a fact is a fact waiting to drift, and this project has been bitten by
+# that more than once. ast reads the assignment; nothing in check_drift.py runs,
+# so a build never touches the network.
+import ast
+_cd = ast.parse(open('check_drift.py', encoding='utf-8').read())
+_watch = next(ast.literal_eval(n.value) for n in _cd.body
+              if isinstance(n, ast.Assign)
+              and getattr(n.targets[0], 'id', None) == 'WATCH')
+
+def _snap_title(path):
+    """The watched page's own <title>, out of the snapshot check_drift.py keeps,
+    so the card names the page the way Laurier names it."""
+    raw = open(path, encoding='utf-8', errors='replace').read()
+    m = re.search(r'<title>(.*?)</title>', raw, re.S)
+    t = re.sub(r'\s+', ' ', m.group(1)).strip() if m else path
+    return re.sub(r'\s*\|\s*Wilfrid Laurier University\s*$', '', t)
+
+WATCHED = [(u, _snap_title(p), why) for u, p, why in _watch]
+
+watch_html = "\n".join(
+  '    <div class="src watched"><b>Watched &middot; not read</b><span>%s</span>'
+  '<em>%s</em><a href="%s" target="_blank" rel="noopener">%s</a></div>'
+  % (esc_html(t), esc_html(why), u, short(u))
+  for u, t, why in WATCHED)
 
 def opts(name, values, labels=None, kind="radio"):
     out = []
@@ -209,15 +249,20 @@ META = json.dumps({
   "levels": LEVELS, "levelLabels": LEVEL_LB, "campuses": CAMPUSES,
   "terms": TERMS, "streams": STREAMS,
   "nEvents": len(EV), "nDistinct": NDISTINCT, "nSources": len(SOURCES),
+  "nWatched": len(WATCHED), "nTracked": len(SOURCES) + len(WATCHED),
   "pageTitles": PAGE_TITLES,
   "sources": [{"file": f, "title": PAGE_TITLES.get(f, f), "url": u} for f, u in SOURCES],
+  "watched": [{"title": t, "url": u, "why": w} for u, t, w in WATCHED],
 }, separators=(',', ':'), ensure_ascii=False)
 
 if ARGS.body:
     BODY = (open(ARGS.body, encoding='utf-8').read()
             .replace('{{META}}', META)
             .replace('{{SRCGRID}}', src_html)
+            .replace('{{WATCHGRID}}', watch_html)
             .replace('{{NSOURCES}}', str(len(SOURCES)))
+            .replace('{{NWATCHED}}', str(len(WATCHED)))
+            .replace('{{NTRACKED}}', str(len(SOURCES) + len(WATCHED)))
             .replace('{{NEVENTS}}', str(len(EV)))
             .replace('{{NDISTINCT}}', str(NDISTINCT)))
 else:
