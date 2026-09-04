@@ -1403,6 +1403,19 @@ function rules(sc, of) {
   return h;
 }
 
+/* How tall a block is drawn. There is no floor: the height is the event's own
+   length, and scaleFor() has already stretched the day so the shortest one
+   clears a readable line. A floor here would put a box back over the top of the
+   one below it, which is what the old padding was invented to stop.
+
+   layoutModel() reports this same function rather than working the height out
+   again. A model that computes its own answer agrees with itself and proves
+   nothing: a floor added here was invisible to it, which is exactly the defect
+   this arrangement is meant to catch. */
+function blockHeight(sc, it) {
+  return sc.pos(it.e) - sc.pos(it.s) - 2;
+}
+
 /* A block on the day clock. Nothing else uses this: the whole-run view gave up
    on drawing hours and lists names instead. */
 function blockHtml(it, sc, within) {
@@ -1410,12 +1423,7 @@ function blockHtml(it, sc, within) {
   var u = 100 / it.ncol, left = it.col * u, w = u * Math.min(it.span || 1, it.ncol - it.col);
   var cls = "blk" + (off ? " off" : (e.oa ? " open" : "")) + (drawsClash(e, within) ? " clash" : "") +
             (e.d && e.d < NOW ? " past" : "") + (isPicked(e) ? " mine" : "");
-  var top = sc.pos(it.s), bot = sc.pos(it.e);
-  /* No floor any more. The height is the event's own length, and scaleFor() has
-     already stretched the day so the shortest one clears a readable line — a
-     floor here would put a box back over the top of the one below it, which is
-     what the old padding was invented to stop. */
-  var h = bot - top - 2;
+  var top = sc.pos(it.s), h = blockHeight(sc, it);
   /* Three lines need about 56px. What gives way is what is written in the box,
      never how long the box is drawn: below 56px the venue steps aside, and below
      40px the time and the name share a single row. Both are on the card behind. */
@@ -1426,7 +1434,12 @@ function blockHtml(it, sc, within) {
     h + "px;left:calc(" + left + "% + 1px);width:calc(" + w + "% - 3px)\" " +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i +
     '" tabindex="0" title="' + esc(label) + '">' +
-    '<span class="bt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
+    /* The end is a separate span so a column too narrow for the whole range can
+       drop it rather than truncate it. "11:30am–1:30pm" cut to "11:30am–1:3"
+       reads as an event ending at half past one in the morning; "11:30am" alone
+       is simply less, and the range is in the hover title and on the card. */
+    '<span class="bt"><span class="bts">' + clock(it.s) + '</span>' +
+      '<span class="bte">–' + clock(it.e) + "</span></span>" +
     '<span class="bh">' + esc(title(e)) + "</span>" +
     (isPicked(e) ? '<span class="mymark" aria-hidden="true">✓</span>' : "") +
     '<span class="bw">' + esc(e.w || (e.vr ? "Online" : "Venue not published")) + "</span>" +
@@ -1467,16 +1480,16 @@ function layoutModel(d) {
     day: k, view: view, ppm: ppm, height: sc ? Math.round(sc.H) : 0,
     columns: items.reduce(function (m, it) { return Math.max(m, it.ncol); }, 0),
     events: items.map(function (it) {
-      var top = sc.pos(it.s), bot = sc.pos(it.e);
+      var h = blockHeight(sc, it);
       return {
         title: it.ev.t, published: clock(it.s) + "-" + clock(it.e),
         minutes: it.e - it.s,
-        drawnPx: Math.round(bot - top - 2),
+        drawnPx: Math.round(h),
         /* The drawn length read back as minutes. Comparing pixels would report
            the half-pixel left by rounding a difference as though the clock were
            lying; comparing minutes asks the question actually worth asking, and
            this must equal `minutes` to within rounding. */
-        drawnMinutes: Math.round((bot - top) / ppm * 100) / 100,
+        drawnMinutes: Math.round((h + 2) / ppm * 100) / 100,
         col: it.col, ncol: it.ncol,
         overlaps: items.filter(function (o) {
           return o !== it && o.s < it.e && it.s < o.e;
@@ -1485,7 +1498,10 @@ function layoutModel(d) {
     }),
     // long-running and undated entries never reach the clock, and are listed so
     // a reader of this object is not left wondering where they went
-    allDay: parts.long.map(function (e) { return e.t; }),
+    /* split() hands back wrappers, {ev, s, e} — not events. Reading .t off the
+       wrapper gave a list of nulls in the one field whose whole job is to say
+       where the long-running events went. */
+    allDay: parts.long.map(function (it) { return it.ev.t; }),
     undated: onDay(list, "TBA").map(function (e) { return e.t; })
   };
 }
@@ -2412,6 +2428,7 @@ var PR_LANES_MAX = 6;  // past that a box holds a number and a time, and nothing
 var PR_PT_HOUR = 30;   // points per hour at full scale
 var PR_PT_GAP = 13;    // a collapsed stretch of nothing, named rather than drawn
 var PR_PT_MAX = 560;   // the tallest grid that still leaves the page room to breathe
+var PR_SLOT_MIN = 13;  // a slot may grow to this to stay readable, never past its neighbour
 
 function printGrid(items, named, of) {
   /* The same piecewise axis the screen uses: occupied stretches run to scale,
@@ -2437,8 +2454,19 @@ function printGrid(items, named, of) {
     var u = 100 / it.ncol, left = it.col * u;
     var w = u * Math.min(it.span || 1, it.ncol - it.col);
     var top = sc.pos(it.s), bot = sc.pos(it.e);
+    /* A slot may be grown to PR_SLOT_MIN so its number and time can be read, but
+       never past the next slot in its own column. At 0.5pt a minute that floor is
+       twenty-six minutes: while placed() padded every event to thirty it could not
+       reach its neighbour, and when the padding went it printed the Dean's Welcome
+       over the Graduate Student Panel on every graduate selection. The screen
+       clock solves this by scaling the day; a sheet of paper has a fixed height,
+       so here the floor yields instead. */
+    var next = items.filter(function (o) { return o.col === it.col && o.s >= it.e; })
+                    .reduce(function (m, o) { return m === null || o.s < m.s ? o : m; }, null);
+    var room = (next ? sc.pos(next.s) : sc.H) - top - 1.5;
+    var hpt = Math.max(Math.min(PR_SLOT_MIN, room), bot - top - 1.5);
     return '<div class="prslot' + (isPicked(it.ev) ? " prmine" : "") + '" style="top:' +
-      top.toFixed(1) + "pt;height:" + Math.max(13, bot - top - 1.5).toFixed(1) +
+      top.toFixed(1) + "pt;height:" + hpt.toFixed(1) +
       "pt;left:" + left.toFixed(2) + "%;width:calc(" + w.toFixed(2) + '% - 2.5pt)">' +
       '<span class="prno">' + it.no + "</span>" +
       '<span class="prslott">' + esc(clock(it.s)) + "–" + esc(clock(it.e)) + "</span>" +

@@ -89,3 +89,10 @@ def _sweep():
 
 
 atexit.register(_sweep)
+
+# Chrome will not open a window narrower than 504 CSS px in headless mode,
+# whichever --window-size is asked for, so the narrow states here are read at
+# 504 and the 320-503 band is not exercised by any gate. 504 is still below
+# the 700px breakpoint where the day becomes a list, so the phone layout is
+# reached; what is not reached is the very narrow end of it.
+NARROW_FLOOR = 504

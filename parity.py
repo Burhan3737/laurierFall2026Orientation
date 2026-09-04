@@ -977,7 +977,7 @@ def main():
                                               "&view=plan&q=lazaridis", "&ghosts=1"]),
                         (REFERENCE, [])]:
         frags = probe + [probe[0] + x for x in extra]
-        bad = console_check(page, frags, 1400) + console_check(page, frags, 420)
+        bad = console_check(page, frags, 1400) + console_check(page, frags, 504)
         if bad:
             all_ok = False
             print("  FAIL  %s" % page)

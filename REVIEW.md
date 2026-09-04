@@ -434,3 +434,43 @@ layoutModel earned itself on the first run by reporting four events on 8 Septemb
 drawn at the wrong length. They were half a pixel out from rounding a difference rather
 than differencing two rounds, so it now compares minutes to minutes.
 
+## Twelfth audit: the screen was right, the paper was not, and nothing guarded either
+
+The layout rewrite held on screen — 24,895 placements across 162 selections, no event
+drawn at a length other than its own, no event sharing a column with something it does
+not overlap, and the model checked against the painted DOM rather than only against
+itself. Five findings.
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | Laurier moved the Cultural Analysis and Social Theory welcome from Tue 8 Sept 1-3:30pm DAWB 4-105 to Fri 11 Sept 2-4pm DAWB 3-106, and lengthened a lane swim on its undergraduate page only. The board was stale | **fixed** — snapshots refreshed; the swim is reproduced per page, as Laurier publishes it |
+| 2 | `printGrid` kept a 13pt floor under a slot. At half a point a minute that floor is 26 minutes: harmless while `placed()` padded to 30, and once the padding went it printed the Dean's Welcome over the Graduate Student Panel by 5.5pt on every graduate selection | **fixed** — the floor yields to the next slot in the column rather than overrunning it |
+| 3 | **Nothing in the repository could fail if either layout rule broke.** The audit rebuilt both defects and every gate stayed green | **fixed** — `layoutcheck.py` |
+| 4 | `layoutModel().allDay` returned a list of nulls: `split()` hands back wrappers, and the field read `.t` off the wrapper | **fixed** |
+| 5 | Between 700 and 899px a published time was cut clean — `11:30am-1:30pm` to `11:30am-1:3`, which reads as an event ending at half past one in the morning. Pre-existing; verified identical before the rewrite | **fixed** — the end time is dropped rather than truncated, and names wrap instead of being sliced |
+
+Finding 3 is the one that matters. `clashcheck.py` cannot catch a column defect by
+design — since the gold marks began asking `collidesWith()` rather than `ncol`, they stay
+honest however the columns are packed — and `parity.py` checks which events are drawn,
+never their geometry. `layoutModel()` was added so an audit could read the layout instead
+of scraping pixels, and then no gate read it. Adding the reader is not the same as adding
+the check.
+
+`layoutcheck.py` sweeps every selection that renders a clock, asserts both rules, compares
+the model against the heights actually painted, and checks the printed calendar for
+overprinting. Three things were wrong with it before it was worth having, and each is the
+same mistake in a different coat:
+
+- the first mutant inflated `it.e` itself, so the ground truth moved with the defect and
+  the test proved nothing;
+- `layoutModel()` computed its own geometry rather than reporting the renderer's, so a
+  floor added in `blockHtml` was invisible to it — there is one height function now, used
+  by both;
+- the self-test ran the first six selections, all undergraduate, and reported its own
+  print mutant as MISSED because the defect only appears on a graduate evening.
+
+Three gates also claimed to read the page at 420px. Chrome will not open a window
+narrower than 504 CSS px in headless mode whatever `--window-size` asks for, so they read
+504 and the 320-503 band is exercised by nothing. The claims now say 504, and `_chrome.py`
+records the floor and what it costs, rather than leaving a true-sounding number in place.
+

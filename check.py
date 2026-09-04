@@ -11,7 +11,7 @@ render. So this does what a person cannot be relied on to remember:
   1. build the page
   2. node --check          (syntax)
   3. reference check       (every bare call has a definition in the file)
-  4. console check         (load it in Chrome at 1400px and 420px, zero errors)
+  4. console check         (load it in Chrome wide and narrow, zero errors)
 
 Run it after every write to an app script, before anything else proceeds.
 """
@@ -229,7 +229,7 @@ def check(v):
         return False
 
     print("  ok    %s builds, parses, resolves every call, and runs clean at "
-          "1400px and 420px across %d states" % (out, len(STATES[v])))
+          "1400px and 504px across %d states" % (out, len(STATES[v])))
     return True
 
 

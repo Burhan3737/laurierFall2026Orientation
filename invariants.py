@@ -135,8 +135,8 @@ def run(page, frag, width=1400, extra=""):
 STATES = {
     "main": [(BOARD, 1400), (BOARD + "&view=week", 1400), (BOARD + "&view=clash", 1400),
              (BOARD + "&view=plan", 1400), (BOARD + "&view=reg", 1400),
-             (BOARD + "&q=lazaridis", 1400), (DENSE, 1400), (BOARD, 420),
-             (BOARD + "&view=reg", 420)],
+             (BOARD + "&q=lazaridis", 1400), (DENSE, 1400), (BOARD, 504),
+             (BOARD + "&view=reg", 504)],
 }
 
 PAGES = {"main": "orientation.html"}

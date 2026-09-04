@@ -176,11 +176,20 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 }
 .blk:hover{border-color:var(--purple);z-index:3;box-shadow:2px 2px 0 rgba(51,0,114,.18)}
 .blk:focus-visible{outline:3px solid var(--gold);outline-offset:-1px;z-index:4}
-.bt{font-size:10.5px;font-weight:700;color:var(--purple);letter-spacing:.01em;white-space:nowrap}
+/* The published time is the one string on this page that can be misread as a
+   different real time: "11:30am-1:30pm" cut to "11:30am-1:3" reads as an event
+   ending at half past one in the morning. It is allowed to ellipsise, so a
+   reader can see it has been shortened, and never to be cut clean. */
+.bt{font-size:10.5px;font-weight:700;color:var(--purple);letter-spacing:.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .bh{font-size:13px;font-weight:600;line-height:1.22;color:var(--ink);
-  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+  /* a -webkit-box clamps lines, it does not shorten one: a word wider than a
+     narrow column was sliced down its middle instead of wrapping */
+  overflow-wrap:anywhere}
 .bw{font-size:11.5px;color:var(--meta);line-height:1.25;margin-top:2px;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  overflow-wrap:anywhere}
 .bx{font-size:11px;color:var(--meta);font-style:italic}
 /* Room for two lines but not three: the venue steps aside, as it does on a
    crowded day. Nothing about the drawn length changes. */
@@ -613,6 +622,12 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   /* .blk is a column: without this the time and the name stack, and on a
      26px box the name falls straight out of the bottom of it. */
   flex-direction:row;align-items:center;gap:7px;padding:1px 6px;
+}
+/* Below this the day's columns are too narrow to hold a whole time range. The
+   end time is dropped, never cut: a shortened range can be read as a different
+   real time, a start time on its own cannot. */
+@media (max-width:900px){
+  .daygrid .bte{display:none}
 }
 .blk.squat .bt{flex:0 0 auto;font-size:9.5px}
 .blk.squat .bh{

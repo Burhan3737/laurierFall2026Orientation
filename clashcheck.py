@@ -5,10 +5,13 @@
 
 1. Nothing is drawn as colliding unless it genuinely overlaps something else.
 
-   The class used to be decided by `it.ncol > 1`. ncol is a layout figure: placed()
-   pads every item to a minimum drawn height so a short event is still a readable
-   box, so two strictly consecutive events land in different lanes and both come
-   back with ncol 2. Every block on graduate/Waterloo/Wednesday 2 September was
+   The class used to be decided by `it.ncol > 1`, which was never an overlap test.
+   placed() padded every item to a minimum drawn height so a short event was still
+   a readable box, and packed columns from the padded length, so two strictly
+   consecutive events landed in different columns and both came back with ncol 2.
+   (The padding is gone now and ncol is a true statement about concurrency, which
+   layoutcheck.py holds it to; this class must still not be decided from it.)
+   Every block on graduate/Waterloo/Wednesday 2 September was
    painted gold, including the five consecutive parts of the Graduate Student
    Orientation evening, while the Clashes lens for that day correctly showed
    nothing. This walks the DOM and asks the data directly -- does anything the
