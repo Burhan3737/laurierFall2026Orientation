@@ -156,8 +156,13 @@ check("conditional filters rebuilt after the campus/term fallback",
       "refreshConditional(s2)" in app)
 
 # data notes must describe the board as it actually behaves
-check("Winter note does not overstate missing venues",
-      "are TBD" in app and "no date and TBD for time and venue" not in app)
+# The board is Fall 2026 only. Winter and Spring were dropped from parse.py's META,
+# so their notes were removed with them - a note whose condition can never be true
+# is a claim nobody can check.
+check("the board carries one term only",
+      {e['term'] for e in E} == {'Fall 2026'}, str(sorted({e['term'] for e in E})))
+check("no note is left describing a term the board no longer carries",
+      'Winter 2027' not in app and 'Spring 2026' not in app)
 check("program note reflects that filtering now exists",
       "Program welcomes are not filtered by program" not in app
       and "Program or faculty" in app)

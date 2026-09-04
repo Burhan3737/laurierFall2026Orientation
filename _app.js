@@ -195,30 +195,12 @@ function buildNotes() {
       Object.keys(byTerm).map(function (t) { return byTerm[t] + " in " + t; }).join(", ") +
       "). They appear at the end of the board under “Undated”."]);
   }
-  var spring = EV.filter(function (e) { return e.tm === "Spring 2026" && e.d && e.d.slice(5, 7) === "01"; });
-  if (spring.length) {
-    notes.push(["Spring graduate schedule shows January dates",
-      "The page titled “Laurier Spring Orientation: Graduate Schedule” lists its sessions on Jan. 5, 7 and 9, 2026. " +
-      "January is the winter term at Laurier, so this page appears to be either mislabelled or left over from a previous cycle. " +
-      "Dates are reproduced exactly as published — confirm with aspire@wlu.ca before relying on them."]);
-  }
   var noTime  = EV.filter(function (e) { return (e.f || []).indexOf("no-time") >= 0; }).length;
   var noVenue = EV.filter(function (e) { return (e.f || []).indexOf("no-venue") >= 0; }).length;
   if (noTime || noVenue) {
     notes.push(["Events without a usable time or venue",
       noTime + " events have no usable time and " + noVenue + " no usable venue. This counts " +
       "Laurier's own “TBD” placeholders, not just blank fields."]);
-  }
-  var winter = EV.filter(function (e) { return e.tm === "Winter 2027"; });
-  if (winter.length && winter.every(function (e) { return !e.d; })) {
-    var wVenue = winter.filter(function (e) { return (e.f || []).indexOf("no-venue") === -1; }).length;
-    var wTime = winter.filter(function (e) { return (e.f || []).indexOf("no-time") === -1; }).length;
-    notes.push(["The Winter 2027 schedule is mostly a placeholder",
-      "All " + winter.length + " Winter 2027 events are published without a date, and Laurier states " +
-      "registration opens in October 2026. " +
-      (wVenue ? wVenue + " of them do give a venue (the Virtual sessions state Zoom); the other " +
-                (winter.length - wVenue) + " are TBD. " : "None gives a venue. ") +
-      (wTime ? wTime + " give a time." : "None gives a time.")]);
   }
   var prog = EV.filter(function (e) { return e.pg; }).length;
   if (prog) {

@@ -54,8 +54,6 @@ limitations that are **deliberate choices, not defects**. Do not re-report those
 - Kitchener and the Balsillie School fold into Waterloo, matching Laurier's own grouping.
 - Virtual is a delivery mode, not a campus. Online events appear under every campus with an
   "Online" badge; there is deliberately no Virtual campus button.
-- The Spring graduate page lists January dates. Reproduced exactly, flagged in a data note.
-- Winter 2027 is a placeholder: undated, TBD time and venue.
 - `cms03.wlu.ca` is a dead link Laurier leaked into their own page. Reproduced faithfully
   and labelled "link broken on Laurier's site".
 
@@ -104,12 +102,30 @@ Fetch these live yourself. Base
 | 5 | `graduate/fall-waterloo.html` |
 | 6 | `graduate/fall-brantford.html` |
 | 7 | `graduate/fall-virtual.html` |
-| 8 | `graduate/winter.html` |
-| 9 | `graduate/spring.html` |
-| 10 | `bachelor-of-education.html` |
-| 11 | `international.html` |
-| 12 | `indigenous.html` |
-| 13 | `locus.html` |
+| 8 | `bachelor-of-education.html` |
+| 9 | `international.html` |
+| 10 | `indigenous.html` |
+| 11 | `locus.html` |
+
+## Scope: Fall 2026 only
+
+This board covers **Fall 2026 and nothing else**. `graduate/winter.html` and
+`graduate/spring.html` were deliberately removed from `parse.py`'s META: the Winter 2027
+page was an undated placeholder and the Spring page listed January dates, and neither
+helps someone arriving this September. Eleven schedules are read, not thirteen.
+
+What this means for you:
+
+- An event outside Fall 2026 appearing on the board is a **finding**, not a bonus.
+- The two removed pages are **not** missing sources. Do not report their absence, and do
+  not report them in Step 2b page discovery as pages we do not know about.
+- The term dimension still exists in the data and in URL fragments (`term=Fall%202026`),
+  because eligibility is expressed in terms of it. It is drawn as a statement rather than
+  a control, since one option is not a choice. A term picker offering more than one value
+  is a finding.
+- Data notes about Spring's January dates and Winter's placeholder status were removed
+  with the data. A note describing either is a finding; so is a note whose condition can
+  never be true.
 
 **Scraping requirement.** Most event detail is inside **collapsed accordion panels**
 (`button.accordion-trigger` paired with `div.accordion-panel`, which carries the `hidden`
@@ -161,8 +177,8 @@ State is set via the URL hash, so no clicking is needed:
 ```
 
 Valid values — level: `undergraduate` | `graduate` | `bachelor-of-education`;
-campus: `Waterloo` | `Brantford` | `Milton`; term: `Fall 2026` | `Winter 2027` |
-`Spring 2026`; streams: pipe-separated from International, Exchange, Indigenous,
+campus: `Waterloo` | `Brantford` | `Milton`; term: `Fall 2026`, the only one;
+streams: pipe-separated from International, Exchange, Indigenous,
 `Off-campus (LOCUS)`, Residence, `Mature & Transfer`, `Accessible Learning`.
 
 **Trap:** `--dump-dom` includes the embedded JSON payload inside a `<script>` block. When

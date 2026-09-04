@@ -24,8 +24,6 @@ META = {
  "graduate__fall-waterloo.html":        ("graduate", "Waterloo",  "Fall 2026", None),
  "graduate__fall-brantford.html":       ("graduate", "Brantford", "Fall 2026", None),
  "graduate__fall-virtual.html":         ("graduate", "Virtual",   "Fall 2026", None),
- "graduate__winter.html":               ("graduate", "split",     "Winter 2027", None),
- "graduate__spring.html":               ("graduate", "split",     "Spring 2026", None),
  "bachelor-of-education.html":          ("bachelor-of-education", "split", "Fall 2026", None),
  "international.html":                  ("all", "split", "Fall 2026", "International"),
  "indigenous.html":                     ("all", "split", "Fall 2026", "Indigenous"),

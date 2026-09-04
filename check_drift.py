@@ -33,7 +33,7 @@ READ_FILE = "_read.json"
 BASE = "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/"
 PAGES = [
     "bachelor-of-education.html", "graduate/fall-brantford.html", "graduate/fall-virtual.html",
-    "graduate/fall-waterloo.html", "graduate/spring.html", "graduate/winter.html",
+    "graduate/fall-waterloo.html",
     "indigenous.html", "international.html", "locus.html",
     "undergraduate/fall-brantford.html", "undergraduate/fall-milton.html",
     "undergraduate/fall-virtual.html", "undergraduate/fall-waterloo.html",
@@ -54,10 +54,10 @@ WATCH = [
      "_watch/aspire__incoming-student-support.html",
      "Laurier publishes its graduate 'Laurier Crash Course' webinars here, dated "
      "and registrable, in the same accordions as the schedules. Every Fall 2026 "
-     "session has already run, so none of them belongs on a board for the term "
-     "ahead. Laurier says the Winter 2027 sessions go up at the beginning of the "
-     "fall semester, which is now, so the page is checked for them rather than "
-     "assumed to be empty."),
+     "session has already run, so none of them belongs on the board. It is watched "
+     "because it is where Laurier posts dated graduate sessions outside the "
+     "schedules, and a Fall 2026 arrival event appearing here would otherwise be "
+     "invisible."),
     ("https://students.wlu.ca/academics/graduate-and-postdoctoral-studies/aspire/"
      "skills-training.html",
      "_watch/aspire__skills-training.html",

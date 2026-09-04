@@ -1011,8 +1011,13 @@ function drawIdbar() {
         seg("level", META.levels, META.levelLabels, sel.level, null) + "</div>";
   h += '<div class="idq"><span class="idlab">student at</span>' +
         seg("campus", META.campuses, null, sel.campus, function (v) { return !countFor(sel.level, v, sel.term); }) + "</div>";
+  /* One term is not a choice. Drawing it as a control with a single button looks
+     like something that ought to do more than it does; drawn as a statement it
+     tells the student what this board covers, which is the useful half. */
   h += '<div class="idq"><span class="idlab">starting</span>' +
-        seg("term", META.terms, null, sel.term, function (v) { return !countFor(sel.level, sel.campus, v); }) + "</div>";
+        (META.terms.length > 1
+          ? seg("term", META.terms, null, sel.term, function (v) { return !countFor(sel.level, sel.campus, v); })
+          : '<div class="segfix">' + esc(META.terms[0]) + "</div>") + "</div>";
   h += "</div>";
 
   var extras = "";
@@ -2909,7 +2914,7 @@ function readHash() {
    every build, so a note cannot outlive the thing it describes. The counts run
    through onePerEvent because they describe cards a student can see, and the
    board draws one card per event: counting Laurier's listings instead promised
-   20 undated Winter sessions where 14 exist. */
+   more of them than the board can ever draw. */
 function buildNotes() {
   var notes = [];
   var undated = onePerEvent(EV.filter(function (e) { return !e.d; }));
@@ -2921,26 +2926,6 @@ function buildNotes() {
       Object.keys(byTerm).map(function (t) { return byTerm[t] + " in " + t; }).join(", ") +
       "). They cannot be put on the clock, so they are gathered at the end of the " +
       "run under a heading reading “Undated”."]);
-  }
-  var spring = onePerEvent(EV.filter(function (e) { return e.tm === "Spring 2026" && e.d && e.d.slice(5, 7) === "01"; }));
-  if (spring.length) {
-    notes.push(["The Spring graduate schedule shows January dates",
-      "The page titled “Laurier Spring Orientation: Graduate Schedule” lists its " +
-      spring.length + " sessions on Jan. 5, 7 and 9, 2026. January is the winter term at " +
-      "Laurier, so the page looks either mislabelled or left over from an earlier cycle. " +
-      "The dates are shown exactly as Laurier published them — confirm with " +
-      "aspire@wlu.ca before relying on them."]);
-  }
-  var winter = onePerEvent(EV.filter(function (e) { return e.tm === "Winter 2027"; }));
-  if (winter.length && winter.every(function (e) { return !e.d; })) {
-    var wVenue = winter.filter(function (e) { return (e.f || []).indexOf("no-venue") === -1; }).length;
-    var wTime = winter.filter(function (e) { return (e.f || []).indexOf("no-time") === -1; }).length;
-    notes.push(["The Winter 2027 schedule is mostly a placeholder",
-      "All " + winter.length + " Winter 2027 events are published without a date, and Laurier " +
-      "states registration opens in October 2026. " +
-      (wVenue ? wVenue + " of them do give a venue (the online sessions state Zoom); the other " +
-                (winter.length - wVenue) + " are TBD. " : "None gives a venue. ") +
-      (wTime ? wTime + " give a time." : "None gives a time.")]);
   }
   var prog = onePerEvent(EV.filter(function (e) { return e.pg; })).length;
   if (prog) {

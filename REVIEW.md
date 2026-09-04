@@ -330,3 +330,24 @@ needs from the page table and exits naming the missing file. All three are the s
 a check that cannot see its subject reports the blindness as a defect in the thing it was
 measuring.
 
+## Fall 2026 only
+
+Winter 2027 and Spring 2026 were dropped from parse.py's META. The Winter page was an
+undated placeholder whose sessions open for registration in October, and the Spring page
+listed January dates on a page titled Spring; neither helps somebody arriving this
+September. Eleven schedules, 488 listings, 329 events, one term. Undated events fell from
+27 to 7, nearly all of the old ones having been the Winter placeholder.
+
+Two consequences worth stating. The chooser drew the term as a segmented control, which
+with one value renders a single button that looks like it ought to do more than it does;
+it is now a plain statement, so the scope stays visible without pretending to be a choice.
+And the two data notes describing those terms were removed rather than left dormant: both
+were conditional on data that no longer exists, and a note whose condition can never be
+true is a claim nobody can check. The regression test that guarded the Winter note wording
+is replaced by two that pin what is now true - the board carries exactly one term, and no
+note names a term it no longer carries.
+
+The auditor brief gained a Scope section saying the same thing, including that the two
+removed pages are not missing sources and must not be reported by its page-discovery step
+as pages we do not know about.
+

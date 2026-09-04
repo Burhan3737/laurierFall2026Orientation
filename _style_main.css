@@ -60,6 +60,10 @@ a{color:var(--purple)}
 .idrow{display:flex;flex-wrap:wrap;gap:10px 26px;align-items:flex-end}
 .idrow-2{margin-top:8px;padding-top:8px;border-top:1px dotted var(--line-h)}
 .idq{display:flex;flex-direction:column;gap:5px;min-width:0}
+/* the term when there is only one of it: reads as the segment it replaces,
+   without offering a choice that does not exist */
+.segfix{display:inline-flex;align-items:center;padding:6px 12px;
+  font:inherit;font-size:14px;color:var(--ink);white-space:nowrap}
 .idq-wide{flex:1 1 320px}
 .idlab{
   font-size:10.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
