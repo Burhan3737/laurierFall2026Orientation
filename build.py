@@ -1,7 +1,11 @@
 """Generate a self-contained orientation page from events.json.
 
-    python build.py                                  -> orientation.html   (_style_min.css)
-    python build.py --css _style_a.css --out orientation-a.html
+    python build.py                     -> orientation.html, the board
+    python build.py --css _style_min.css --js _app.js --body '' \n                    --out _yardstick.html
+
+The second form builds the yardstick: the same events drawn as a plain list, one
+card per listing, which parity.py measures the board against. It is a test
+fixture and not a page anyone is meant to open.
 
 The no-argument invocation is the canonical build and its output is byte-for-byte
 stable; --css/--out only swap the stylesheet and the destination.
@@ -9,9 +13,9 @@ stable; --css/--out only swap the stylesheet and the destination.
 import json, io, os, re, datetime, subprocess, sys, argparse
 
 _ap = argparse.ArgumentParser(description=__doc__)
-_ap.add_argument('--css', default='_style_a.css', help='stylesheet to inline')
-_ap.add_argument('--js',  default='_app_a.js', help='application script to inline')
-_ap.add_argument('--body', default='_body_a.html',
+_ap.add_argument('--css', default='_style_main.css', help='stylesheet to inline')
+_ap.add_argument('--js',  default='_app_main.js', help='application script to inline')
+_ap.add_argument('--body', default='_body_main.html',
                  help='alternate body template; {{META}}, {{SRCGRID}}, {{WATCHGRID}}, '
                       '{{NSOURCES}}, {{NWATCHED}}, {{NTRACKED}}, {{NEVENTS}}, '
                       '{{NDISTINCT}}, {{READON}}, {{COMPILED}} are substituted')
@@ -156,7 +160,7 @@ for f in (ARGS.js,):
     if r.returncode:
         sys.exit('SYNTAX ERROR in %s\n%s' % (f, r.stderr))
     # node --check sees only syntax. A call to a function the script never defines
-    # is a runtime error, and one of those shipped an empty orientation-classic.html
+    # is a runtime error, and one of those once shipped an empty page
     # that still looked like a page. check.py has always had the resolver; it ran
     # after the build that produced the broken file, not before it.
     try:

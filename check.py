@@ -53,29 +53,17 @@ CONST = re.compile(r"(?:^|[^.A-Za-z0-9_$])([A-Z][A-Z0-9_]{2,})(?![A-Za-z0-9_$])"
 CALL = re.compile(r"(?:^|[^.A-Za-z0-9_$])([a-z_$][A-Za-z0-9_$]*)\s*\(")
 
 STATES = {
-    "a": ["level=undergraduate&campus=Waterloo&term=Fall%202026",
-          "level=undergraduate&campus=Waterloo&term=Fall%202026&view=week",
-          "level=undergraduate&campus=Waterloo&term=Fall%202026&view=clash",
-          "level=graduate&campus=Waterloo&term=Fall%202026&view=week"],
-    "b": ["level=undergraduate&campus=Waterloo&term=Fall%202026",
-          "level=undergraduate&campus=Waterloo&term=Fall%202026&by=where",
-          "level=undergraduate&campus=Waterloo&term=Fall%202026&only=clash",
-          "level=undergraduate&campus=Waterloo&term=Fall%202026&vs=graduate%7CWaterloo%7CFall%202026"],
-    "c": ["", "level=undergraduate&campus=Waterloo&term=Fall%202026",
-          "level=undergraduate&campus=Waterloo&term=Fall%202026&full=1",
-          "level=graduate&campus=Waterloo&term=Fall%202026"],
-    "a_plus": ["level=undergraduate&campus=Waterloo&term=Fall%202026",
-               "level=undergraduate&campus=Waterloo&term=Fall%202026&view=week",
-               "level=undergraduate&campus=Waterloo&term=Fall%202026&view=clash",
-               "level=undergraduate&campus=Waterloo&term=Fall%202026&view=plan",
-               "level=undergraduate&campus=Waterloo&term=Fall%202026&view=reg",
-               "level=undergraduate&campus=Waterloo&term=Fall%202026&q=lazaridis",
-               "level=graduate&campus=Waterloo&term=Fall%202026&view=week"],
+    "main": ["level=undergraduate&campus=Waterloo&term=Fall%202026",
+             "level=undergraduate&campus=Waterloo&term=Fall%202026&view=week",
+             "level=undergraduate&campus=Waterloo&term=Fall%202026&view=clash",
+             "level=undergraduate&campus=Waterloo&term=Fall%202026&view=plan",
+             "level=undergraduate&campus=Waterloo&term=Fall%202026&view=reg",
+             "level=undergraduate&campus=Waterloo&term=Fall%202026&q=lazaridis",
+             "level=graduate&campus=Waterloo&term=Fall%202026&view=week"],
 }
 
-# The source triple is named for the variant; the page it builds is not always
-# "orientation-<variant>.html".
-PAGES = {"a_plus": "orientation-a-plus.html"}
+# The source triple is named for the build; the page it writes is named separately.
+PAGES = {"main": "orientation.html"}
 
 TRAP = ('<script>window.__e=[];addEventListener("error",function(v){__e.push(v.message)});'
         'addEventListener("unhandledrejection",function(){__e.push("promise")});</script>')
@@ -187,7 +175,7 @@ def check(v):
     css = "_style_%s.css" % v
     js = "_app_%s.js" % v
     body = "_body_%s.html" % v
-    out = PAGES.get(v, "orientation-%s.html" % v)
+    out = PAGES[v]
 
     r = subprocess.run([sys.executable, "build.py", "--css", css, "--js", js,
                         "--body", body, "--out", out],
@@ -249,10 +237,10 @@ def resolve_all():
     """Every application script resolves every call it makes.
 
     check(v) already does this, but only for the four variants that have a
-    matching stylesheet and body. _app.js has neither - orientation-classic.html
+    matching stylesheet and body. _app.js has neither - the yardstick
     is built from it - so it was checked by nothing: a blanket edit put four calls
     to onePerEvent into it, which it does not define, and node --check passed because an
-    undefined identifier is a runtime error. orientation-classic.html rendered
+    undefined identifier is a runtime error. The page it builds rendered
     an empty board, and because it is parity.py's yardstick the failure showed
     up as all 83 selections disagreeing rather than as one dead page."""
     ok = True
@@ -273,6 +261,6 @@ def resolve_all():
 
 
 if __name__ == "__main__":
-    which = [a for a in sys.argv[1:] if a in STATES] or ["a", "b", "c", "a_plus"]
+    which = [a for a in sys.argv[1:] if a in STATES] or ["main"]
     results = [resolve_all()] + [check(v) for v in which]
     sys.exit(0 if all(results) else 1)

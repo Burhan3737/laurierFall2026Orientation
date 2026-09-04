@@ -290,3 +290,43 @@ by nothing — `orientation-classic.html` builds from `_app.js`. Two identical c
 one is dead is this project's oldest failure shape, and it caught me directly: the fix I
 made to that file last round had no effect on anything. It has been removed.
 
+## Consolidation: one page, and what it cost the gates
+
+The four design variants and the feature copy were removed. `orientation.html` is the
+only page; it builds from `_app_main.js` / `_style_main.css` / `_body_main.html`, renamed
+from the a-plus sources it was promoted from. `orientation-classic.html` survives as
+`_yardstick.html`: not a design, but the plain listing parity measures the board against,
+underscore-prefixed so it cannot be mistaken for something to open.
+
+The provenance apparatus was removed from the page, not from the project. The watched
+pages are still checked on every audit; the board simply no longer explains itself to a
+student. The footer no longer counts Laurier's listings or describes the merge, the
+sources lede no longer describes the scrape, and the clash blurb no longer explains
+duplicate folding.
+
+Ten scripts named the deleted files. Two of the rewirings would have been silently wrong.
+
+**`shared_logic_check` would have stopped checking anything.** It required that any rule
+copied into more than one variant be byte-identical. With one board it would have found
+fewer than two copies of every function, skipped all twenty, and printed `ok`. It now
+asserts the invariant that actually holds — each fact has exactly one implementation, and
+any second copy must agree to the byte — and reports the counts it found rather than a
+bare pass. Verified by planting a differing `dupKey` in the yardstick: it fails.
+
+**`links_check` was pointed at a page that cannot answer it.** It proves no registration
+link or citation is lost, and it worked by reading a page that writes every link of every
+listing into the markup — variant C in full-text mode. Repointing it at the board looked
+like a rename and was not: the board keeps links in the detail sheet and renders them on
+open, so the check reported 93 links missing across eight selections. That read as lost
+data and was a misdirected question. It now runs against the yardstick, the one page that
+writes them all; the board's own link rule stays covered by `link_core_check`, which runs
+`allLinksOf()` over all 528 listings against the yardstick's assembly, and by the harvest,
+which opens sheets and collects what they draw.
+
+A third fault was in the same family. `parity.snapshot()` copied the tree by filename
+prefix, and the renamed yardstick matched none of them, so Chrome rendered a file that did
+not exist and the run blamed the board for the absence. The snapshot now derives what it
+needs from the page table and exits naming the missing file. All three are the same shape:
+a check that cannot see its subject reports the blindness as a defect in the thing it was
+measuring.
+

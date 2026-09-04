@@ -1,4 +1,4 @@
-REFERENCE = "orientation-classic.html"   # the original build, kept as the parity yardstick
+REFERENCE = "_yardstick.html"   # the plain listing the board is measured against
 
 """Prove the variants show exactly the events the incumbent shows — merged, never lost.
 
@@ -7,7 +7,7 @@ variant is only allowed to differ in *how* it presents events, never in *which* 
 it presents.
 
 The rule this script enforces changed once, deliberately. It used to be that a
-variant renders the same *multiset* of listings as orientation-classic.html:
+board renders the same *multiset* of listings as the yardstick:
 Laurier publishes one session on two of its schedule pages, the incumbent draws it
 twice, so a variant had to draw it twice too. The variants now draw it once and
 name both pages in its detail, so the rule is now:
@@ -44,7 +44,7 @@ Extraction, per page:
              separately, to prove each is also reachable a day at a time
   b, c       one page renders the whole eligible set
 """
-import base64, json, re, subprocess, sys, os, html, tempfile, shutil, urllib.parse
+import base64, glob, json, re, subprocess, sys, os, html, tempfile, shutil, urllib.parse
 from collections import Counter
 
 import dupkey
@@ -61,11 +61,23 @@ SNAP = None
 
 
 def snapshot():
+    """Copy what this run reads, then prove the copy has it.
+
+    The filter used to be a set of prefixes, and the yardstick was renamed to one
+    the prefixes did not match. Chrome then rendered a file that was not there,
+    every link came back missing, and the run reported eight failing selections
+    rather than the one missing file. A gate that cannot see its subject must say
+    so, not report the absence as a defect in the thing it was measuring."""
     global SNAP
     SNAP = tempfile.mkdtemp(prefix="parity-snap-")
+    needed = {REFERENCE} | set(PAGE.values())
     for name in os.listdir(HERE):
-        if (name.startswith("orientation") and name.endswith(".html")) or            name.startswith(("_app_", "_style_", "_body_")) or name == "_app.js":
+        if name in needed or name.startswith(("_app_", "_style_", "_body_"))            or name == "_app.js":
             shutil.copy2(os.path.join(HERE, name), os.path.join(SNAP, name))
+    absent = [n for n in sorted(needed) if not os.path.exists(os.path.join(SNAP, n))]
+    if absent:
+        sys.exit("parity cannot run: %s missing from the working tree. Run "
+                 "build_all.py first." % ", ".join(absent))
     return SNAP
 
 
@@ -146,22 +158,11 @@ def titles_by_day(page, s):
     return got
 
 
-def titles_a(s):
-    return titles_week("orientation-a.html", s)
+def titles_main(s):
+    return titles_week("orientation.html", s)
 
-
-def titles_a_plus(s):
-    return titles_week("orientation-a-plus.html", s)
-
-def titles_b(s):
-    return marked(dom("orientation-b.html", frag_of(s)))
-
-def titles_c(s):
-    return marked(dom("orientation-c.html", frag_of(s)))
-
-GRAB = {"a": titles_a, "b": titles_b, "c": titles_c, "a_plus": titles_a_plus}
-PAGE = {"a": "orientation-a.html", "b": "orientation-b.html", "c": "orientation-c.html",
-        "a_plus": "orientation-a-plus.html"}
+GRAB = {"main": titles_main}
+PAGE = {"main": "orientation.html"}
 
 # ------------------------------------------------------------ selections ----
 def build_selections():
@@ -288,20 +289,25 @@ def console_check(page, frags, width=1400):
 
 # ------------------------------------------------- one answer, one function --
 def shared_logic_check(names):
-    """Round 3 put an overlap feature into two variants at once and both got it
-    wrong the same way. Anything copied into more than one variant is a place
-    where the same bug can be fixed once and left standing twice, so the
-    functions that decide *facts* — when an event runs, which listings are the
-    same event, how prose is broken — must be byte-identical wherever they
-    appear. Presentation may differ; facts may not.
+    """There must be exactly one implementation of each fact.
 
-    clockStates() and legendKeys() are the one exception, and they are here for
-    the same reason. They decide what the key under a day is allowed to claim
-    about the colours beside it, and a key that claims something the day does not
-    contain is a page telling a student something false. Two copies of that rule
-    drifting is precisely the failure this list exists to prevent."""
+    Round 3 put an overlap feature into two variants at once and both got it wrong
+    the same way, so this used to require that anything copied into more than one
+    variant was byte-identical. There is one board now, which is the stronger form
+    of the same guarantee — but a check that merely stops finding second copies
+    would report "ok" while verifying nothing, so it states what it found instead.
+
+    A second copy appearing later is the failure this exists to catch: two scripts
+    defining the same fact must agree to the byte, and if they do not, that is the
+    old drift returning under a new name."""
+    FACTS = ("parseWhen", "sentences", "paras", "gatesOf", "assess",
+             "stripDay", "stripLead", "dupKey", "sameEvent",
+             "publishedDetail", "listingRank", "onePerEvent",
+             "attendable", "copiesIn", "sourcesOf", "allLinksOf", "audienceLine",
+             "clockStates", "legendKeys", "dayEntries")
+
     def body(path, name):
-        src = open(at(path), encoding="utf-8").read()
+        src = open(path, encoding="utf-8").read()
         m = re.search(r"^function %s\(" % name, src, re.M)
         if not m:
             return None
@@ -316,26 +322,31 @@ def shared_logic_check(names):
             k += 1
         return src[i:k]
 
-    ok = True
-    for name in ("parseWhen", "sentences", "paras", "gatesOf", "assess",
-                 "stripDay", "stripLead", "dupKey", "sameEvent",
-                 "publishedDetail", "listingRank", "onePerEvent",
-                 "attendable", "copiesIn", "sourcesOf", "allLinksOf", "audienceLine",
-                 "clockStates", "legendKeys", "dayEntries"):
+    scripts = sorted(glob.glob(os.path.join(HERE, "_app*.js")))
+    ok, single, shared, missing = True, 0, 0, []
+    for name in FACTS:
         got = {}
-        for n in names:
-            b = body("_app_%s.js" % n, name)
+        for path in scripts:
+            b = body(path, name)
             if b:
-                got[n] = b
-        if len(got) < 2:
-            continue
-        if len(set(got.values())) != 1:
-            print("  FAIL  %s() differs between %s — the variants can disagree "
-                  "about the same fact" % (name, ", ".join(sorted(got))))
+                got[os.path.basename(path)] = b
+        if not got:
+            missing.append(name)
             ok = False
-    print("  %s  time parsing, prose breaking, duplicate identity, the fold that "
-          "merges them and the eligibility core are one implementation everywhere"
-          % ("ok  " if ok else "FAIL"))
+        elif len(got) == 1:
+            single += 1
+        else:
+            shared += 1
+            if len(set(got.values())) != 1:
+                print("  FAIL  %s() differs between %s - two scripts disagree about "
+                      "the same fact" % (name, ", ".join(sorted(got))))
+                ok = False
+    if missing:
+        print("  FAIL  no script defines: %s - this list has drifted from the code"
+              % ", ".join(missing))
+    print("  %s  %d facts have exactly one implementation across %d script(s); %d appear "
+          "in more than one and are byte-identical"
+          % ("ok  " if ok else "FAIL", single, len(scripts), shared))
     return ok
 
 
@@ -358,9 +369,8 @@ def smoke_check(names, sels):
         src = open(at(page), encoding="utf-8").read()
         tmp = os.path.join(tempfile.gettempdir(), "smoke-" + page)
         open(tmp, "w", encoding="utf-8").write(src.replace("</body>", SMOKE + "</body>", 1))
-        extra = {"a": ["&view=week", "&view=clash"], "b": ["&by=where"], "c": ["&full=1"],
-                 "a_plus": ["&view=week", "&view=clash", "&view=plan", "&view=reg",
-                            "&q=lazaridis"]}
+        extra = {"main": ["&view=week", "&view=clash", "&view=plan", "&view=reg",
+                          "&q=lazaridis"]}
         for s in sels:
             for w in (380, 700, 1400):
                 jobs.append((n, tmp, frag_of(s), label(s), w))
@@ -503,7 +513,7 @@ def control_check(names):
                 continue
             src = open(path, encoding="utf-8").read()
             allowed = (9, 10, 13)
-            # C1 (127-159) as well as C0: _style_a.css carried a U+0091 beside
+            # C1 (127-159) as well as C0: a stylesheet once carried a U+0091 beside
             # its U+0002 -- both halves of the same mangled pair of CSS escapes
             # -- and only the U+0002 was ever reported.
             bad = sorted({ord(c) for c in src
@@ -589,7 +599,7 @@ def link_core_check(names):
     d = tempfile.mkdtemp(prefix="linkcore-")
     js = os.path.join(d, "run.js")
     open(js, "w", encoding="utf-8").write(LINK_EQUIV)
-    r = subprocess.run(["node", js, at("_app_a.js"), os.path.join(HERE, "events.json")],
+    r = subprocess.run(["node", js, at("_app_main.js"), os.path.join(HERE, "events.json")],
                        capture_output=True, text=True, encoding="utf-8")
     if r.returncode:
         print("  FAIL  could not run allLinksOf(): %s" % (r.stderr or r.stdout)[:200])
@@ -650,12 +660,22 @@ def eligible(e, s):
 
 
 def links_check(sels):
-    """Variant C in full-text mode writes every link and citation of every event
-    into the page, so it can prove end to end that none were lost."""
+    """No registration link or citation is lost between the data and a page.
+
+    The yardstick writes every link of every listing straight into the DOM, so it
+    is the one page where this can be proved by reading the markup. The board
+    keeps links in the detail sheet and renders them when the sheet opens, which
+    is why it cannot be read this way and is covered instead by link_core_check
+    (allLinksOf() returns exactly what the yardstick assembles, for all 528
+    listings) and by the harvest, which opens sheets and collects what they draw.
+
+    Asking the board for these links directly reports every one of them missing —
+    which is what this check did when it was first pointed at the board, and the
+    failure looked like lost data rather than a misdirected question."""
     ev = json.load(open(os.path.join(HERE, "events.json"), encoding="utf-8"))["events"]
     bad = 0
     for s in sels:
-        d = body_only(dom("orientation-c.html", frag_of(s) + "&full=1"))
+        d = body_only(dom(REFERENCE, frag_of(s)))
         got = set(html.unescape(h) for h in re.findall(r'href="([^"]+)"', d))
         want = expected_links(s, ev)
         missing = want - got
@@ -700,7 +720,7 @@ def reference_check(sels, base):
     Everything below is measured against a model of eligibility written in this
     file. If that model were wrong, every variant could agree with it and the run
     would come back green while the board showed the wrong events. So the model is
-    first held against orientation-classic.html, which renders one <h3> per
+    first held against the yardstick, which renders one <h3> per
     listing and has not been touched: for every selection, the listings the model
     says are eligible must be exactly the ones the incumbent draws."""
     bad = 0
@@ -732,14 +752,8 @@ def reference_check(sels, base):
 # is opened, or None where the page writes the detail inline and nothing needs
 # clicking.
 MERGE = {
-    "a":      dict(page="orientation-a.html",      extra="&view=week",
-                   sel="#board [data-id]", detail="#sheet"),
-    "a_plus": dict(page="orientation-a-plus.html", extra="&view=week",
-                   sel="#board [data-id]", detail="#sheet"),
-    "b":      dict(page="orientation-b.html",      extra="",
-                   sel="#results [data-id]", detail="#reader"),
-    "c":      dict(page="orientation-c.html",      extra="&full=1",
-                   sel="#pages [data-id]", detail=None),
+    "main": dict(page="orientation.html", extra="&view=week",
+                 sel="#board [data-id]", detail="#sheet"),
 }
 
 HARVEST = """<script>
@@ -863,7 +877,7 @@ def day_walk_check(names, sels):
     navigator never offers would pass everything else in this file."""
     ok = True
     for name in names:
-        if name not in ("a", "a_plus"):
+        if name != "main":
             continue
         mine = True
         page = PAGE[name]
@@ -881,7 +895,7 @@ def day_walk_check(names, sels):
 
 # ---------------------------------------------------------------- main ------
 def main():
-    names = [a for a in sys.argv[1:] if a in GRAB] or ["a", "b", "c", "a_plus"]
+    names = [a for a in sys.argv[1:] if a in GRAB] or ["main"]
     snapshot()
     sels = build_selections()
     print("Parity: %d selections x %d variants, against %s\n" % (len(sels), len(names), REFERENCE))
@@ -954,18 +968,12 @@ def main():
 
     print("\nConsole errors")
     probe = [frag_of(s) for s in sels[:14]]
-    for page, extra in [("orientation.html", []),
-                        ("orientation-a.html", ["&view=day&day=2026-09-08", "&view=week"]),
-                        ("orientation-a-plus.html", ["&view=day&day=2026-09-08", "&view=week",
-                                                     "&view=clash", "&view=plan", "&view=reg",
-                                                     "&q=lazaridis", "&q=zzzznothing",
-                                                     "&view=plan&q=lazaridis", "&ghosts=1"]),
-                        ("orientation-b.html", ["&by=where", "&by=host", "&by=daypart",
-                                                "&by=stream", "&by=section", "&all=1", "&q=residence"]),
-                        ("orientation-c.html", ["&picks=1|2|3", "&only=1", ""])]:
+    for page, extra in [("orientation.html", ["&view=day&day=2026-09-08", "&view=week",
+                                              "&view=clash", "&view=plan", "&view=reg",
+                                              "&q=lazaridis", "&q=zzzznothing",
+                                              "&view=plan&q=lazaridis", "&ghosts=1"]),
+                        (REFERENCE, [])]:
         frags = probe + [probe[0] + x for x in extra]
-        if page == "orientation-c.html":
-            frags.append("")
         bad = console_check(page, frags, 1400) + console_check(page, frags, 420)
         if bad:
             all_ok = False

@@ -42,7 +42,7 @@ CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 sys.path.insert(0, HERE)
 from _chrome import chrome_flags
 
-PAGES = ["orientation.html", "orientation-a-plus.html"]
+PAGES = ["orientation.html"]
 
 # ---------------------------------------------------------------- the sweep --
 # Injected after the page has built itself. Everything it needs -- EV, sel,
@@ -295,7 +295,7 @@ BREAKS = [
 
 
 def negative():
-    base = io.open(os.path.join(HERE, "_app_a.js"), encoding="utf-8").read()
+    base = io.open(os.path.join(HERE, "_app_main.js"), encoding="utf-8").read()
     allok = True
     for name, expect, edits in BREAKS:
         js = base
@@ -304,13 +304,13 @@ def negative():
                 print("  the negative test no longer matches the code it breaks: %r" % a[:50])
                 return False
             js = js.replace(a, b)
-        bjs = os.path.join(HERE, "_app_a_broken.js")
+        bjs = os.path.join(HERE, "_app_broken.js")
         bout = "orientation-broken.html"
         io.open(bjs, "w", encoding="utf-8", newline="").write(js)
         print("negative test: %s" % name)
         try:
-            r = subprocess.run([sys.executable, "build.py", "--css", "_style_a.css",
-                                "--js", "_app_a_broken.js", "--body", "_body_a.html",
+            r = subprocess.run([sys.executable, "build.py", "--css", "_style_main.css",
+                                "--js", "_app_broken.js", "--body", "_body_main.html",
                                 "--out", bout], cwd=HERE, capture_output=True, text=True)
             if r.returncode:
                 print("  the broken build failed to build: %s" % (r.stderr or r.stdout)[:200])

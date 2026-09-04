@@ -8,13 +8,15 @@ last week's data. That happened once; this exists so it cannot happen again.
 """
 import subprocess, sys, hashlib, os
 
+# Two outputs, and only one of them is a page. orientation.html is the board. The
+# yardstick draws the same events as a plain list, one card per listing, and exists
+# so parity.py can prove the board shows exactly what the listing shows and loses
+# nothing in the merging. It is underscore-prefixed because it is a test fixture,
+# not something to open.
 PAGES = [
-    ("orientation.html",         ["--css", "_style_a.css",      "--js", "_app_a.js",      "--body", "_body_a.html"]),
-    ("orientation-a.html",       ["--css", "_style_a.css",      "--js", "_app_a.js",      "--body", "_body_a.html"]),
-    ("orientation-a-plus.html",  ["--css", "_style_a_plus.css", "--js", "_app_a_plus.js", "--body", "_body_a_plus.html"]),
-    ("orientation-b.html",       ["--css", "_style_b.css",      "--js", "_app_b.js",      "--body", "_body_b.html"]),
-    ("orientation-c.html",       ["--css", "_style_c.css",      "--js", "_app_c.js",      "--body", "_body_c.html"]),
-    ("orientation-classic.html", ["--css", "_style_min.css",    "--js", "_app.js",        "--body", ""]),
+    ("orientation.html", ["--css", "_style_main.css", "--js", "_app_main.js",
+                          "--body", "_body_main.html"]),
+    ("_yardstick.html",  ["--css", "_style_min.css",  "--js", "_app.js", "--body", ""]),
 ]
 
 def md5(p):

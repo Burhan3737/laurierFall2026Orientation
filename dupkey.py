@@ -6,18 +6,17 @@ seven rounds of this project that meant a second implementation transcribed by
 hand into Python, which is exactly the arrangement that drifts.
 
 There is no transcription here. This module extracts `stripDay()` and `dupKey()`
-out of `_app_a.js` and runs *those functions* under node against `events.json`.
+out of `_app_main.js` and runs *those functions* under node against `events.json`.
 If the key changes in the application, it changes here in the same commit,
 because there is only one of it. `parity.shared_logic_check()` proves the other
-three scripts carry the same bytes, so deriving from `_app_a.js` derives from all
-four.
+incumbent carries the same rule, so there is still only one of it.
 
     from dupkey import key_of, shown_title, fold, copies_of
 """
 import json, os, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SOURCE = os.path.join(HERE, "_app_a.js")
+SOURCE = os.path.join(HERE, "_app_main.js")
 DATA = os.path.join(HERE, "events.json")
 
 # the short names build.py packs the payload under, for the fields dupKey reads

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Prove the things orientation-a-plus.html does that the other gates cannot see.
+"""Prove the things orientation.html does that the other gates cannot see.
 
 parity.py proves the page shows the right events. check.py proves it runs.
 invariants.py and contrast.py prove it keeps its promises on screen. None of them
@@ -48,7 +48,7 @@ from _chrome import chrome_flags
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-PAGE = os.path.join(HERE, "orientation-a-plus.html")
+PAGE = os.path.join(HERE, "orientation.html")
 BOARD = "level=undergraduate&campus=Waterloo&term=Fall%202026"
 LSPLAN = "wlu-orientation.plan.v1"
 LSREG = "wlu-orientation.registered.v1"
@@ -657,7 +657,7 @@ def test_venue_map():
 
 
 def main():
-    print("orientation-a-plus.html — the doing layer")
+    print("orientation.html — the doing layer")
     picks, chosen = fixtures()
     print("  fixture plan: %d events" % len(picks))
     for label, e in chosen:

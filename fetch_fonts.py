@@ -68,7 +68,7 @@ def build(stylesheet):
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    sheets = sys.argv[1:] or ["_style_a.css", "_style_b.css", "_style_c.css"]
+    sheets = sys.argv[1:] or ["_style_main.css"]
     print("Caching webfonts into _fonts/")
     for s in sheets:
         build(s)

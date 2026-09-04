@@ -24,12 +24,8 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 BASE = "file:///" + HERE.replace("\\", "/").replace(" ", "%20") + "/"
 
 PAGES = {
-    "orientation-a.html": ["", "&view=week", "&view=clash", "&ghosts=1"],
-    "orientation-b.html": ["", "&only=clash", "&pivot=venue",
-                           "&cmp=1&clevel=graduate&ccampus=Brantford&cterm=Fall%202026"],
-    "orientation-c.html": ["", "&full=1", "&only=picks"],
-    "orientation-a-plus.html": ["", "&view=week", "&view=clash", "&view=plan",
-                                "&view=reg", "&ghosts=1", "&q=lazaridis"],
+    "orientation.html": ["", "&view=week", "&view=clash", "&view=plan",
+                         "&view=reg", "&ghosts=1", "&q=lazaridis"],
 }
 SEL = "#level=undergraduate&campus=Waterloo&term=Fall%202026"
 
@@ -118,7 +114,7 @@ def selftest():
               "var p=D.createElement('p');p.textContent='deliberately unreadable';"
               "p.setAttribute('style','position:fixed;top:4px;left:4px;z-index:99999;"
               "background:#ffffff;color:#c9c9c9;font-size:13px');D.body.appendChild(p);},2500)</script>")
-    n, items = probe(BASE + "orientation-a.html" + SEL, inject=inject)
+    n, items = probe(BASE + "orientation.html" + SEL, inject=inject)
     hit = any("201,201,201" in i for i in items)
     print("  %s  self-test: a 13px #C9C9C9 paragraph on white is %s"
           % ("ok  " if hit else "FAIL", "reported" if hit else "NOT reported \u2014 the walk is blind"))

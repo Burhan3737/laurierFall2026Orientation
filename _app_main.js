@@ -1142,8 +1142,10 @@ function drawNav() {
   h += '<div class="views">' +
        (wide ? vb("week", "Whole run", 0) : "") +
        vb("day", "One day", 0) +
-       vb("clash", "Clashes", clashN) +
+       /* the plan comes before the clashes: it is the thing a student is here to
+          build, and the clash list is a check on it rather than a view of its own. */
        vb("plan", "My plan", planN) +
+       vb("clash", "Clashes", clashN) +
        vb("reg", "To register", regN) +
        '<div class="qwrap">' +
        '<input id="qbox" class="qbox" type="search" autocomplete="off" spellcheck="false" ' +
@@ -1521,8 +1523,8 @@ function clashHtml(list) {
   var h = '<div class="clashhead"><h2>' + groups.length + " moment" + (groups.length === 1 ? "" : "s") +
     " where you have to choose</h2>" +
     '<p class="lede">' + n + " of your " + list.length + " events are in one. Desks and fairs that stay " +
-    "open across the middle of the day are left out, and so is Laurier listing the same " +
-    "event twice — neither is a choice you have to make.</p></div>";
+    "open across the middle of the day are left out — they are not a choice you " +
+    "have to make.</p></div>";
 
   h += '<div class="clashlist">' + groups.map(function (g) {
     var dt = new Date(g.day + "T00:00:00");
