@@ -854,7 +854,7 @@ function drawDoc() {
           ? ", every one written out in full " + DASH + " nothing to unfold."
           : ", listed by title. One day is open in full; open any other from its heading, " +
             "or turn on Full text below.") +
-        " Read from Laurier" + APOS + "s own schedule pages on 31 Aug 2026, including " +
+        " Read from Laurier" + APOS + "s own schedule pages " + META.readOn + ", including " +
         "the venue, host and registration detail Laurier keeps hidden until you open " +
         "an event.</p>"
       : '<p class="docsum">Laurier publishes <b>no schedule at all</b> for this combination. ' +

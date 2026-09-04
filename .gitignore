@@ -21,3 +21,5 @@ _plus_empty_calendar.pdf
 _plus_plan.ics
 # watched-only snapshots: pages we are told about but do not parse
 _watch/
+# the date the snapshots were last verified against Laurier (check_drift.py writes it)
+_read.json

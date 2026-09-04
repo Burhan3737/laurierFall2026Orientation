@@ -14,7 +14,7 @@ _ap.add_argument('--js',  default='_app_a.js', help='application script to inlin
 _ap.add_argument('--body', default='_body_a.html',
                  help='alternate body template; {{META}}, {{SRCGRID}}, {{WATCHGRID}}, '
                       '{{NSOURCES}}, {{NWATCHED}}, {{NTRACKED}}, {{NEVENTS}}, '
-                      '{{NDISTINCT}} are substituted')
+                      '{{NDISTINCT}}, {{READON}}, {{COMPILED}} are substituted')
 _ap.add_argument('--out', default='orientation.html', help='page to write')
 ARGS = _ap.parse_args()
 
@@ -27,7 +27,45 @@ EV = d['events']
 # counts events the same way the board does, or not at all.
 import dupkey
 NDISTINCT = len(dupkey.fold(EV))
-TODAY = "2026-08-31"
+
+# ---- when this was read, and when it was built -----------------------------
+# Both dates used to be the string "31 Aug 2026", typed into build.py, four body
+# templates and four application scripts. Refreshing the snapshots without
+# editing all nine turned a true sentence into a false one — and false in the
+# direction that matters, the page claiming to be more current than it is. Both
+# are now consequences of the build.
+#
+# READ_ON is the last date every tracked page was downloaded in full and found
+# to match its snapshot; check_drift.py writes it the moment that becomes true
+# and refuses to write it when drift is outstanding, so the claim cannot outrun
+# the data. Where that record is missing — a working copy whose snapshots were
+# fetched some other way — the newest snapshot on disk is used instead, and
+# saying so is left to the reader of this comment: it is a weaker fact, but it
+# is still a fact about these files rather than a memory of one.
+#
+# COMPILED is the day the page was generated, which is what "compiled" has
+# always meant, and TODAY is that same day in ISO for the payload.
+def _read_on():
+    try:
+        with open('_read.json', encoding='utf-8') as fh:
+            return datetime.date.fromisoformat(json.load(fh)['checked'])
+    except (OSError, ValueError, KeyError):
+        snaps = [os.path.getmtime(os.path.join('_src', f))
+                 for f in os.listdir('_src') if f.endswith('.html')] if os.path.isdir('_src') else []
+        if not snaps:
+            raise SystemExit("build.py: no _read.json and no snapshots in _src/ — cannot "
+                             "say when these schedules were read. Run check_drift.py.")
+        return datetime.date.fromtimestamp(max(snaps))
+
+
+def _human(d):
+    return "%d %s %d" % (d.day, ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+                                 "Aug", "Sep", "Oct", "Nov", "Dec"][d.month - 1], d.year)
+
+
+READ_ON  = _human(_read_on())
+COMPILED = _human(datetime.date.today())
+TODAY    = datetime.date.today().isoformat()
 
 # ---- compact the payload: short keys, drop empties -------------------------
 K = {"date":"d","title":"t","desc":"x","where":"w","when":"n","host":"h","cost":"c",
@@ -218,14 +256,14 @@ BODY_DEFAULT = f"""<body>
 
 <section class="blk wrap">
   <h2>Sources <em>&amp; citations</em></h2>
-  <p class="lede">Every event links back to the exact section of the page it came from. All {len(SOURCES)} schedules were scraped on 31 Aug 2026, including the collapsed accordion panels where Laurier keeps venue, host and registration detail.</p>
+  <p class="lede">Every event links back to the exact section of the page it came from. All {len(SOURCES)} schedules were scraped on {READ_ON}, including the collapsed accordion panels where Laurier keeps venue, host and registration detail.</p>
   <div class="srcgrid">
 {src_html}
   </div>
 </section>
 
 <footer class="wrap">
-  {len(EV)} events extracted from {len(SOURCES)} Laurier schedule pages &middot; compiled 31 Aug 2026<br>
+  {len(EV)} events extracted from {len(SOURCES)} Laurier schedule pages &middot; compiled {COMPILED}<br>
   Laurier updates these schedules continuously — reconfirm before travelling to a venue &middot; eligibility shown here is an interpretation of each page's stated audience, not an official ruling
 </footer>
 """
@@ -250,6 +288,10 @@ META = json.dumps({
   "terms": TERMS, "streams": STREAMS,
   "nEvents": len(EV), "nDistinct": NDISTINCT, "nSources": len(SOURCES),
   "nWatched": len(WATCHED), "nTracked": len(SOURCES) + len(WATCHED),
+  # The two dates the pages talk about, so a variant states them rather than
+  # remembering them. readOn is a phrase, not a date, because it follows the
+  # word "read" in every sentence that uses it.
+  "readOn": "on " + READ_ON, "compiled": COMPILED,
   "pageTitles": PAGE_TITLES,
   "sources": [{"file": f, "title": PAGE_TITLES.get(f, f), "url": u} for f, u in SOURCES],
   "watched": [{"title": t, "url": u, "why": w} for u, t, w in WATCHED],
@@ -264,7 +306,9 @@ if ARGS.body:
             .replace('{{NWATCHED}}', str(len(WATCHED)))
             .replace('{{NTRACKED}}', str(len(SOURCES) + len(WATCHED)))
             .replace('{{NEVENTS}}', str(len(EV)))
-            .replace('{{NDISTINCT}}', str(NDISTINCT)))
+            .replace('{{NDISTINCT}}', str(NDISTINCT))
+            .replace('{{READON}}', 'on ' + READ_ON)
+            .replace('{{COMPILED}}', COMPILED))
 else:
     BODY = BODY_DEFAULT
 

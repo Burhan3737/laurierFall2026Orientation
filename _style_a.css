@@ -385,11 +385,12 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   .blk.off{background:#F4F4F4;border-left-style:dotted}
   .blk.past .bh,.blk.past .bt,.blk.past .bw{color:#666}
 
-  /* the whole-run view has no hours to keep, so it stays a list of bars */
-  .wb{position:static;height:auto;display:block;width:auto!important;margin-bottom:2pt;
-      background:#fff;border:.5pt solid #000}
-  .wbl.out{display:none}
-  .wklane{height:auto!important}
+  /* The whole run prints too, but its rules cannot live here: every property
+     in them was overridden by the base .wb three hundred lines below, at equal
+     specificity and later in the file, so this block was dead and the run came
+     out of the printer in full colour with its bars absolutely positioned at
+     width:auto. They are in "print: the whole run" at the foot of this file,
+     after the rules they have to beat. */
   .wkrow{break-inside:avoid}
   .cl{break-inside:avoid}
 
@@ -607,7 +608,14 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 }
 .wb.open{background:var(--lilac)}
 .wb.clash{border-top-color:var(--gold)}
-.wb.off{background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
+/* A bar the student cannot attend never carries the gold cap. clockStates()
+   sets "off" and returns before it can set "clash", so the key never names a
+   collision on a ghost -- and .wb.off replaced only the background, so the cap
+   inherited from .wb.clash above survived on the hatching as a colour with no
+   caption anywhere on the page. drawsClash() no longer puts .clash on a ghost;
+   this says the same thing in the stylesheet, where the cap is actually drawn. */
+.wb.off{background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px);
+  border-top-color:transparent}
 .wb.off .wbl{color:var(--meta)}
 .wb:hover{outline:2px solid var(--ink);outline-offset:0;z-index:4}
 .wb:focus-visible{outline:3px solid var(--gold);z-index:5}
@@ -732,4 +740,63 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .src.watched b{color:var(--gold-d)}
 .src em{
   display:block;margin:4px 0 5px;font-style:normal;color:var(--meta);font-size:12px;line-height:1.5;
+}
+
+/* ---- print: the run, the ribbons and the untimed chips -----------------
+   Placed here, at the end, because these rules have to beat the .wb block
+   above them and CSS resolves ties by source order: written inside the print
+   section near the top of this file, every one of them lost silently and the
+   run printed in full colour.
+
+   The decision, made rather than inherited: the run prints in monochrome and
+   stays a grid. Monochrome because the rest of this sheet already is -- a
+   block on the printed day clock is white with a reading edge whose weight and
+   style carry its state, and a sheet that only works out of a colour printer
+   is a sheet that does not work. A grid because flattening the run into a
+   column of bars throws away the only thing it is for: thirteen days of
+   position and duration, read at once. The hour axis prints with it, so the
+   positions mean something on paper, and the states are the same reading edge
+   the day sheet and the printed key use -- so one key covers both.
+------------------------------------------------------------------------- */
+@media print{
+  .weekwrap{break-inside:auto}
+  .wkhead{border-bottom:.5pt solid #000}
+  .wklab,.wt{color:#000;font-size:6.5pt}
+  .wl{border-left-color:#DDD}
+  .wklane{background:#fff;border-bottom:.25pt solid #CCC}
+  .wkrow.past .wklane{background:#fff}
+  .wkday,.wkrow.today .wkday{background:#fff}
+  .wdw,.wdm{color:#333}
+  .wdd{color:#000}
+  .wdn{background:#fff;color:#000;border:.5pt solid #666}
+  /* white bar, black reading edge: the same idiom as .blk, so the printed key
+     names the states of both views at once */
+  .wb,.wb.open,.wb.clash,.wb.off,.wb.past{
+    background:#fff;border:.5pt solid #000;border-left:2pt solid #000;border-top:0;
+    height:15px;
+  }
+  .wb.clash{border-left-width:3.5pt}
+  .wb.open{border-left-style:double;border-left-width:4pt}
+  .wb.off{background:#F4F4F4;border-left-style:dotted}
+  .wbl,.wb.off .wbl{color:#000;font-size:6.4pt}
+  .wbl.out{color:#000}
+
+  /* An all-day ribbon and an untimed chip wear the clock's own reading edges on
+     the screen, and the printed key describes those edges in black. Left in
+     colour they were the two things on the sheet the key did not fit -- and they
+     appear on the day sheet as well as under the run, so a purple ribbon sat
+     forty pixels from a swatch drawn as a plain black rule. Same idiom as .blk:
+     white, a black edge, double for open to all, dotted for not open to you. */
+  .rib,.rib.open,.rib.off,.chipev,.chipev.open,.chipev.off{
+    background:#fff;border:.5pt solid #000;border-left:2pt solid #000;
+  }
+  .rib.open,.chipev.open{border-left-style:double;border-left-width:4pt}
+  .rib.off,.chipev.off{background:#F4F4F4;border-left-style:dotted}
+  .rt,.rh,.rib.off .rt,.rib.off .rh{color:#000}
+  .chipev .ch,.chipev.off .ch{color:#000}
+  .chipev .cw{color:#333}
+  .allday h3,.loosebar h3{color:#000}
+  .allday h3 span,.loosebar h3 span{background:#fff;color:#000;border:.5pt solid #666}
+  .allday,.loosebar,.loosebar.tight{border-top-color:#000}
+  .loosebar .lede,.looseday{color:#333}
 }

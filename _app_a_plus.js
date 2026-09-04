@@ -300,6 +300,48 @@ function collidesWith(e) {
   });
   return out;
 }
+/* Whether a drawn event should be marked as colliding, and with what.
+
+   The class used to be decided by `it.ncol > 1`, which is not an overlap test at
+   all. placed() pads every item to a minimum drawn height -- de = max(end, start
+   + minMin), 52 minutes on the day clock and 20 on the run -- so that a short
+   event is still a readable box. Two strictly consecutive events therefore land
+   in different lanes, both come back with ncol 2, and both were painted gold.
+   The Graduate Student Orientation evening -- welcome reception, dean's welcome,
+   panel, "Are You Ready", trivia, end to end with not a minute of overlap -- was
+   drawn as five mutual conflicts, telling a graduate student to choose between
+   consecutive parts of one evening on the most important night of their week,
+   while the Clashes lens two clicks away correctly showed nothing for that day.
+   The page contradicted itself, and the agenda -- which had a real overlap test
+   -- drew the same day as ten plain rows under a key still claiming a collision.
+
+   de stays what it is, a layout figure. Whether two events overlap is asked of
+   collidesWith(), which is this page's only overlap engine and already drops the
+   drop-in desks and Laurier's duplicate listings, so the block, the bar, the
+   agenda row, the key above them and the detail sheet cannot disagree.
+
+   An event the student cannot attend is never marked. clockStates() deliberately
+   refuses to name a collision on a ghost, and a colour on the screen that no
+   caption accounts for is the same fault seen from the other end.
+
+   `within` narrows the answer to a set of events by dupKey: the plan asks what
+   in the plan collides with what else in the plan, which is the question its own
+   bar and its list form already answer.
+
+   The sweep is every pick against every event, and the run view asks it of
+   eighty-odd bars per render, so it is answered once per selection and thrown
+   away when the selection changes -- keyed on the selection itself rather than
+   cleared by hand, so it cannot go stale. */
+var CLASHBY = null, CLASHHIT = {};
+function drawnClashes(e, within) {
+  if (!assess(e).ok) return [];
+  var k = sourcePoolKey();
+  if (CLASHBY !== k) { CLASHBY = k; CLASHHIT = {}; }
+  var hit = CLASHHIT[e.__i];
+  if (!hit) hit = CLASHHIT[e.__i] = collidesWith(e);
+  return within ? hit.filter(function (o) { return within[dupKey(o)]; }) : hit;
+}
+function drawsClash(e, within) { return drawnClashes(e, within).length > 0; }
 function esc(s) {
   return String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -1305,10 +1347,10 @@ function rules(sc, of) {
 
 /* A block on the day clock. Nothing else uses this: the whole-run view gave up
    on drawing hours and lists names instead. */
-function blockHtml(it, sc) {
+function blockHtml(it, sc, within) {
   var e = it.ev, a = assess(e), off = !a.ok;
   var u = 100 / it.ncol, left = it.col * u, w = u * Math.min(it.span || 1, it.ncol - it.col);
-  var cls = "blk" + (off ? " off" : (e.oa ? " open" : "")) + (it.ncol > 1 ? " clash" : "") +
+  var cls = "blk" + (off ? " off" : (e.oa ? " open" : "")) + (drawsClash(e, within) ? " clash" : "") +
             (e.d && e.d < NOW ? " past" : "") + (isPicked(e) ? " mine" : "");
   var top = sc.pos(it.s), bot = sc.pos(it.de);
   var label = clock(it.s) + "–" + clock(it.e) + " · " + (e.t || "") + (e.w ? " · " + e.w : "");
@@ -1587,7 +1629,7 @@ function weekHtml(list, keys) {
     var shown = items;
     var n = onDay(list, k).length;
 
-    shown.forEach(function (it) { wentries.push([it.ev, it.ncol > 1, false]); });
+    shown.forEach(function (it) { wentries.push([it.ev, drawsClash(it.ev), false]); });
 
     body += '<div class="wkrow' + (past ? " past" : "") + (k === NOW ? " today" : "") + '">' +
       '<button class="wkday" data-day="' + k + '">' +
@@ -1607,7 +1649,7 @@ function weekHtml(list, keys) {
         var btop = it.col * (LANE_H + LANE_GAP) + 2;
         var lab = barLabel(it, e, k, wide, room, laneW, byTitle, left, btop, off);
         return lab[1] + '<button class="wb' + (off ? " off" : (e.oa ? " open" : "")) +
-          (it.ncol > 1 ? " clash" : "") +
+          (drawsClash(e) ? " clash" : "") +
           (isPicked(e) ? " mine" : "") +
           '" style="left:' + left + "%;width:" + wide + "%;top:" + btop + "px\" " +
           (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i +
@@ -1650,7 +1692,7 @@ function weekHtml(list, keys) {
    has nothing left to say. The argument survives the change of form — the hour
    gutter stays, empty stretches are still named rather than drawn, and every
    collision is counted in words. */
-function agendaHtml(items, of) {
+function agendaHtml(items, of, within) {
   var prevEnd = null;
   return '<div class="agenda">' + items.map(function (it) {
     var gap = "";
@@ -1659,7 +1701,7 @@ function agendaHtml(items, of) {
             clock(prevEnd) + " and " + clock(it.s) + "</div>";
     prevEnd = prevEnd === null ? it.de : Math.max(prevEnd, it.de);
     var e = it.ev, a = assess(e), off = !a.ok;
-    var clash = items.filter(function (o) { return o !== it && o.s < it.e && it.s < o.e; });
+    var clash = drawnClashes(e, within);
     return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) +
       (clash.length ? " clash" : "") +
       (isPicked(e) ? " mine" : "") + '" ' +
@@ -1734,8 +1776,8 @@ function legendKeys(st) {
 /* The entries one day of the clock draws, in the form clockStates() wants:
    the event, whether it collides, and whether it is drawn beside the clock
    rather than on it. */
-function dayEntries(pt, items) {
-  return items.map(function (it) { return [it.ev, it.ncol > 1, false]; })
+function dayEntries(pt, items, within) {
+  return items.map(function (it) { return [it.ev, drawsClash(it.ev, within), false]; })
     .concat(pt.long.map(function (it) { return [it.ev, false, true]; }),
             pt.loose.map(function (e) { return [e, false, true]; }));
 }
@@ -1880,7 +1922,12 @@ function planCalHtml(picks) {
     var lanes = items.reduce(function (m, it) { return Math.max(m, it.ncol); }, 0);
     var sc = items.length ? makeScale(items, 1.15) : null;
     var tooDeep = lanes > MAX_LANES;
-    all = all.concat(dayEntries(pt, items));
+    /* PLAN is already keyed by dupKey, and it is the set planClashes() and the
+       plan bar count against. Passing it here is what stops the plan's calendar
+       form marking a block gold for colliding with something the student did
+       not put in their plan, while its list form -- reading the same picks --
+       says nothing of the kind. */
+    all = all.concat(dayEntries(pt, items, PLAN));
 
     var h = '<section class="pday pcalday' + (g.k !== "TBA" && g.k < NOW ? " past" : "") +
       '"><h3 class="pdayh">' + esc(dayLabel(g.k)) +
@@ -1899,12 +1946,12 @@ function planCalHtml(picks) {
         ? "The clock is too narrow to draw here, so this day is read in time order."
         : lanes + " of these run at once, which is more than the clock can draw and " +
           "still be read, so this day is written out in time order.") + "</p>";
-      h += agendaHtml(items, "nothing in your plan");
+      h += agendaHtml(items, "nothing in your plan", PLAN);
     } else if (items.length) {
       h += '<div class="daygrid"><div class="gutcol"><div class="gut" style="height:' +
         sc.H + 'px">' + hourAxis(sc) + '</div></div><div class="col wide" style="height:' +
         sc.H + 'px">' + rules(sc, "nothing in your plan") +
-        items.map(function (it) { return blockHtml(it, sc); }).join("") + "</div></div>";
+        items.map(function (it) { return blockHtml(it, sc, PLAN); }).join("") + "</div></div>";
     }
     return h + "</section>";
   }).join("");
@@ -2174,7 +2221,7 @@ function printRegHtml() {
     '<p class="prwhat">' + own.length + " event" + (own.length === 1 ? "" : "s") +
       " on my board " + (own.length === 1 ? "carries" : "carry") + " a registration, RSVP or " +
       "ticket link of " + (own.length === 1 ? "its" : "their") + " own; " + done +
-      " already ticked off. Compiled from Laurier's published schedules on 31 Aug 2026.</p>" +
+      " already ticked off. Compiled from Laurier's published schedules on " + META.compiled + ".</p>" +
     "</header>";
 
   if (wide.length) {
@@ -2210,7 +2257,7 @@ function printRegHtml() {
       }).join("") + "</section>";
   }).join("");
   h += '<footer class="prfoot"><p>Printed from the Laurier Orientation Event Finder, ' +
-    "compiled 31 Aug 2026 from " + META.nSources + " published Laurier schedules. " +
+    "compiled " + META.compiled + " from " + META.nSources + " published Laurier schedules. " +
     "Laurier updates these continuously — reconfirm a deadline before relying on it.</p>" +
     "</footer></div>";
   return h;
@@ -2293,10 +2340,19 @@ function shortDay(k) {
 function printEntry(e, no, hit, common) {
   var m = mapFor(e), src = sourcesOf(e);
   var pw = e.d ? parseWhen(e.n) : null;
-  var isDrop = !!pw && isDropIn(pw);
+  var isDrop = !!pw && isDropIn(pw), a = assess(e);
   var bits = [];
   if (e.h) bits.push("Host: " + e.h);
-  bits.push(audienceLine(e));
+  /* The detail sheet has always got this right -- a.ok ? audienceLine(e) :
+     a.reason -- and paper had not. audienceLine() falls back to "Open to you",
+     which means "matches the level, campus, term and streams you gave", and
+     77 events are stream-gated with no audience Laurier ever published, so
+     every one of them printed "Open to you" directly above a note saying it
+     was not on the board you were looking at. A pick reaches paper whenever a
+     stream it needs is not currently ticked, so this was not a corner case.
+     Laurier's own reason is the honest line, and the note below no longer
+     repeats it. */
+  bits.push(a.ok ? audienceLine(e) : a.reason);
   if (e.c) bits.push("Cost: " + e.c);
   return '<div class="prev">' +
     '<p class="prt"><span class="prno">' + no + "</span> " +
@@ -2308,8 +2364,8 @@ function printEntry(e, no, hit, common) {
         esc(e.w || (e.vr ? "Online" : "Venue not published by Laurier")) +
         (m && m.tail ? " · " + esc(m.tail) : "") + "</p>" +
       '<p class="prm">' + esc(bits.join(" · ")) + "</p>" +
-      (assess(e).ok ? "" : '<p class="proff"><b>Note:</b> not on the board you were ' +
-        "looking at — " + esc(assess(e).reason) + ".</p>") +
+      (a.ok ? "" : '<p class="proff"><b>Note:</b> not on the board you were ' +
+        "looking at.</p>") +
       (hit && hit.length ? '<p class="prc"><b>Overlaps:</b> ' + esc(hit.map(function (o) {
           return title(o) + " (" + whenLabel(o) + ")";
         }).join("; ")) + "</p>" : "") +
@@ -2355,7 +2411,7 @@ function printSheetHead(usingPlan, list) {
         "collected at the end, because a grid has room for neither."
       : "Written out in time order, with the venue, the host and every web address " +
         "against each event.") +
-    " Compiled from Laurier’s published schedules on 31 Aug 2026.</p></header>";
+    " Compiled from Laurier’s published schedules on " + META.compiled + ".</p></header>";
 }
 
 /* ---- the addresses a grid cannot carry ----------------------------------
@@ -2378,7 +2434,7 @@ function printAddresses(days) {
            a sheet a student has to go back to a laptop for. */
         var bits = [];
         if (e.h) bits.push("Host: " + e.h);
-        bits.push(audienceLine(e));
+        bits.push(a.ok ? audienceLine(e) : a.reason);
         if (e.c) bits.push("Cost: " + e.c);
         return '<p class="prad"><span class="prno">' + d.no[e.__i] + "</span> " +
           '<span class="prday-lab">' + esc(shortDay(e.d)) + "</span> " +
@@ -2391,7 +2447,7 @@ function printAddresses(days) {
           esc(e.w || (e.vr ? "Online" : "Venue not published by Laurier")) +
           (m && m.tail ? " · " + esc(m.tail) : "") +
           "<br>" + esc(bits.join(" · ")) +
-          (a.ok ? "" : "<br>Not on the board I was looking at — " + esc(a.reason) + ".") +
+          (a.ok ? "" : "<br>Not on the board I was looking at.") +
           regLinksOf(e).map(function (l) {
             return "<br>Register (" + esc(l.text) + "): " + esc(l.href);
           }).join("") +
@@ -2537,7 +2593,7 @@ function printHtml() {
   if (planCal) h += printAddresses(appendix);
 
   h += '<footer class="prfoot"><p>Printed from the Laurier Orientation Event Finder, ' +
-    "compiled 31 Aug 2026 from " + META.nSources + " published Laurier schedules. " +
+    "compiled " + META.compiled + " from " + META.nSources + " published Laurier schedules. " +
     "Laurier updates these continuously — reconfirm before travelling to a venue. " +
     "Eligibility shown here is an interpretation of each page's stated audience, not an " +
     "official ruling.</p></footer></div>";
@@ -2748,7 +2804,7 @@ function openSheet(i) {
           return '<span class="citeone"><a href="' + esc(o.u) + '" target="_blank" rel="noopener">' +
             esc(o.u) + "</a>" + (o.s ? "<em>" + esc(o.s) + "</em>" : "") + "</span>";
         }).join("") +
-        "Read on 31 Aug 2026, including the venue, host and registration detail Laurier " +
+        "Read " + META.readOn + ", including the venue, host and registration detail Laurier " +
         "keeps hidden until you open an event.</p>" +
     "</div>";
   $("sheet").hidden = false; $("scrim").hidden = false;

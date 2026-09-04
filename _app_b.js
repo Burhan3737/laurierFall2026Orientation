@@ -917,7 +917,7 @@ function drawResults() {
        (Q ? ' matching “' + esc(Q) + "”" : "") +
        (sel.streams.length ? ", including " + esc(sel.streams.join(", ")) : "") +
        " · filed under " + esc((PIVOTS.filter(function (p) { return p[0] === pivot; })[0] || ["", ""])[1]) +
-       " · printed from the Laurier Orientation Index, compiled 31 Aug 2026</span></div>";
+       " · printed from the Laurier Orientation Index, compiled " + META.compiled + "</span></div>";
   h += '<div class="rowhead"><span class="h-date">Date</span><span class="h-time">Time</span>' +
        '<span class="h-event">Event</span><span class="h-venue">Venue</span>' +
        '<span class="h-host">Host</span></div>';
@@ -1125,7 +1125,7 @@ function drawReader() {
             (o.u.indexOf("#") > 0 ? ", &sect;" + esc(o.u.split("#")[1].replace(/-/g, " ")) : "") +
             '. <a href="' + esc(o.u) + '" target="_blank" rel="noopener">' + esc(o.u) + "</a>";
         }).join("<br>") +
-        "<br>Read on 31 Aug 2026, including the venue, host and registration detail " +
+        "<br>Read " + META.readOn + ", including the venue, host and registration detail " +
         "Laurier keeps hidden until you open an event.</p>" +
     "</article>";
   $("backbtn").onclick = function () { document.body.classList.remove("reading"); };

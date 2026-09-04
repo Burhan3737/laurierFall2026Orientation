@@ -1465,3 +1465,155 @@ to all levels and colliding shows lilac *and* a gold cap, so the key offering bo
 is not over-claiming — the run draws collisions as a cap above a filled bar, which
 is why `clockStates()` takes `capped`. Making the cap visible was the fix that
 mattered there.
+
+---
+
+## Round 8 — five defects from the audit
+
+### 1. Laurier moved Music Bingo, and the page could not say when it had read the schedules
+
+`check_drift.py --update` found four pages changed. Two changes reached the board:
+
+- **Music Bingo is 5 to 7 p.m.**, not 5:30, on `locus.html` and
+  `undergraduate/fall-waterloo.html`. `bachelor-of-education.html` still says 5:30, so
+  Laurier now contradicts itself across its own pages. Each page's own value is
+  reproduced and nothing is reconciled. The two undergraduate listings agree and fold
+  into one event as they always did; the Bachelor of Education copy no longer folds with
+  them, because `dupKey` includes the published time. That is the fold working — the
+  distinct count went 353 to 354 — and no student sees both, because the two are on
+  different levels.
+- **Laurier retired the virtual orientation's Zoom registration** and published a
+  YouTube recording in its place, and dropped the page-level "Register Now!" banner from
+  `undergraduate/fall-virtual.html`. `test_regressions.py` asserted that Zoom fragment
+  was reachable, so the suite went 47/48 — correctly. That assertion guards the parser,
+  not Laurier's editorial decisions, so it now watches the Zoom registration that page
+  still carries (CSEDI 101). An assertion about a link Laurier has deleted stops testing
+  anything and only teaches you to ignore a red run.
+
+**Both dates are now consequences of the build.** "read on 31 Aug 2026" and "compiled
+31 Aug 2026" were string literals in nine places — `build.py`, four body templates and
+four application scripts — so refreshing the snapshots without editing all nine turned a
+true sentence into a false one, in the direction that matters: the page claiming to be
+more current than it is. It had already happened. `check_drift.py` now writes `_read.json`
+at the moment every tracked page has been downloaded in full and found to match its
+snapshot, and refuses to write it while drift is outstanding, so the claim cannot outrun
+the data. `build.py` reads it into `READ_ON`; where the record is missing it falls back to
+the newest snapshot on disk, which is weaker but is still a fact about these files rather
+than a memory of one. `COMPILED` and `TODAY` are the build date. `META.readOn` and
+`META.compiled` carry both to every variant, and `{{READON}}`/`{{COMPILED}}` to every body
+template, so no page states a date it was told rather than one it worked out.
+
+### 2. "Runs at the same time as something else", drawn over events that do not overlap
+
+The worst of the five, and the one a student would act on. `blockHtml`, the run bars and
+`dayEntries` all decided the class with `it.ncol > 1`. `ncol` is a layout figure:
+`placed()` pads every item to a minimum drawn height (`de = max(end, start + minMin)`, 52
+minutes on the day clock and 20 on the run) so a short event is still a readable box, so
+two strictly consecutive events land in different lanes and both come back with `ncol` 2.
+
+On graduate/Waterloo/Wednesday 2 September, **all seven blocks were gold** — including the
+Graduate Student Orientation evening, which is strictly sequential: reception 5:30–6:30,
+dean's welcome 6:30–6:45, panel 6:45–7:30, "Are You Ready" 7:30–8:10, trivia 8:10–8:30.
+The page told a graduate student to choose between consecutive parts of one evening on the
+most important night of their week, while its own Clashes lens correctly showed nothing for
+that day, and the agenda — which had a real overlap test — drew the same day as ten plain
+rows under a key still claiming a collision.
+
+`de` stays what it is, a layout figure. **`drawnClashes(e, within)`** now answers the
+question, and it asks `collidesWith()` — this page's only overlap engine, which already
+drops the drop-in desks and Laurier's duplicate listings — so the block, the bar, the
+agenda row, the key above them and the detail sheet cannot disagree. It refuses to mark an
+event the student cannot attend, because `clockStates()` refuses to name a collision on a
+ghost and a colour no caption accounts for is the same fault seen from the other end. The
+sweep is every event against every event and the run view asks it of eighty-odd bars per
+render, so it is answered once per selection and keyed on the selection itself rather than
+cleared by hand, so it cannot go stale.
+
+The agenda gave up its own overlap test at the same time: it had a correct one, but a
+second implementation of a rule is a rule waiting to drift, and "N others at this time" now
+counts the same set the edge is drawn from.
+
+`dayEntries`, `clockStates` and `drawnClashes` are byte-identical in `_app_a.js` and
+`_app_a_plus.js`, and `parity.py`'s shared-logic gate holds them that way. The one place
+they are deliberately asked a narrower question is **A-plus's plan drawn as a calendar**,
+which passes `PLAN`: without it a block would be gold for colliding with something the
+student never put in their plan, while the plan's list form — reading the same picks
+through `planClashes()` — said nothing of the kind.
+
+Verified on the state the audit named: seven blocks, two marked (Campus Tour and
+Orientation Check-In, which genuinely run together), five plain, and the key naming
+exactly "an ordinary event" and "runs at the same time as something else".
+
+### 3. The printed run key omitted the colour that was on the sheet
+
+`viewStates()` called `clockStates(ent)` with no `capped`, while `weekHtml` calls
+`clockStates(wentries, true)`. Without `capped`, a bar that both collides and is open to
+all sets `clash` and returns before it can set `open` — so a printed run sheet carried
+lilac with nothing naming it, which is precisely the fault the conditional key was built
+to remove, and screen and paper disagreed about the same board. It passes
+`view === "week"` now.
+
+**And the print stylesheet was dead.** `@media print .wb{background:#fff;...}` sat three
+hundred lines above the base `.wb{background:var(--purple)}` at equal specificity, so every
+property in it lost and the run printed in full colour with its bars absolutely positioned
+at `width:auto`.
+
+The decision, made rather than inherited: **the run prints in monochrome and stays a
+grid.** Monochrome because the rest of this sheet already is — a block on the printed day
+clock is white with a reading edge whose weight and style carry its state — and a sheet
+that only works out of a colour printer is a sheet that does not work. A grid because
+flattening the run into a column of bars throws away the only thing it is for: thirteen
+days of position and duration, read at once. The rules live at the foot of the stylesheet,
+after the ones they have to beat.
+
+All-day ribbons and untimed chips came with it. They wear the clock's own reading edges on
+screen and the printed key describes those edges in black, so left in colour they were the
+two things on the sheet the key did not fit — and they appear on the day sheet as well as
+under the run. Measured on the printed run: purple fills 5 to 0.
+
+### 4. A printed entry that said both "Open to you" and "not on the board you were looking at"
+
+`printEntry` and `printAddresses` pushed `audienceLine(e)` unconditionally. It falls back
+to "Open to you", which means "matches the level, campus, term and streams you gave", and
+77 events are stream-gated with no audience Laurier ever published — so every one of them
+printed "Open to you" directly above a note saying it was not on the board. A pick reaches
+paper whenever a stream it needs is not currently ticked, so this was not a corner case.
+Both now do what the detail sheet has always done, `a.ok ? audienceLine(e) : a.reason`, and
+the note below no longer repeats the reason.
+
+### 5. Gold caps on the run with nothing naming them
+
+`.wb.off` replaced only the background, so `.wb.clash`'s gold cap survived on the hatching
+— while `clockStates()` returns early for `off` and never sets `clash`, so the colour had
+no caption anywhere on the page. Closed at source: `drawnClashes()` returns nothing for an
+event the student cannot attend. The stylesheet says the same thing where the cap is
+actually drawn, because CSS and JS are separate files and the invariant is one line.
+
+### The gate, and proving it goes red
+
+**`clashcheck.py`** asserts two properties against the rendered page, across every day of
+every board at three settings — the clock, the same day read as an agenda, and the board
+with "show what you cannot attend" on:
+
+1. nothing is drawn as colliding unless it genuinely overlaps something else. It walks the
+   DOM and asks the data directly — does anything the student may attend, on this date,
+   actually run across this event's hours — **without calling `collidesWith()`**, because a
+   check that calls the implementation it is checking cannot fail;
+2. the key names exactly the states its board draws, in both directions, for the screen key
+   and the printed key separately. They are computed by different routes — the screen key
+   from the entries a view lays out, the printed key from `viewStates()` before the board
+   exists — and those two disagreeing is what finding 3 was.
+
+**2,232 board states, clean.** Negative-tested one defect at a time rather than all three
+at once, because the loudest fault masks the others and a gate that fails for the wrong
+reason has not been tested: the layout figure put back as an overlap test, the printed key
+asked without `capped`, and the collision mark allowed onto a ghost. Each is caught, and
+each is named by the assertion written for it.
+
+### Gates
+
+`build_all.py`; `parity.py` (83 selections across 4 variants against the classic yardstick,
+4,147 entries each, 294 board states in the empty-board smoke, zero console errors across
+92 states); `clashcheck.py` 2,232 states and its three-part negative test; `check.py`;
+`invariants.py`; `contrast.py`; `plus_check.py`; `test_regressions.py` 48/48;
+`check_drift.py` clean across 14 pages.

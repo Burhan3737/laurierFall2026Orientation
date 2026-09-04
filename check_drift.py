@@ -16,9 +16,19 @@ only, so that a decision can be revisited when the page changes rather than
 never. Watching is not parsing: parse.py reads the files named in its own META
 and nothing else, and a watched-only snapshot is kept outside _src/ so that
 stays true by construction rather than by care.
+
+A clean run also records the date it happened, in _read.json. The built pages
+tell a student when these schedules were read from Laurier, and that sentence
+used to be a string literal in five files: refreshing the snapshots without
+remembering to edit all five turned a true sentence into a false one, silently,
+in the direction that matters (the page claiming to be more current than it is).
+build.py reads the date from here instead, so the claim is a consequence of the
+last successful check rather than of anybody's memory.
 """
-import sys, os, ssl, urllib.request
+import sys, os, ssl, json, datetime, urllib.request
 from bs4 import BeautifulSoup
+
+READ_FILE = "_read.json"
 
 BASE = "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/"
 PAGES = [
@@ -125,10 +135,22 @@ for url, local, why in WATCH:
     if bad:
         watched_drifted.append(name)
 
+def record_read():
+    """Every tracked page was downloaded in full and the snapshots now match it.
+    That is the strongest true statement anyone can make about how current this
+    board is, and it is the one the built pages make, so it is written down here
+    at the moment it becomes true rather than typed into five templates later."""
+    today = datetime.date.today().isoformat()
+    json.dump({"checked": today, "pages": len(PAGES), "watched": len(WATCH)},
+              open(READ_FILE, "w", encoding="utf-8"), indent=2)
+    print("Recorded in %s: read from Laurier on %s." % (READ_FILE, today))
+
+
 print()
 if not drifted and not watched_drifted:
     print("No drift: all %d pages match their snapshots (%d on the board, %d watched only)."
           % (len(PAGES) + len(WATCH), len(PAGES), len(WATCH)))
+    record_read()
     sys.exit(0)
 
 if drifted:
@@ -140,8 +162,11 @@ if watched_drifted:
           "rebuild to run: read what changed, then decide whether it belongs in "
           "parse.py's META.")
 if UPDATE:
+    record_read()
     print("Snapshots refreshed. Now run:  python parse.py && python test_regressions.py "
           "&& python build_all.py")
     sys.exit(0)
+# Deliberately not recorded: the snapshots do not match Laurier, so nothing may
+# claim they were read today. The date stays at the last check that was clean.
 print("Re-run with --update to refresh, then rebuild.")
 sys.exit(1)

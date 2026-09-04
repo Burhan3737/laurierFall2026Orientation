@@ -87,9 +87,17 @@ check("SEEDs day 2 keeps its section anchor",
 for t in ['Start Strong in September', 'Faculty of Education New Student Welcome', 'Your Time']:
     check("published event present: %s" % t, bool(by_title(t)))
 
+# These guard the parser, not Laurier's editorial decisions: each is a live
+# registration link that the extraction has dropped before. The virtual page's
+# Zoom link used to be xZf2lSpITnya ("Register Now!" on Start Strong in
+# September); on 3 Sept 2026 Laurier retired it and published a YouTube
+# recording in its place, so the fragment no longer exists anywhere on any of
+# the thirteen pages. Chasing the removal is right — an assertion about a link
+# Laurier has deleted stops testing anything and only teaches you to ignore a
+# red run — so it now watches the Zoom registration that page still carries.
 for frag, what in [('SV_dmTKuCt50hmm4LA', 'undergraduate Fall registration'),
                    ('SV_enB9GE8BCBrmwDk', 'SEEDs registration'),
-                   ('xZf2lSpITnya', 'virtual orientation Zoom')]:
+                   ('1iqV53a_S2yTyNJLLDRUSA', 'virtual orientation Zoom')]:
     n = sum(1 for e in E
             if any(frag in l['href'] for l in
                    e.get('links', []) + e.get('section_links', []) + e.get('page_links', [])))

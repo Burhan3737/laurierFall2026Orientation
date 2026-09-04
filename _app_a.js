@@ -300,6 +300,48 @@ function collidesWith(e) {
   });
   return out;
 }
+/* Whether a drawn event should be marked as colliding, and with what.
+
+   The class used to be decided by `it.ncol > 1`, which is not an overlap test at
+   all. placed() pads every item to a minimum drawn height -- de = max(end, start
+   + minMin), 52 minutes on the day clock and 20 on the run -- so that a short
+   event is still a readable box. Two strictly consecutive events therefore land
+   in different lanes, both come back with ncol 2, and both were painted gold.
+   The Graduate Student Orientation evening -- welcome reception, dean's welcome,
+   panel, "Are You Ready", trivia, end to end with not a minute of overlap -- was
+   drawn as five mutual conflicts, telling a graduate student to choose between
+   consecutive parts of one evening on the most important night of their week,
+   while the Clashes lens two clicks away correctly showed nothing for that day.
+   The page contradicted itself, and the agenda -- which had a real overlap test
+   -- drew the same day as ten plain rows under a key still claiming a collision.
+
+   de stays what it is, a layout figure. Whether two events overlap is asked of
+   collidesWith(), which is this page's only overlap engine and already drops the
+   drop-in desks and Laurier's duplicate listings, so the block, the bar, the
+   agenda row, the key above them and the detail sheet cannot disagree.
+
+   An event the student cannot attend is never marked. clockStates() deliberately
+   refuses to name a collision on a ghost, and a colour on the screen that no
+   caption accounts for is the same fault seen from the other end.
+
+   `within` narrows the answer to a set of events by dupKey: the plan asks what
+   in the plan collides with what else in the plan, which is the question its own
+   bar and its list form already answer.
+
+   The sweep is every pick against every event, and the run view asks it of
+   eighty-odd bars per render, so it is answered once per selection and thrown
+   away when the selection changes -- keyed on the selection itself rather than
+   cleared by hand, so it cannot go stale. */
+var CLASHBY = null, CLASHHIT = {};
+function drawnClashes(e, within) {
+  if (!assess(e).ok) return [];
+  var k = sourcePoolKey();
+  if (CLASHBY !== k) { CLASHBY = k; CLASHHIT = {}; }
+  var hit = CLASHHIT[e.__i];
+  if (!hit) hit = CLASHHIT[e.__i] = collidesWith(e);
+  return within ? hit.filter(function (o) { return within[dupKey(o)]; }) : hit;
+}
+function drawsClash(e, within) { return drawnClashes(e, within).length > 0; }
 function esc(s) {
   return String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -747,10 +789,10 @@ function rules(sc, of) {
 
 /* A block on the day clock. Nothing else uses this: the whole-run view gave up
    on drawing hours and lists names instead. */
-function blockHtml(it, sc) {
+function blockHtml(it, sc, within) {
   var e = it.ev, a = assess(e), off = !a.ok;
   var u = 100 / it.ncol, left = it.col * u, w = u * Math.min(it.span || 1, it.ncol - it.col);
-  var cls = "blk" + (off ? " off" : (e.oa ? " open" : "")) + (it.ncol > 1 ? " clash" : "") +
+  var cls = "blk" + (off ? " off" : (e.oa ? " open" : "")) + (drawsClash(e, within) ? " clash" : "") +
             (e.d && e.d < NOW ? " past" : "");
   var top = sc.pos(it.s), bot = sc.pos(it.de);
   var label = clock(it.s) + "–" + clock(it.e) + " · " + (e.t || "") + (e.w ? " · " + e.w : "");
@@ -1017,7 +1059,7 @@ function weekHtml(list, keys) {
     var shown = items;
     var n = onDay(list, k).length;
 
-    shown.forEach(function (it) { wentries.push([it.ev, it.ncol > 1, false]); });
+    shown.forEach(function (it) { wentries.push([it.ev, drawsClash(it.ev), false]); });
 
     body += '<div class="wkrow' + (past ? " past" : "") + (k === NOW ? " today" : "") + '">' +
       '<button class="wkday" data-day="' + k + '">' +
@@ -1037,7 +1079,7 @@ function weekHtml(list, keys) {
         var btop = it.col * (LANE_H + LANE_GAP) + 2;
         var lab = barLabel(it, e, k, wide, room, laneW, byTitle, left, btop, off);
         return lab[1] + '<button class="wb' + (off ? " off" : (e.oa ? " open" : "")) +
-          (it.ncol > 1 ? " clash" : "") +
+          (drawsClash(e) ? " clash" : "") +
           '" style="left:' + left + "%;width:" + wide + "%;top:" + btop + "px\" " +
           (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i +
           '" title="' + esc(clock(it.s) + "–" + clock(it.e) + " · " + e.t +
@@ -1079,7 +1121,7 @@ function weekHtml(list, keys) {
    has nothing left to say. The argument survives the change of form — the hour
    gutter stays, empty stretches are still named rather than drawn, and every
    collision is counted in words. */
-function agendaHtml(items, of) {
+function agendaHtml(items, of, within) {
   var prevEnd = null;
   return '<div class="agenda">' + items.map(function (it) {
     var gap = "";
@@ -1088,7 +1130,7 @@ function agendaHtml(items, of) {
             clock(prevEnd) + " and " + clock(it.s) + "</div>";
     prevEnd = prevEnd === null ? it.de : Math.max(prevEnd, it.de);
     var e = it.ev, a = assess(e), off = !a.ok;
-    var clash = items.filter(function (o) { return o !== it && o.s < it.e && it.s < o.e; });
+    var clash = drawnClashes(e, within);
     return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) +
       (clash.length ? " clash" : "") + '" ' +
       (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '" tabindex="0">' +
@@ -1169,7 +1211,13 @@ function viewStates() {
     ent = ent.concat(dayEntries(pt, view === "week"
       ? placed(pt.timed.concat(pt.long), 20) : placed(pt.timed, 52)));
   });
-  return clockStates(ent);
+  /* capped, because the run draws a collision as a gold cap above a filled
+     bar and the two states really do show together there. Called without it,
+     a bar that both collides and is open to all set clash and returned before
+     it could set open, so the printed run sheet carried lilac with nothing in
+     the key naming it -- the exact fault the conditional key exists to remove,
+     and screen and paper disagreeing about the same board. */
+  return clockStates(ent, view === "week");
 }
 function printKeys(st) {
   var k = "";
@@ -1183,8 +1231,8 @@ function printKeys(st) {
 /* The entries one day of the clock draws, in the form clockStates() wants:
    the event, whether it collides, and whether it is drawn beside the clock
    rather than on it. */
-function dayEntries(pt, items) {
-  return items.map(function (it) { return [it.ev, it.ncol > 1, false]; })
+function dayEntries(pt, items, within) {
+  return items.map(function (it) { return [it.ev, drawsClash(it.ev, within), false]; })
     .concat(pt.long.map(function (it) { return [it.ev, false, true]; }),
             pt.loose.map(function (e) { return [e, false, true]; }));
 }
@@ -1389,7 +1437,7 @@ function openSheet(i) {
           return '<span class="citeone"><a href="' + esc(o.u) + '" target="_blank" rel="noopener">' +
             esc(o.u) + "</a>" + (o.s ? "<em>" + esc(o.s) + "</em>" : "") + "</span>";
         }).join("") +
-        "Read on 31 Aug 2026, including the venue, host and registration detail Laurier " +
+        "Read " + META.readOn + ", including the venue, host and registration detail Laurier " +
         "keeps hidden until you open an event.</p>" +
     "</div>";
   $("sheet").hidden = false; $("scrim").hidden = false;
