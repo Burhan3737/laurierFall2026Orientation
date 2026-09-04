@@ -155,6 +155,19 @@ for f in (ARGS.js,):
     r = subprocess.run(['node', '--check', f], capture_output=True, text=True)
     if r.returncode:
         sys.exit('SYNTAX ERROR in %s\n%s' % (f, r.stderr))
+    # node --check sees only syntax. A call to a function the script never defines
+    # is a runtime error, and one of those shipped an empty orientation-classic.html
+    # that still looked like a page. check.py has always had the resolver; it ran
+    # after the build that produced the broken file, not before it.
+    try:
+        from check import refcheck
+    except Exception:
+        refcheck = None
+    if refcheck:
+        missing = refcheck(os.path.abspath(f))
+        if missing:
+            sys.exit('UNRESOLVED in %s: calls but never defines %s'
+                     % (f, ', '.join(missing)))
 
 CSS = open(ARGS.css, encoding='utf-8').read()
 APP = open(ARGS.js, encoding='utf-8').read()

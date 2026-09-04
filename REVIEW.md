@@ -249,3 +249,44 @@ The notes in `_app.js` and `_app_classic.js` keep the listing counts, which are 
 ones for a page that draws listings. This is the third time in this project one rule has
 been applied in two places that were not the same place.
 
+## Tenth audit: the commit held, and three older defects surfaced
+
+The audit was scoped at the previous commit and told to go at the heading-order defect
+directly rather than sweep for it, since it had passed that card three times. It verified
+the commit independently — re-ran the old parser in a temp tree, wrote its own
+document-order checker, and reported 0 ordering violations across all 396 panels on HEAD
+against exactly 1 on the pre-fix parser, with no word gained or lost anywhere. It settled
+the open question about the new guard by instrumenting the parser rather than reasoning
+from the diff as I had: the `len(pend_desc) == pend_at` case occurs at three sites, all
+with empty `pend_desc`, so behaviour is unchanged — while confirming the shape I was
+worried about (`prose → heading → heading`) would drop a heading, and does not occur in
+any panel Laurier publishes today. It mutation-tested every assertion added that round.
+
+Three defects, all older than the commit, and all one root cause.
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | `parse.py` read only `p/ul/ol/table/h3/h4/h5`. Laurier writes some panels as bare `<div>`s — Outlook pastes them as `<div class="elementToProof">` — and everything in them was dropped. World Suicide Awareness Day lost both sub-event names and every word of both descriptions: the board drew two cards with the same title and no text, so the morning flag raising and the evening vigil were indistinguishable. The graduate "Orientation Check-In" lost its description while its Brantford twin kept one, and the LOCUS Hub card lost its intro | **fixed** — leaf `<div>`s are read as blocks; a div holding another block is a wrapper and is skipped so nothing is emitted twice |
+| 2 | Laurier puts a sentence after the last field label in the same block, separated by `<br>`. It was discarded, losing the Academic Resource Fair's pointer to the Get Involved Fair while the pointer back was kept — the board showed one half of a pair | **fixed** — `grab()` reads a value from one line and never across lines, so anything below the last labelled line is prose and is kept |
+| 3 | In the undated group the chip printed the time before the venue, and every Winter 2027 event publishes `TBD` as its time. An online session and its in-person twin drew two identical chips reading "TBD" | **fixed** — `TBD`/`TBA` is Laurier declining to set a time, not a time, so the venue wins and the online chip reads "Zoom" |
+
+Blast radius of the two parser fixes: 4 titles and 7 descriptions of 528 listings. Every
+change is additive — no description shrank, and every old description is still a prefix
+of its new one, so nothing was reordered or lost. No date, time, venue, host, cost or
+link moved.
+
+One correction to the audit: it reported finding 2 as affecting six listings. Only two
+source panels carry that sentence, and exactly two listings now carry it — reconciled
+against the raw HTML of all thirteen pages rather than against the finding.
+
+Findings 1 and 2 are guarded by six new assertions, each verified to fail on the pre-fix
+data. Finding 3 is a rendering rule and is guarded only by the rendering gates.
+
+Two process defects were fixed alongside them. `build.py` ran `node --check` but not the
+resolver, so `build_all.py` on its own would still have written the page that dies at
+load; it now refuses to write when a script calls something it never defines, proved by
+reintroducing the fault. And `_app_classic.js` was byte-identical to `_app.js` and built
+by nothing — `orientation-classic.html` builds from `_app.js`. Two identical copies where
+one is dead is this project's oldest failure shape, and it caught me directly: the fix I
+made to that file last round had no effect on anything. It has been removed.
+

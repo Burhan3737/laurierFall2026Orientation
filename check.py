@@ -249,9 +249,9 @@ def resolve_all():
     """Every application script resolves every call it makes.
 
     check(v) already does this, but only for the four variants that have a
-    matching stylesheet and body. _app.js and _app_classic.js have neither, so
-    they were checked by nothing: a blanket edit put four calls to onePerEvent
-    into both, which neither defines, and node --check passed because an
+    matching stylesheet and body. _app.js has neither - orientation-classic.html
+    is built from it - so it was checked by nothing: a blanket edit put four calls
+    to onePerEvent into it, which it does not define, and node --check passed because an
     undefined identifier is a runtime error. orientation-classic.html rendered
     an empty board, and because it is parity.py's yardstick the failure showed
     up as all 83 selections disagreeing rather than as one dead page."""

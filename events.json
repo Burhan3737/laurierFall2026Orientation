@@ -554,7 +554,7 @@
   },
   {
    "title": "Academic Resource Fair",
-   "desc": "Drop by the Academic Resource Fair. Discover the services and supports that will help you succeed in the classroom at Laurier by connecting with academic support services such as Student Success, Accessible Learning, Academic Advising, the Library, and more. Learn about the resources available to help you achieve your academic goals.",
+   "desc": "Drop by the Academic Resource Fair. Discover the services and supports that will help you succeed in the classroom at Laurier by connecting with academic support services such as Student Success, Accessible Learning, Academic Advising, the Library, and more. Learn about the resources available to help you achieve your academic goals. Looking for ways to get involved outside the classroom? Be sure to check out the Get Involved Fair (GIF) on Thursday, September 9, where you can connect with student clubs, Students’ Union committees, Laurier departments, and community organizations to explore involvement, leadership, volunteer, and engagement opportunities across campus.",
    "where": "One Market Atrium",
    "when": "Noon to 1:30 p.m.",
    "host": "The Laurier 101 Team",
@@ -4272,8 +4272,8 @@
    "flags": []
   },
   {
-   "title": "Thursday, Sept. 10 - World Suicide Awareness Day",
-   "desc": "",
+   "title": "Flag Raising Ceremony",
+   "desc": "Join the Brantford Student Wellness Centre along with community partners on Thursday, September 10, as we recognize World Suicide Awareness Day and come together to raise awareness, remember those we have lost, and promote hope and healing in our communities.",
    "where": "Harmony Square",
    "when": "10 a.m.",
    "host": "Wellness Centre",
@@ -4285,6 +4285,7 @@
      "href": "https://students.wlu.ca/support-and-wellness/student-wellness-centre/index.html"
     }
    ],
+   "parent": "Thursday, Sept. 10 - World Suicide Awareness Day",
    "date": "2026-09-10",
    "section": "Additional Orientation Events - Sept. 8 to 12",
    "anchor": "sept-8-12",
@@ -4306,8 +4307,8 @@
    "flags": []
   },
   {
-   "title": "Thursday, Sept. 10 - World Suicide Awareness Day",
-   "desc": "",
+   "title": "An Evening of Hope and Healing",
+   "desc": "Join the Brantford Student Wellness Centre along with community partners on Thursday, September 10 as we recognize World Suicide Awareness Day and come together to raise awareness, remember those we have lost, and promote hope and healing in our communities.",
    "where": "Gehikdagye Friendship Centre | 274 Colborne Street",
    "when": "5 to 8 p.m.",
    "host": "Wellness Centre",
@@ -4319,6 +4320,7 @@
      "href": "https://students.wlu.ca/support-and-wellness/student-wellness-centre/index.html"
     }
    ],
+   "parent": "Thursday, Sept. 10 - World Suicide Awareness Day",
    "date": "2026-09-10",
    "section": "Additional Orientation Events - Sept. 8 to 12",
    "anchor": "sept-8-12",
@@ -4934,7 +4936,7 @@
   },
   {
    "title": "Orientation Check-In",
-   "desc": "",
+   "desc": "Kick off your graduate orientation experience by checking in and collecting your orientation materials and swag items. This is a great opportunity to get organized, familiarize yourself with the event space, and prepare for the exciting activities ahead.",
    "where": "Atrium | Lazaridis Hall",
    "when": "5:00 to 5:30 p.m.",
    "host": "",
@@ -13524,7 +13526,7 @@
   },
   {
    "title": "New Student Faculty Reception and Academic Resource Fair",
-   "desc": "After your Faculty Welcome, drop by the New Student Faculty Reception & Academic Resource Fair. Enjoy light refreshments, explore the Academic Resource Fair, and discover the services and supports that will help you succeed in the classroom at Laurier. Connect with representatives from your faculty and academic support services such as Student Success, Accessible Learning, Academic Advising, the Library, and more. Learn about the resources available to help you achieve your academic goals.",
+   "desc": "After your Faculty Welcome, drop by the New Student Faculty Reception & Academic Resource Fair. Enjoy light refreshments, explore the Academic Resource Fair, and discover the services and supports that will help you succeed in the classroom at Laurier. Connect with representatives from your faculty and academic support services such as Student Success, Accessible Learning, Academic Advising, the Library, and more. Learn about the resources available to help you achieve your academic goals. Looking for ways to get involved outside the classroom? Be sure to check out the Get Involved Fair (GIF) on Thursday, September 9, where you can connect with student clubs, Students’ Union committees, Laurier departments, and community organizations to explore involvement, leadership, volunteer, and engagement opportunities across campus.",
    "where": "One Market Atrium",
    "when": "Noon to 1:30 p.m.",
    "host": "The Laurier 101 Team",
@@ -14661,8 +14663,8 @@
    "flags": []
   },
   {
-   "title": "World Suicide Awareness Day",
-   "desc": "",
+   "title": "Flag Raising Ceremony",
+   "desc": "Join the Brantford Student Wellness Centre along with community partners on Thursday, September 10, as we recognize World Suicide Awareness Day and come together to raise awareness, remember those we have lost, and promote hope and healing in our communities.",
    "where": "Harmony Square",
    "when": "10 a.m.",
    "host": "Wellness Centre",
@@ -14674,6 +14676,7 @@
      "href": "https://students.wlu.ca/support-and-wellness/student-wellness-centre/index.html"
     }
    ],
+   "parent": "World Suicide Awareness Day",
    "date": "2026-09-10",
    "section": "Thursday, Sept. 10 Events",
    "anchor": "sept-10",
@@ -14706,8 +14709,8 @@
    "flags": []
   },
   {
-   "title": "World Suicide Awareness Day",
-   "desc": "",
+   "title": "An Evening of Hope and Healing",
+   "desc": "Join the Brantford Student Wellness Centre along with community partners on Thursday, September 10 as we recognize World Suicide Awareness Day and come together to raise awareness, remember those we have lost, and promote hope and healing in our communities.",
    "where": "Gehikdagye Friendship Centre | 274 Colborne Street",
    "when": "5 to 8 p.m.",
    "host": "Wellness Centre",
@@ -14719,6 +14722,7 @@
      "href": "https://students.wlu.ca/support-and-wellness/student-wellness-centre/index.html"
     }
    ],
+   "parent": "World Suicide Awareness Day",
    "date": "2026-09-10",
    "section": "Thursday, Sept. 10 Events",
    "anchor": "sept-10",

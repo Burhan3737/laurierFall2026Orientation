@@ -159,8 +159,17 @@ def parse_panel(panel, fallback_title):
     # what stacked the concert's seven policy headings at the front in reverse.
     pend_at = 0
 
-    blocks = [p for p in panel.find_all(['p', 'ul', 'ol', 'table', 'h3', 'h4', 'h5'], recursive=True)
-              if not (p.name in ('p', 'ul', 'ol') and p.find_parent(['ul', 'ol', 'table']))]
+    # Laurier writes some panels in bare <div>s rather than <p>s - Outlook pastes
+    # them as <div class="elementToProof"> - and everything in them used to be
+    # dropped. That cost World Suicide Awareness Day both of its sub-event names
+    # and every word of both descriptions, leaving two identical, empty cards on
+    # the day. Only leaf divs count: one holding another block is a wrapper, and
+    # taking it as well would emit its contents twice.
+    BLOCKS = ['p', 'ul', 'ol', 'table', 'h3', 'h4', 'h5', 'div']
+    blocks = [p for p in panel.find_all(BLOCKS, recursive=True)
+              if not (p.name in ('p', 'ul', 'ol') and p.find_parent(['ul', 'ol', 'table']))
+              and not (p.name == 'div' and (p.find(BLOCKS)
+                                            or p.find_parent(['p', 'ul', 'ol', 'table'])))]
     if not blocks:                                  # some panels wrap everything in <span>
         blocks = [panel]
 
@@ -199,9 +208,17 @@ def parse_panel(panel, fallback_title):
             head = clean(head)
             inline_title = head if looks_like_title(head) else None
             title = inline_title or pend_title or fallback_title
+            # Laurier sometimes puts a sentence after the last field, in the same
+            # block, separated only by <br>. grab() reads a value from one line and
+            # never across lines, so anything below the last labelled line is prose,
+            # and dropping it lost the Academic Resource Fair's pointer to the Get
+            # Involved Fair on six cards while keeping the pointer back.
+            last_field = max(i for i, l in enumerate(lns) if FIELD.search(l))
+            after = clean(" ".join(l for l in lns[last_field + 1:] if not FIELD.search(l)))
             events.append({
                 "title": title,
-                "desc": " ".join(pend_desc).strip(),
+                "desc": clean(" ".join(pend_desc) + " " + after) if after
+                        else " ".join(pend_desc).strip(),
                 "where": grab(lns, "Where"), "when": grab(lns, "When"),
                 "host": grab(lns, "Host"),   "cost": grab(lns, "Cost"),
                 "audience": audience,

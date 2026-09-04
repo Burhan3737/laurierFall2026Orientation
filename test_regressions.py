@@ -262,6 +262,43 @@ check("the split fires only on genuinely multi-day panels",
 check("no single-day event was split",
       all(e['runs_over'].count(' and ') >= 1 for e in split))
 
+# --- blocks Laurier did not write as paragraphs ----------------------------
+# Outlook pastes copy as <div class="elementToProof">, and the parser read only
+# p/ul/ol/table/h-tags. World Suicide Awareness Day put both of its sub-events in
+# bare divs, so the board drew two cards with the same accordion title and not one
+# word of description - a student could not tell the morning flag raising from the
+# evening vigil.
+for name in ('Flag Raising Ceremony', 'An Evening of Hope and Healing'):
+    got = by_title(name)
+    check("a sub-event written in a <div> keeps its own name (%s)" % name, len(got) == 2,
+          "%d listings" % len(got))
+    check("...and its description (%s)" % name,
+          bool(got) and all(len(e['desc']) > 200 for e in got),
+          str([len(e['desc']) for e in got]))
+
+check("a description written in a <div> is not dropped",
+      all(e['desc'] for e in by_title('Orientation Check-In')),
+      str([(e['url'].rsplit('/', 1)[-1], len(e['desc'])) for e in by_title('Orientation Check-In')]))
+
+# A wrapper div holding other blocks must not be taken as well as its children.
+bad_twice = [e['title'] for e in E
+             if any(t and e['desc'].count(t) > 1
+                    for t in [e['desc'][:80]] if len(e['desc']) > 160)]
+check("a wrapping <div> does not emit its contents twice", not bad_twice, str(bad_twice[:3]))
+
+# --- prose sharing a block with the fields ---------------------------------
+# Laurier puts a sentence after the last "Host:" line, separated only by <br>.
+# grab() reads a value from a single line and never across lines, so anything
+# below the last labelled line is prose. It used to be discarded, which lost the
+# Academic Resource Fair's pointer to the Get Involved Fair while keeping the
+# pointer back from the Fair - the board showed one half of a pair.
+GIF = "Looking for ways to get involved outside the classroom"
+carry = [e for e in E if GIF in e['desc']]
+check("prose after the last field label is kept", len(carry) == 2, "%d listings" % len(carry))
+check("...and only where Laurier published it",
+      all('Academic Resource Fair' in e['title'] or 'Academic Res' in e['title'] for e in carry),
+      str([e['title'] for e in carry]))
+
 # --- source hygiene --------------------------------------------------------
 # A word-boundary escape written inside a shell heredoc arrives as a literal backspace (0x08).
 # It has silently disabled a regex in this parser more than once; the character

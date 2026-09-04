@@ -810,7 +810,11 @@ function looseHtml(e) {
   return '<button class="chipev' + (off ? " off" : (e.oa ? " open" : "")) + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="ch">' + esc(title(e)) + "</span>" +
-    '<span class="cw">' + esc(off ? a.reason : (e.n || e.w || "Time not published")) + "</span></button>";
+    '<span class="cw">' + esc(off ? a.reason
+        /* "TBD" is Laurier saying it has not set a time, not a time. Letting it
+           win over the venue drew an online session and its in-person twin as two
+           chips reading "TBD", indistinguishable, in the undated group. */
+        : (e.n && !/^(TBD|TBA)\.?$/i.test(e.n) ? e.n : (e.w || e.n || "Time not published"))) + "</span></button>";
 }
 
 /* ---- the board ---------------------------------------------------------- */
