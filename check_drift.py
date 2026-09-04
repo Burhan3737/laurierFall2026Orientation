@@ -9,7 +9,7 @@ correct and simply omits whatever was published after the snapshot.
 
 Compares accordion panels (the unit of an event) and each page's byte length.
 
-Two kinds of page are watched. The thirteen the board is built from, whose
+Two kinds of page are watched. The eleven the board is built from, whose
 snapshots live in _src/ and are read by parse.py; and pages that publish
 orientation events we have decided not to put on the board, which are watched
 only, so that a decision can be revisited when the page changes rather than

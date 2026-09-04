@@ -1400,7 +1400,7 @@ function drawBoard() {
         "of, and Laurier&rsquo;s own description of it.</p>" +
         '<p><button class="pbtn" id="qclr2">Clear the search</button></p></div>'
       : '<div class="empty"><p>Laurier publishes nothing for this combination yet.</p>' +
-        "<p>Try another term, or tick a stream above.</p></div>";
+        "<p>Tick a stream above — some sessions only appear once you say they apply to you.</p></div>";
   } else {
     $("board").innerHTML = view === "week" ? weekHtml(list, keys)
                         : view === "clash" ? clashHtml(list)
@@ -1794,7 +1794,15 @@ function dayEntries(pt, items, within) {
 }
 
 function dayHtml(list, keys) {
-  if (keys.indexOf(day) === -1) day = keys[0];
+  /* The day survives a change of level, and the new level may not publish it. Falling
+     back to keys[0] dropped the student onto the earliest day the board holds, which
+     for graduate Waterloo is 31 August - four days behind, one finished event. Land
+     where the page lands on load: today if there is a today, else the next day that
+     still has something on it. */
+  if (keys.indexOf(day) === -1) {
+    var ahead = keys.filter(function (k) { return k !== "TBA" && k >= NOW; });
+    day = keys.indexOf(NOW) >= 0 ? NOW : (ahead[0] || keys[0]);
+  }
   var i = keys.indexOf(day);
   var undated = day === "TBA", dt = undated ? null : new Date(day + "T00:00:00");
   var todays = onDay(list, day);
@@ -2908,7 +2916,7 @@ function readHash() {
 }
 
 /* ---- what Laurier leaves unsettled --------------------------------------
-   Four places where its own pages do not answer the question, kept beside the
+   The places where its own pages do not answer the question, kept beside the
    sources rather than folded into the events, because a student reading a room
    number should not have to step over them. Each is counted from the data on
    every build, so a note cannot outlive the thing it describes. The counts run
@@ -2970,7 +2978,10 @@ readHash();
    redraw(), so the link cannot fall behind the screen. */
 function redraw() {
   CLASHCACHE = null;
-  writeHash(); drawIdbar(); drawNav(); drawBoard(); drawPrint(); announce();
+  /* drawBoard() may settle the day - a day the new level does not publish is
+     replaced there - so the hash is written after it, or the URL records a day the
+     board is not showing and a reload lands somewhere else again. */
+  drawIdbar(); drawNav(); drawBoard(); writeHash(); drawPrint(); announce();
 }
 /* The tally is rebuilt with the band it sits in, so a live region there would be
    destroyed before anything could read it. This one outlives every redraw. */

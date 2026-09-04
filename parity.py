@@ -666,7 +666,7 @@ def links_check(sels):
     is the one page where this can be proved by reading the markup. The board
     keeps links in the detail sheet and renders them when the sheet opens, which
     is why it cannot be read this way and is covered instead by link_core_check
-    (allLinksOf() returns exactly what the yardstick assembles, for all 528
+    (allLinksOf() returns exactly what the yardstick assembles, for every listing
     listings) and by the harvest, which opens sheets and collects what they draw.
 
     Asking the board for these links directly reports every one of them missing —
@@ -901,7 +901,10 @@ def main():
     print("Parity: %d selections x %d variants, against %s\n" % (len(sels), len(names), REFERENCE))
 
     print("Eligibility core")
+    # both run: 'a and b' would skip the second whenever the first failed, which is
+    # exactly the run where you want to know everything that is wrong.
     core_ok = core_check(names)
+    core_ok = shared_logic_check(names) and core_ok
 
     print("\nBaseline: the incumbent, held against the data")
     with ThreadPoolExecutor(max_workers=4) as ex:

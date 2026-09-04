@@ -5,8 +5,7 @@ later work rewrote the code around it, and nothing noticed: the console was clea
 the parity gate was green, and a screenshot of the top of the page looked right.
 `check.py` proves a page runs. This proves it still keeps its promises.
 
-    python invariants.py            all variants
-    python invariants.py a c        only those
+    python invariants.py            the board
     python invariants.py --selftest prove each assertion fails on a known-bad page
 
 Each assertion is negative-tested by `--selftest`, because an assertion that has
@@ -164,17 +163,21 @@ def selftest():
     print("Self-test — each assertion must fail on a known-bad page")
     cases = [
         ("day prefix in a visible title",
-         "<script>setTimeout(function(){var n=document.querySelector('.bh,.ebody h4,.rn');"
-         "if(n)n.textContent='Tuesday, Sept. 8 - Something';},300);</script>", "a"),
+         # the same selector the assertion scans, so the injection cannot miss by
+         # naming a class the board does not use - which is how this case went
+         # MISSED after the variants were deleted
+         "<script>setTimeout(function(){var n=document.querySelector("
+         "'.bh,.ch,.rh,.agb h4,.clname,.sbody h3,.briefline,.ebody h4,.rn,.wbl');"
+         "if(n)n.textContent='Tuesday, Sept. 8 - Something';},700);</script>"),
         ("a sticky element hidden behind another",
          "<style>.navstrip{position:sticky;top:0;height:120px}"
-         ".dayhead{position:sticky;top:10px}</style>", "a"),
+         ".dayhead{position:sticky;top:10px}</style>"),
         ("a rule colour used as text",
-         "<style>.tally{color:var(--line-h)}</style>", "a"),
+         "<style>.tally{color:var(--line-h)}</style>"),
     ]
     ok = True
-    for name, inject, v in cases:
-        found = run("orientation-%s.html" % v, BOARD, 1400, extra=inject)
+    for name, inject in cases:
+        found = run(PAGES["main"], BOARD, 1400, extra=inject)
         print("  %-42s -> %s" % (name, found[:2] if found else "MISSED"))
         if not found:
             ok = False

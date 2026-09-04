@@ -5,7 +5,7 @@ something and aborted before writing the definition. `node --check` cannot see
 that — the syntax is perfect — and the page still serves; it just throws on every
 render. So this does what a person cannot be relied on to remember:
 
-    python check.py            build and check all three
+    python check.py            build and check the board
     python check.py c          just that one
 
   1. build the page
@@ -236,7 +236,7 @@ def check(v):
 def resolve_all():
     """Every application script resolves every call it makes.
 
-    check(v) already does this, but only for the four variants that have a
+    check(v) already does this, but only for a build with a stylesheet and body that have a
     matching stylesheet and body. _app.js has neither - the yardstick
     is built from it - so it was checked by nothing: a blanket edit put four calls
     to onePerEvent into it, which it does not define, and node --check passed because an

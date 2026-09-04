@@ -56,39 +56,25 @@ def shot(name, html, frag, w, h, inject="", iframe=False):
     print("  %-22s %s" % (name, png))
 
 
-def openers(title):
-    """Click whatever each variant uses to reveal an event's full detail."""
+def opener(title):
+    """Click what the board uses to reveal an event's full detail."""
     t = json.dumps(title)
-    return {
-        # A: find the block for this event and open its sheet
-        "a": ('<script>setTimeout(function(){var n=document.querySelector('
-              "'[data-ev-title=' + JSON.stringify(%s) + ']');"
-              'if(n)openSheet(+n.dataset.id);},600);</script>' % t),
-        # B: select the record so it fills the reading pane
-        "b": ('<script>setTimeout(function(){var n=document.querySelector('
-              "'[data-ev-title=' + JSON.stringify(%s) + ']');"
-              'if(n)select(+n.dataset.id,true);},600);</script>' % t),
-        # C: writes every event out in full already
-        "c": "",
-    }
+    return ('<script>setTimeout(function(){var n=document.querySelector('
+            "'[data-ev-title=' + JSON.stringify(%s) + ']');"
+            'if(n)openSheet(+n.dataset.id);},600);</script>' % t)
 
 
 def main():
-    which = [a for a in sys.argv[1:] if a in "abc"] or ["a", "b", "c"]
+    # One board. This iterated the deleted variants and had not run since they went,
+    # which nothing noticed because nothing ships from it.
+    page = "orientation.html"
     print("Stress states -> %s" % OUT)
-    for v in which:
-        page = "orientation-%s.html" % v
-        print(" variant %s" % v)
-        shot("%s-dense" % v, page, DENSE, 1400, 1400)
-        shot("%s-long" % v, page,
-             "level=undergraduate&campus=Waterloo&term=Fall%202026" +
-             ("&view=day&day=2026-09-10" if v == "a" else "") +
-             ("&q=french" if v == "b" else "") +
-             ("&full=1" if v == "c" else ""),
-             1400, 1500, openers(LONGEST)[v])
-        shot("%s-phone" % v, page,
-             "level=undergraduate&campus=Waterloo&term=Fall%202026", 390, 1500,
-             iframe=True)
+    shot("dense", page, DENSE, 1400, 1400)
+    shot("long", page,
+         "level=undergraduate&campus=Waterloo&term=Fall%202026&view=day&day=2026-09-10",
+         1400, 1500, opener(LONGEST))
+    shot("phone", page,
+         "level=undergraduate&campus=Waterloo&term=Fall%202026", 390, 1500, iframe=True)
 
 
 if __name__ == "__main__":

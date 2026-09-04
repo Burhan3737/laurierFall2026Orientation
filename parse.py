@@ -1,4 +1,4 @@
-"""Extract every orientation event from Laurier's 13 schedule pages into events.json.
+"""Extract every orientation event from Laurier's 11 schedule pages into events.json.
 
 Structure Laurier uses consistently:
   <div id="multicomponent_..">  section, containing <a id="slug"> inside its heading
@@ -330,9 +330,23 @@ def parse_panel(panel, fallback_title):
                        "parent": fallback_title})
     return events
 
+# Facts Laurier states once for a whole section rather than on each event. Longest
+# first, because the shorter names appear inside the longer ones.
+SECT_LABELS = ("Registration Deadline", "Early Bird Registration",
+               "Registration", "Location", "Cost")
+SECT_STOP = re.compile(r'\s*(?:' + '|'.join(SECT_LABELS) + r')\s*:', re.I)
+
+
 def section_prose(cont):
-    """paragraphs of a section that sit OUTSIDE any accordion panel"""
-    return [p for p in cont.find_all('p') if not p.find_parent('div', class_='accordion-panel')]
+    """Blocks of a section that sit OUTSIDE any accordion panel.
+
+    Lists count as well as paragraphs. Laurier publishes the LOCUS Welcome Day
+    registration deadline as two <li>s beside the Register Now button, and reading
+    only <p> meant 26 cards carried a live registration link with no sign that
+    Laurier says registration closed on 2 September."""
+    return [p for p in cont.find_all(['p', 'ul', 'ol'])
+            if not p.find_parent('div', class_='accordion-panel')
+            and not p.find_parent(['p', 'ul', 'ol'])]
 
 
 # A programme welcome that runs over several days is published as one panel with one
@@ -460,12 +474,25 @@ def parse_page(fname):
         # section-level facts and registration calls-to-action
         sect_info, sect_links = {}, []
         for p, t in zip(prose, prose_txt):
-            for label in ("Registration", "Location", "Cost"):
-                v = grab([t], label)
+            # Longest label first, and each one that matches is struck out of the
+            # working copy. grab() ends a value at the next FIELD label, and these
+            # section labels are not FIELD labels, so "Registration" otherwise ran
+            # straight through "Deadline: September 2nd" and claimed both facts -
+            # and matched inside "Early Bird Registration:" as well.
+            work = t
+            for label in SECT_LABELS:
+                v = grab([work], label)
+                if not v:
+                    continue
+                m = SECT_STOP.search(v)
+                if m:
+                    v = clean(v[:m.start()])
                 # a section fact of "TBD" adds nothing and reads as a contradiction
                 # next to the card's own "not published" venue line
                 if v and clean(v).upper() not in ("TBD", "TBA", "N/A") and label not in sect_info:
                     sect_info[label] = v
+                work = re.sub(re.escape(label) + r'\s*:\s*' + re.escape(v), ' ', work,
+                              count=1, flags=re.I)
             if re.search(r'regist|rsvp|sign up|tickets?', t, re.I):
                 sect_links += [l for l in links_in(p) if l not in sect_links]
         # CTA buttons sit in bare <div>s, not <p>s, so scan the section's text blocks too

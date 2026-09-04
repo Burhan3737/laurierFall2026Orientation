@@ -134,9 +134,13 @@ check("Master of Applied Computing welcome present", bool(mac),
 
 
 # the chooser must offer a way out for programs Laurier publishes no welcome for
-app = open('_app.js', encoding='utf-8').read()
-check("chooser offers 'my program is not listed'",
-      'NO_PROGRAM' in app and 'My program is not listed' in app)
+# This read _app.js, which builds the yardstick fixture, not the board. Five guards
+# below were statements about a page nobody opens: all five stayed green while the
+# strings they name had changed on the board, and deleting _app_main.js entirely
+# would not have reddened one of them.
+app = open('_app_main.js', encoding='utf-8').read()
+check("chooser offers a way out for an unlisted program",
+      'NO_PROGRAM' in app and 'Not listed' in app)
 check("that option hides every program welcome",
       'sel.program === NO_PROGRAM && e.pg' in app)
 
@@ -152,8 +156,8 @@ for t in ["Setting Yourself Up for Success at University", "University 101 Sessi
           len(hits) == 1 and len(hits[0]['desc']) > 100)
 
 # the filter groups must be built from the settled selection, not a transient one
-check("conditional filters rebuilt after the campus/term fallback",
-      "refreshConditional(s2)" in app)
+check("the chooser redraws from the settled selection, not a transient one",
+      "settle(); redraw();" in app and "function settle()" in app)
 
 # data notes must describe the board as it actually behaves
 # The board is Fall 2026 only. Winter and Spring were dropped from parse.py's META,
@@ -165,7 +169,7 @@ check("no note is left describing a term the board no longer carries",
       'Winter 2027' not in app and 'Spring 2026' not in app)
 check("program note reflects that filtering now exists",
       "Program welcomes are not filtered by program" not in app
-      and "Program or faculty" in app)
+      and "My program" in app)
 
 
 # --- audit round 5 -------------------------------------------------------
@@ -176,10 +180,17 @@ check("bold blocks that are not sub-event titles are kept, not discarded",
       bool(fm) and all(k in fm[0]['desc'].lower() for k in ('re-entry', '19+')))
 
 check("data notes emit real punctuation, not escape sequences",
-      '\\u201' not in app and '\\u2014' not in app)
+      '\\\\u' not in app)
 
-check("stream ticks survive a level switch through an invalid combination",
-      'keepStreams' in app and 'keepStreams.indexOf(i.value) >= 0' in app)
+# Round 5: switching level through a combination Laurier publishes nothing for
+# dropped the student's stream ticks, because the ticks were tested against the
+# selection before the campus fallback had moved it. The board has no keepStreams
+# variable; it gets this right by ordering, so the ordering is what is pinned.
+_settle = app[app.index("function settle()"):]
+_settle = _settle[:_settle.index(chr(10) + "}")]
+check("streams are filtered after the campus fallback, not before it",
+      _settle.index("sel.campus = c[0]") < _settle.index("sel.streams = sel.streams.filter"),
+      "settle() drops stream ticks against a selection it has not settled yet")
 
 intl = [e for e in E if e['source_file'] == 'international.html']
 labels = [l['text'] for l in (intl[0].get('page_links') or [])] if intl else []

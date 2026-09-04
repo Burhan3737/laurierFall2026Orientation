@@ -285,7 +285,7 @@ BREAKS = [
          '  return items.map(function (it) { return [it.ev, it.ncol > 1, false]; })'),
     ]),
     ("the printed key asked without capped", "the key does not name it", [
-        ('  return clockStates(ent, view === "week");', '  return clockStates(ent);'),
+        ('legendKeys(clockStates(wentries, true))', 'legendKeys(clockStates(wentries))'),
     ]),
     ("a collision mark on an event the student cannot attend",
      "marked as colliding and as not open to you", [

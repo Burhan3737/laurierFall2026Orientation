@@ -1102,19 +1102,3 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   }
 }
 
-/* ---- the page that is watched, but never read --------------------------
-   The sources section used to state one true number and imply a false one:
-   every event here comes from the schedules listed above, but that is not
-   everything being tracked. Both numbers are said now, and the page that
-   contributes nothing to the board says on its own card why it contributes
-   nothing, so a reader is not left wondering what is missing. */
-.srcsub{
-  margin-top:30px;font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--purple);
-}
-.watchgrid{grid-template-columns:1fr}
-.watchgrid .src{max-width:76ch}
-.src.watched b{color:var(--gold-d)}
-.src em{
-  display:block;margin:4px 0 5px;font-style:normal;color:var(--meta);font-size:12px;line-height:1.5;
-}

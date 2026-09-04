@@ -351,3 +351,31 @@ The auditor brief gained a Scope section saying the same thing, including that t
 removed pages are not missing sources and must not be reported by its page-discovery step
 as pages we do not know about.
 
+## Eleventh audit: the board held, nine defects in the gates and the copy
+
+The board came through the Fall-only cut and the consolidation intact — a field-level
+diff against the previous commit found exactly one changed listing in the whole dataset,
+Laurier's own lane-swim relabel. Nine findings, all real. Three reach a student.
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | Laurier publishes the LOCUS Welcome Day deadlines — Early Bird before 21 August, Registration Deadline 2 September — as two `<li>`s beside the Register Now button. `section_prose()` read only `<p>`, so 26 cards carried the live button and neither date. On 4 September that offers a student a registration that Laurier says closed two days ago | **fixed** — lists count as section prose, and both labels are captured |
+| 2 | Changing level kept the day and fell back to `keys[0]` when the new level did not publish it, dropping the student onto the earliest day on the board — 31 August for graduate Waterloo, one finished event, four days behind | **fixed** — the fallback uses the page's own load-time rule: today, else the next day with something on it |
+| 3 | `redraw()` wrote the hash before the board settled the day, so the URL named a day the board was not showing | **fixed** — the hash is written after |
+| 4 | The empty board advised "Try another term" after the term stopped being a control | **fixed** — it points at the streams, which is what actually reveals those sessions |
+| 5 | `test_regressions.py` read `_app.js`, the yardstick fixture, not the board. Five guards were statements about a page nobody opens; deleting `_app_main.js` outright would have left all five green | **fixed** — repointed and restated, each mutation-tested to go red |
+| 6 | `parity.shared_logic_check()` was rewritten, recorded here as verified, and never called by `main()` | **fixed** — called, and both core checks now run unconditionally rather than through an `and` that would skip the second whenever the first failed |
+| 7 | `invariants.py --selftest` crashed on a deleted variant; its three assertions had not been proved able to fail since the consolidation. One case also injected into class names the board does not use | **fixed** — the injection now uses the same selector the assertion scans |
+| 8 | `clashcheck.py --negative` aborted on a stale code string, so two of its three defect classes went unproven | **fixed** — retargeted; all three caught and named |
+| 9 | `stress.py` had not run since the variants were deleted; stale counts in six files' comments; dead `.watchgrid` / `.srcsub` / `.src em` CSS | **fixed** |
+
+Finding 6 is the one worth remembering. I rewrote that check, mutation-tested it by hand
+with `python -c`, watched it fail on a planted second `dupKey`, and wrote in this file
+that it was verified — without ever checking that the suite invokes it. Proving a function
+works is not proving it runs. It was dormant through two full audits.
+
+Findings 5, 7 and 8 are the same error in three places: after the consolidation, checks
+went on passing because their subject no longer existed. Finding 1 is the third instance
+of a selector too narrow for how Laurier writes a page — `<div>` last round, `<ul>` this
+one — and both times the cost was information the student needed and no sign it was gone.
+

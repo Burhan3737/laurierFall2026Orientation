@@ -1,15 +1,15 @@
 """Which listings are the same event — the page's own answer, in Python.
 
-`dupKey()` lives in the four application scripts and decides what the board folds
-into one entry. `plus_check.py` and `parity.py` both need the same answer, and for
-seven rounds of this project that meant a second implementation transcribed by
-hand into Python, which is exactly the arrangement that drifts.
+`dupKey()` lives in `_app_main.js` and decides what the board folds into one
+entry. `plus_check.py` and `parity.py` both need the same answer, and for seven
+rounds of this project that meant a second implementation transcribed by hand
+into Python, which is exactly the arrangement that drifts.
 
 There is no transcription here. This module extracts `stripDay()` and `dupKey()`
 out of `_app_main.js` and runs *those functions* under node against `events.json`.
 If the key changes in the application, it changes here in the same commit,
-because there is only one of it. `parity.shared_logic_check()` proves the other
-incumbent carries the same rule, so there is still only one of it.
+because there is only one of it -- which `parity.shared_logic_check()` checks,
+the yardstick not defining `dupKey()` at all.
 
     from dupkey import key_of, shown_title, fold, copies_of
 """
