@@ -1056,6 +1056,12 @@ function drawReader() {
       n + " more " + word + "</button>" : "";
   }
   krow("When", when);
+  /* Laurier publishes a few programme welcomes as one panel covering several
+     days. Each day is its own entry so it lands on the right day of the board;
+     without this the student who opens day two sees one isolated afternoon and
+     no sign that the welcome started yesterday and continues tomorrow. */
+  row("More days", e.ro ? "Laurier publishes this welcome as one event running "
+      + esc(e.ro) + ". Each of those days is on this board on its own."  : "");
   krow("Where", (esc(e.w) || "Not published by Laurier") +
        (e.w ? xlink("where", e.w, "here") : ""));
   krow("Host", (esc(e.h) || "Not published by Laurier") +

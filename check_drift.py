@@ -39,12 +39,11 @@ PAGES = [
     "undergraduate/fall-virtual.html", "undergraduate/fall-waterloo.html",
 ]
 
-# Watched, not parsed. The graduate "Laurier Crash Course" webinars are published
-# here — dated, timed and registrable, in the same accordion format as the
-# schedules — but every Fall 2026 session has already run, so nothing is missing
-# from the board today. The page states that the Winter 2027 sessions go up "at
-# the beginning of the fall semester", which is now, and until this existed
-# nothing would have told us when they did.
+# Watched, not parsed. These pages publish dated, registrable events for students
+# the board serves, in the same accordion format as the schedules, but nothing on
+# them belongs on a board of orientation events for the term ahead. Each entry
+# records why. A change to one of them is a decision to revisit, not a rebuild to
+# run, which is the whole reason they are watched rather than ignored.
 # The third field is why the page is watched and why nothing on it is on the
 # board. It is data rather than a comment because the built page says the same
 # thing to a student reading the sources section, and two copies of a reason
@@ -59,6 +58,17 @@ WATCH = [
      "ahead. Laurier says the Winter 2027 sessions go up at the beginning of the "
      "fall semester, which is now, so the page is checked for them rather than "
      "assumed to be empty."),
+    ("https://students.wlu.ca/academics/graduate-and-postdoctoral-studies/aspire/"
+     "skills-training.html",
+     "_watch/aspire__skills-training.html",
+     "Laurier's ASPIRE skills training publishes dated, registrable graduate "
+     "workshops here, several of them inside the orientation window (Sept. 9, 14, "
+     "17, 18, 21, 22, 23, 25 and 28, 2026). They are professional skills training "
+     "- teaching and TA development, scholarship proposal writing - and run all "
+     "term, not arrival events, so they are not orientation and are not on the "
+     "board. The page is checked because it is the one place Laurier posts dated "
+     "graduate sessions outside the schedules, and a genuine orientation item "
+     "appearing here would otherwise be invisible."),
 ]
 
 CTX = ssl.create_default_context()

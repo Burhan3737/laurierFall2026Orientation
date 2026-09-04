@@ -678,6 +678,12 @@ function entryHtml(e, full) {
   // venue, host and "part of" are already set in the entry itself; repeating them
   // 91 times in a table underneath is what made this document twice as long as it
   // needed to be.
+  /* Laurier publishes a few programme welcomes as one panel covering several
+     days. Each day is its own entry so it lands on the right day of the board;
+     without this the student who opens day two sees one isolated afternoon and
+     no sign that the welcome started yesterday and continues tomorrow. */
+  row("More days", e.ro ? "Laurier publishes this welcome as one event running "
+      + esc(e.ro) + ". Each of those days is on this board on its own."  : "");
   row("Audience", esc(audienceLine(e)));
   row("Cost", esc(e.c));
   row("Stream", (e.tg || []).length ? esc((e.tg || []).join(", ")) : "");

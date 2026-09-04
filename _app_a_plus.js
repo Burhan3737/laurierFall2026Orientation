@@ -2700,6 +2700,12 @@ function openSheet(i) {
   var facts = "";
   function row(k, v) { if (v) facts += "<dt>" + k + "</dt><dd>" + v + "</dd>"; }
   row("When", when);
+  /* Laurier publishes a few programme welcomes as one panel covering several
+     days. Each day is its own entry so it lands on the right day of the board;
+     without this the student who opens day two sees one isolated afternoon and
+     no sign that the welcome started yesterday and continues tomorrow. */
+  row("More days", e.ro ? "Laurier publishes this welcome as one event running "
+      + esc(e.ro) + ". Each of those days is on this board on its own."  : "");
   var mp = mapFor(e);
   row("Where", e.w
     ? esc(e.w) + mapLink(e) +

@@ -167,3 +167,31 @@ section; rendered counts matching an independent model in all 135 click-driven c
 states; zero console errors. The round-5 fixes were confirmed not to have caused damage
 elsewhere: `cost` is extracted only from the one real price, and the stream-tick restore
 is correctly guarded so a hidden stream is never re-ticked.
+
+## Rounds 7 onward
+
+The per-round tables above stop at round 6. Rounds 7 and 8 are recorded in the commit
+log rather than here (`de8d7a5`, `baed9c1` and the commits that follow them). This
+section resumes the written record.
+
+## Ninth cycle: multi-day panels, and a second watched page
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | Lazaridis publishes four graduate welcomes as a single accordion covering two and a half days — "Sept. 8 from 10 a.m. to 4 p.m., Sept. 9 from 11 a.m. to 4 p.m. and Sept. 10 from 2 to 4 p.m." Read as one event, each landed only on Sept. 8. A student checking Wednesday saw nothing and would have missed day two of their own orientation | **fixed** — `split_multiday()` gives each published day its own listing, carrying the hours Laurier gave that day |
+| 2 | Nothing told a student that a split listing was one day of a longer welcome; they saw one isolated afternoon | **fixed** — the detail sheet carries a "More days" row quoting the string Laurier published, in all six pages |
+| 3 | Laurier's ASPIRE skills-training page publishes dated, registrable graduate sessions inside the orientation window and nothing watched it | **fixed** — added to `check_drift.py`'s `WATCH`. It is teaching and TA development running all term, not arrival events, so nothing on it goes on the board; it is watched so that decision can be revisited when the page changes |
+
+The split is deliberately narrow. An over-greedy date regex that stole the date from an
+ordinary single-day event would be the far worse failure and would not be visible on the
+board, so `test_regressions.py` asserts both directions: the four known panels split into
+twelve listings with the right hours, and no other event is touched.
+
+Three of the bugs in this project's history — and the one that disabled this very regex —
+were a word-boundary escape written inside a shell heredoc, which arrives as a literal
+backspace (0x08). It is invisible in every editor and the regex simply stops matching.
+`test_regressions.py` now fails if any source file contains a stray control character.
+
+Sources tracked: 13 read, 2 watched, 15 in total. The built pages state these counts from
+`check_drift.py`'s own lists rather than from a literal, so they cannot disagree with it.
+

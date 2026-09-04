@@ -205,6 +205,51 @@ check("non-adjacent anchors sharing an href are not glued together", not bad_joi
 check("mid-word split anchors are still rejoined",
       any(l['text'] == "Your Students' Union" for e in E for l in e.get('links', [])))
 
+# --- multi-day panels ------------------------------------------------------
+# Lazaridis publishes four graduate welcomes as a single panel spanning three
+# days: "Sept. 8 from 10 a.m. to 4 p.m., Sept. 9 from 11 a.m. to 4 p.m. and
+# Sept. 10 from 2 to 4 p.m." Read as one event it landed only on Sept. 8, so an
+# MBA student looking at Wednesday saw nothing and would have missed day two of
+# their own orientation. Each day is now its own listing, carrying the hours
+# Laurier published for that day and the full published string in runs_over.
+be = [e for e in E if e['title'].startswith('Master of Arts in Business Economics')]
+check("a multi-day panel becomes one listing per day",
+      sorted(e['date'] for e in be) == ['2026-09-08', '2026-09-09', '2026-09-10'],
+      str(sorted(e['date'] for e in be)))
+
+check("each split day keeps the hours published for that day",
+      sorted((e['date'], e['when']) for e in be)
+      == [('2026-09-08', '10 a.m. to 4 p.m'), ('2026-09-09', '11 a.m. to 4 p.m'),
+          ('2026-09-10', '2 to 4 p.m')],
+      str(sorted((e['date'], e['when']) for e in be)))
+
+check("a split listing records the string Laurier actually published",
+      bool(be) and all(e.get('runs_over', '').startswith('Sept. 8 from 10 a.m.')
+                       and 'Sept. 10 from 2 to 4 p.m' in e['runs_over'] for e in be))
+
+# The split must fire only where Laurier really published several dates. Every
+# ordinary single-day event losing its date to an over-greedy regex is the far
+# worse failure, and it would not be visible on the board.
+split = [e for e in E if e.get('runs_over')]
+check("the split fires only on genuinely multi-day panels",
+      len(split) == 12 and len({e['title'] for e in split}) == 4,
+      "%d listings across %d titles" % (len(split), len({e['title'] for e in split})))
+
+check("no single-day event was split",
+      all(e['runs_over'].count(' and ') >= 1 for e in split))
+
+# --- source hygiene --------------------------------------------------------
+# A word-boundary escape written inside a shell heredoc arrives as a literal backspace (0x08).
+# It has silently disabled a regex in this parser more than once; the character
+# is invisible in every editor and the regex simply stops matching.
+import glob
+dirty = []
+for f in sorted(glob.glob('*.py') + glob.glob('_*.js') + glob.glob('_body*.html')):
+    t = open(f, encoding='utf-8', errors='replace').read()
+    if any(ord(c) < 9 or 13 < ord(c) < 32 for c in t):
+        dirty.append(f)
+check("no source file contains a stray control character", not dirty, str(dirty))
+
 print()
 if fails:
     print("%d FAILED" % len(fails))

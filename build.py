@@ -71,7 +71,13 @@ TODAY    = datetime.date.today().isoformat()
 K = {"date":"d","title":"t","desc":"x","where":"w","when":"n","host":"h","cost":"c",
      "audience":"a","links":"l","level":"lv","campuses":"cp","term":"tm","tags":"tg",
      "open_to_all":"oa","url":"u","section":"s","flags":"f",
-     "section_info":"si","section_links":"sl","page_links":"pl","parent":"pt","virtual":"vr","program":"pg"}
+     "section_info":"si","section_links":"sl","page_links":"pl","parent":"pt","virtual":"vr","program":"pg",
+     # Laurier publishes a few programme welcomes as one panel spanning several
+     # days. parse.py gives each day its own listing so it appears on the right
+     # day of the board; this carries the string Laurier actually published, so
+     # a student who lands on day two is told it is day two of a longer welcome
+     # rather than shown one isolated afternoon.
+     "runs_over":"ro"}
 def pack(e):
     o = {}
     for long, short in K.items():

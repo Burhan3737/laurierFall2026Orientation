@@ -293,6 +293,32 @@ def section_prose(cont):
     """paragraphs of a section that sit OUTSIDE any accordion panel"""
     return [p for p in cont.find_all('p') if not p.find_parent('div', class_='accordion-panel')]
 
+
+# A programme welcome that runs over several days is published as one panel with one
+# "When:" naming each day and its own hours -- "Sept. 8 from 10 a.m. to 4 p.m., Sept. 9
+# from 11 a.m. to 4 p.m. and Sept. 10 from 2 to 4 p.m.". Filed under the first date
+# alone it vanishes from the board on days two and three, so a student who checks on
+# the Wednesday sees nothing and misses their own orientation. Split it into one event
+# per day, each carrying that day's hours, and keep the published wording on every part
+# so the full run is still legible from any one of them.
+MULTIDAY = re.compile(
+    r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept?|Oct|Nov|Dec)\.?\s*(\d{1,2})\s*'
+    r'(?:from\s+)?([^,;]*?\d[^,;]*?)(?=\s*(?:,|;|\s+and\s+)\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept?|Oct|Nov|Dec)\b|$)',
+    re.I)
+
+def split_multiday(when, year):
+    """-> [(iso date, that day's hours)] when the text names two or more days, else []."""
+    if not when:
+        return []
+    parts = []
+    for m in MULTIDAY.finditer(when):
+        d = date_from_text("%s %s" % (m.group(1), m.group(2)), year)
+        hours = clean(m.group(3)).rstrip(' .,;')
+        if d and hours and re.search(r'\d', hours):
+            parts.append((d, hours))
+    uniq = {d for d, _ in parts}
+    return parts if len(uniq) > 1 else []
+
 def parse_page(fname):
     html = open('_src/' + fname, encoding='utf-8', errors='replace').read()
     soup = BeautifulSoup(html, 'html.parser')
@@ -435,14 +461,25 @@ def parse_page(fname):
                     ev["where"] = sect_info.get("Location", "") or ev["where"]
                     if not ev["where"] and re.search(r'\bzoom\b', " ".join(prose_txt), re.I):
                         ev["where"] = "Zoom"
+                spread = split_multiday(ev["when"], year)
                 dd = date_from_text(ev["when"], year) or d if ev["when"] else d
                 ev.update({"date": dd, "section": sect, "anchor": anchor,
                            "level": level, "campus": c, "campuses": campuses, "virtual": is_virtual, "term": term,
                            "stream": stream, "source_file": fname,
                            "section_info": sect_info, "section_links": sect_links, "page_links": page_links,
                            "url": URL[fname] + ("#" + anchor if anchor else "")})
-                out.append(ev)
-                made += 1
+                if spread:
+                    published = ev["when"]
+                    for day, hours in spread:
+                        part = dict(ev)
+                        part["date"] = day
+                        part["when"] = hours
+                        part["runs_over"] = published
+                        out.append(part)
+                        made += 1
+                else:
+                    out.append(ev)
+                    made += 1
 
         # Overview items with no accordion of their own (e.g. SEEDs "Your Time! 6:30 p.m.
         # onwards") would otherwise be dropped, since extraction is accordion-driven.
