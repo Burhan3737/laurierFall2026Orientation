@@ -127,6 +127,40 @@ What this means for you:
   with the data. A note describing either is a finding; so is a note whose condition can
   never be true.
 
+## The layout contract
+
+The day clock and the whole-run view lay events out from the data every time. Nothing
+about a time or a name is hardcoded: the axis runs from the earliest start to the latest
+end of that day's own events, hour ticks are generated between them, and empty stretches
+of two hours or more are compressed to a fixed band.
+
+Two rules bind the drawing, and both are yours to test:
+
+1. **No event is drawn longer or shorter than it runs.** A box is its published length
+   times that day's scale, and nothing else. There is no minimum height and no padding.
+2. **Two events share a column only if they genuinely overlap.** `ncol > 1` on an event
+   that overlaps nothing is a defect — it used to happen, because the layout padded short
+   events and then packed columns from the padded length.
+
+`scaleFor()` chooses pixels per minute per day so the day's shortest event clears one
+readable line at its true length; a day with a five-minute session is simply taller. What
+gives way when a box is short is the text inside it — the venue below 56px, then time and
+name on one row below 40px — never the length.
+
+**Read the model, not the pixels.** `window.layoutModel()` returns, for the current
+selection and day: `ppm`, `height`, `columns`, and per event `published`, `minutes`,
+`drawnPx`, `drawnMinutes`, `col`, `ncol`, `overlaps`, plus the `allDay` and `undated`
+entries that never reach the clock. Two invariants fall straight out of it:
+`abs(drawnMinutes - minutes) <= 1` for every event, and no event with `ncol > 1` and
+`overlaps == 0`. Drive it with `--dump-dom` and a `setTimeout` that writes the JSON into
+`document.title`.
+
+That does **not** excuse you from looking at the rendered page. Both of the last two
+defects in this area were invisible in the model: a title the model held in full which
+the stylesheet then cut mid-word because `text-overflow` does not apply to a flex item,
+and a title the renderer drew outside its own bar. Check what is actually painted, at
+1400px and at 420px.
+
 **Scraping requirement.** Most event detail is inside **collapsed accordion panels**
 (`button.accordion-trigger` paired with `div.accordion-panel`, which carries the `hidden`
 attribute). Venue, host, cost, audience and registration links live almost entirely in
