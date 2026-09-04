@@ -182,8 +182,11 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .bw{font-size:11.5px;color:var(--meta);line-height:1.25;margin-top:2px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .bx{font-size:11px;color:var(--meta);font-style:italic}
-.blk.tiny .bh{font-size:11.5px;line-height:1.15;font-stretch:88%}
+/* Room for two lines but not three: the venue steps aside, as it does on a
+   crowded day. Nothing about the drawn length changes. */
+.blk.tiny .bh{font-size:11.5px;line-height:1.15;font-stretch:88%;-webkit-line-clamp:2}
 .blk.tiny .bt{font-size:9.5px}
+.blk.tiny .bw{display:none}
 .blk.open{border-left:6px double var(--lilac)}
 .blk.open .bt{color:#6E2C86}
 .blk.clash{border-left:4px solid var(--gold)}
@@ -520,9 +523,14 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   border-top:4px solid transparent;
 }
 .wbl{
+  /* min-width:0, or a flex item refuses to shrink below its own content and the
+     name is hard-clipped by the bar instead of ellipsised. */
   font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis;line-height:1;
+  text-overflow:ellipsis;line-height:1;min-width:0;
 }
+/* A bar too narrow to spare 5px a side gives the padding back to the name, so a
+   quarter-hour event still shows a letter or two rather than nothing. */
+.wb.tightbar{padding:0 1px}
 .wb.open{background:var(--lilac)}
 .wb.clash{border-top-color:var(--gold)}
 .wb.off{background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
@@ -597,16 +605,23 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
    against it and carrying its left edge, so the bar and its name read as one
    object. The bar keeps its true width — widening it to fit the words would draw
    a quarter hour as an hour, and this view is a clock. */
-.wbl.out{
-  /* not display:flex - text-overflow does not apply to a flex item, so the name
-     was cut mid-word ("Laurier Trivia Challeng") instead of ellipsised. */
-  position:absolute;height:22px;line-height:22px;
-  padding-left:7px;color:var(--purple-m);background:var(--field-d);
-  border-left:3px solid var(--purple);
-  overflow:hidden;text-overflow:ellipsis;pointer-events:none;
-}
-.wbl.out.goff{color:var(--meta);background:transparent;border-left-color:var(--line-h)}
 .wb{position:absolute}
+/* A block only as tall as its event is short. It keeps the time and the name;
+   the venue is on the card behind it. Nothing here changes how long the block is
+   drawn — only how much is written inside it. */
+.blk.squat{
+  /* .blk is a column: without this the time and the name stack, and on a
+     26px box the name falls straight out of the bottom of it. */
+  flex-direction:row;align-items:center;gap:7px;padding:1px 6px;
+}
+.blk.squat .bt{flex:0 0 auto;font-size:9.5px}
+.blk.squat .bh{
+  /* .bh is a -webkit-box for its 4-line clamp, and text-overflow does not apply
+     to one. One line here, so it goes back to being an ordinary block. */
+  display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+  min-width:0;font-size:11.5px;line-height:1.15;
+}
+.blk.squat .bw{display:none}
 /* a crowded day tightens rather than giving up the clock */
 .daygrid.tight .blk{padding:2px 5px}
 .daygrid.tight .bt{font-size:9.5px}

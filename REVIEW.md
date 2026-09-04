@@ -399,3 +399,38 @@ The bar was not widened to fit the words. This view is a clock, and drawing a qu
 hour as an hour would misstate the time and could make two events look like they overlap
 when they do not - which clashcheck.py exists to prevent.
 
+## The clock stops padding
+
+Reported from the board: consecutive events drawn side by side as though they ran at the
+same time. They were. placed() padded every item to a minimum drawn length so a short
+event was still a readable box, and then packed columns from that padded length. The two
+jobs are not the same job. Graduate Waterloo on 2 September - reception, dean’s welcome,
+panel, “Are You Ready”, trivia, end to end with not one minute of overlap - came back as
+five events in two columns at half width. On 8 September the same artefact inflated a
+genuinely busy day from 5 columns to 12.
+
+The padding is gone. Columns are packed on the published interval, so ncol is a true
+statement about concurrency again. Legibility moved to the scale: scaleFor() picks pixels
+per minute so the shortest event of the day clears one readable line at its true length,
+and the day gets taller - the page scrolls, and height is cheaper than a lie about time.
+Only three days move at all. 1 September, whose virtual evening is five- and ten-minute
+segments, goes to 5.20 px/min and 624px. 2 and 3 September, whose deans’ welcomes are a
+quarter of an hour, go to 1.73. Every other day’s shortest event is half an hour or more
+and already cleared the line; 8 September, the busiest, is unchanged in height.
+
+What gives way is what is written in a box, never how long it is drawn: under 56px the
+venue steps aside, under 40px the time and the name share a row. Both are on the card.
+
+Three things came with it. The layout figures are one commented table rather than three
+literals at three call sites - which is how a quarter-hour came to be drawn as 52 minutes
+without anyone deciding it.  exposes what the clock decided:
+published time, drawn minutes, column, and how many events each one actually overlaps, so
+an audit can read the model instead of scraping pixels. And the rendered checks stay,
+because the last two defects here were a name the model held correctly and the stylesheet
+cut in half, and a name the renderer drew outside its own bar - neither visible in any
+model.
+
+layoutModel earned itself on the first run by reporting four events on 8 September as
+drawn at the wrong length. They were half a pixel out from rounding a difference rather
+than differencing two rounds, so it now compares minutes to minutes.
+

@@ -303,22 +303,23 @@ function collidesWith(e) {
 /* Whether a drawn event should be marked as colliding, and with what.
 
    The class used to be decided by `it.ncol > 1`, which is not an overlap test at
-   all. placed() pads every item to a minimum drawn height -- de = max(end, start
-   + minMin), 52 minutes on the day clock and 20 on the run -- so that a short
-   event is still a readable box. Two strictly consecutive events therefore land
-   in different lanes, both come back with ncol 2, and both were painted gold.
-   The Graduate Student Orientation evening -- welcome reception, dean's welcome,
-   panel, "Are You Ready", trivia, end to end with not a minute of overlap -- was
-   drawn as five mutual conflicts, telling a graduate student to choose between
-   consecutive parts of one evening on the most important night of their week,
-   while the Clashes lens two clicks away correctly showed nothing for that day.
-   The page contradicted itself, and the agenda -- which had a real overlap test
-   -- drew the same day as ten plain rows under a key still claiming a collision.
+   all. placed() padded every item to a minimum drawn length so a short event was
+   still a readable box, and packed columns from that padded length, so two
+   strictly consecutive events landed in different columns, both came back with
+   ncol 2, and both were painted gold. The Graduate Student Orientation evening --
+   welcome reception, dean's welcome, panel, "Are You Ready", trivia, end to end
+   with not a minute of overlap -- was drawn as five mutual conflicts, telling a
+   graduate student to choose between consecutive parts of one evening on the most
+   important night of their week, while the Clashes lens two clicks away correctly
+   showed nothing for that day.
 
-   de stays what it is, a layout figure. Whether two events overlap is asked of
-   collidesWith(), which is this page's only overlap engine and already drops the
-   drop-in desks and Laurier's duplicate listings, so the block, the bar, the
-   agenda row, the key above them and the detail sheet cannot disagree.
+   The padding is gone: columns are packed on the published interval, and the day
+   is scaled instead so the shortest event is legible at its true length. ncol is
+   therefore a true statement about concurrency again. Whether two events overlap
+   is still asked of collidesWith(), which is this page's only overlap engine and
+   already drops the drop-in desks and Laurier's duplicate listings, so the block,
+   the bar, the agenda row, the key above them and the detail sheet cannot
+   disagree.
 
    An event the student cannot attend is never marked. clockStates() deliberately
    refuses to name a collision on a ghost, and a colour on the screen that no
@@ -1218,13 +1219,27 @@ function drawNav() {
 }
 
 /* ---- laying events out on the clock ------------------------------------- */
-function placed(items, minMin) {
+/* Lay events out in columns, on the hours Laurier published and nothing else.
+
+   This used to pad every item to a minimum drawn length — de = max(end, start +
+   52 minutes on the day clock) — so that a quarter-hour event was still a
+   readable box. The padding decided two different things, and only one of them
+   was its business. It set the height of the box, which it should; it also
+   decided who shared a column, which it should not. Graduate Waterloo's evening
+   on 2 September — reception, dean's welcome, panel, "Are You Ready", trivia, end
+   to end with not one minute of overlap — came back as five events in two
+   columns, each drawn at half width as though they ran at the same time.
+
+   Columns are packed on the published interval now. Legibility is the scale's
+   job instead: scaleFor() picks pixels-per-minute so the shortest event of the
+   day is readable at its true length, and the day simply gets taller. No box is
+   ever drawn longer than the event runs. */
+function placed(items) {
   items.sort(function (a, b) { return a.s - b.s || a.e - b.e; });
   var clusters = [], cur = [], curEnd = -1;
   items.forEach(function (it) {
-    it.de = Math.max(it.e, it.s + minMin);
     if (cur.length && it.s >= curEnd) { clusters.push(cur); cur = []; curEnd = -1; }
-    cur.push(it); curEnd = Math.max(curEnd, it.de);
+    cur.push(it); curEnd = Math.max(curEnd, it.e);
   });
   if (cur.length) clusters.push(cur);
   clusters.forEach(function (cl, ci) {
@@ -1232,14 +1247,14 @@ function placed(items, minMin) {
     var ends = [];
     cl.forEach(function (it) {
       var k = 0; while (ends[k] !== undefined && ends[k] > it.s) k++;
-      ends[k] = it.de; it.col = k;
+      ends[k] = it.e; it.col = k;
     });
     var n = ends.length;
     cl.forEach(function (it) {
       it.ncol = n;
       var sp = 1;
       for (var k = it.col + 1; k < n; k++) {
-        var blocked = cl.some(function (o) { return o !== it && o.col === k && o.s < it.de && it.s < o.de; });
+        var blocked = cl.some(function (o) { return o !== it && o.col === k && o.s < it.e && it.s < o.e; });
         if (blocked) break;
         sp++;
       }
@@ -1247,6 +1262,43 @@ function placed(items, minMin) {
     });
   });
   return items;
+}
+
+/* Pixels per minute for one day's clock.
+
+   BASE_PPM is what an unhurried day needs. A day holding something shorter is
+   stretched until that shortest event clears LINE_PX — one readable line — at
+   its true length. The page scrolls, so height is cheap; drawing an event longer
+   than it runs is not. Only three days in the run are affected: 1 September,
+   whose virtual evening is five- and ten-minute segments, and 2 and 3 September,
+   whose deans' welcomes are a quarter of an hour. Every other day's shortest
+   event is half an hour or more and already clears the line at BASE_PPM. */
+/* ---- the layout figures, all of them, in one place ----------------------
+   Every number here trades drawn space against what can be written in it. None
+   of them may change how long an event is drawn: that is always its published
+   length times the day's scale. They were three literals at three call sites
+   (52, 20, 30 minutes of padding), which is how the day clock came to draw a
+   quarter-hour event as fifty-two minutes and put consecutive events in
+   side-by-side columns without anyone deciding to.
+
+   BASE_PPM   pixels per minute on an unhurried day.
+   LINE_PX    the shortest event must clear this, so scaleFor() stretches the day
+              until it does. The page scrolls; height is cheap.
+   COMPACT_PX below this a block puts its time and name on one row.
+   TIGHT_PX   below this a block drops the venue, which is on its card anyway.
+   GAP_MIN    an empty stretch at least this long is compressed...
+   GAP_PX     ...to this, so a quiet afternoon does not push the evening off screen.
+   LANE_H     the height of one bar in the whole-run view, and
+   LANE_GAP   the space between two of them. */
+var BASE_PPM = 1.15, LINE_PX = 26, COMPACT_PX = 40, TIGHT_PX = 56;
+var GAP_MIN = 120, GAP_PX = 46;
+var LANE_H = 22, LANE_GAP = 2;
+
+function scaleFor(items) {
+  var shortest = items.reduce(function (m, it) {
+    return Math.min(m, Math.max(1, it.e - it.s));
+  }, Infinity);
+  return Math.max(BASE_PPM, LINE_PX / shortest);
 }
 /* A drop-in desk -- long, and open across the middle of the day -- is not a
    session you diarise. Left on the clock it swallows the whole column and makes
@@ -1281,11 +1333,10 @@ function ribbonHtml(it) {
    still names the hours it stands for. Nothing is hidden; the empty time is
    stated in words instead of drawn in pixels.
 ------------------------------------------------------------------------- */
-var GAP_MIN = 120, GAP_PX = 46;
 
 function makeScale(items, ppm, gapPx) {
   gapPx = gapPx || GAP_PX;
-  var iv = items.map(function (it) { return [it.s, it.de]; })
+  var iv = items.map(function (it) { return [it.s, it.e]; })
                 .sort(function (a, b) { return a[0] - b[0]; });
   var merged = [];
   iv.forEach(function (r) {
@@ -1359,10 +1410,20 @@ function blockHtml(it, sc, within) {
   var u = 100 / it.ncol, left = it.col * u, w = u * Math.min(it.span || 1, it.ncol - it.col);
   var cls = "blk" + (off ? " off" : (e.oa ? " open" : "")) + (drawsClash(e, within) ? " clash" : "") +
             (e.d && e.d < NOW ? " past" : "") + (isPicked(e) ? " mine" : "");
-  var top = sc.pos(it.s), bot = sc.pos(it.de);
+  var top = sc.pos(it.s), bot = sc.pos(it.e);
+  /* No floor any more. The height is the event's own length, and scaleFor() has
+     already stretched the day so the shortest one clears a readable line — a
+     floor here would put a box back over the top of the one below it, which is
+     what the old padding was invented to stop. */
+  var h = bot - top - 2;
+  /* Three lines need about 56px. What gives way is what is written in the box,
+     never how long the box is drawn: below 56px the venue steps aside, and below
+     40px the time and the name share a single row. Both are on the card behind. */
+  if (h < COMPACT_PX) cls += " squat";
+  else if (h < TIGHT_PX) cls += " tiny";
   var label = clock(it.s) + "–" + clock(it.e) + " · " + (e.t || "") + (e.w ? " · " + e.w : "");
   return '<article class="' + cls + '" style="top:' + top + "px;height:" +
-    Math.max(30, bot - top - 2) + "px;left:calc(" + left + "% + 1px);width:calc(" + w + "% - 3px)\" " +
+    h + "px;left:calc(" + left + "% + 1px);width:calc(" + w + "% - 3px)\" " +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i +
     '" tabindex="0" title="' + esc(label) + '">' +
     '<span class="bt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
@@ -1383,6 +1444,52 @@ function looseHtml(e) {
         : (e.n && !/^(TBD|TBA)\.?$/i.test(e.n) ? e.n : (e.w || e.n || "Time not published"))) + "</span>" +
     (isPicked(e) ? '<span class="mymark" aria-hidden="true">✓</span>' : "") + "</button>";
 }
+
+/* ---- the layout, as data ------------------------------------------------
+   What the clock decided, before any of it became pixels. An auditor reading
+   this does not have to scrape the DOM to find out whether two events were drawn
+   as concurrent, how long a block is, or which day the board settled on — and a
+   question asked here cannot be answered by a screenshot that happens to look
+   right. It is derived from the same functions the board draws with, so it
+   cannot describe a layout the board is not using.
+
+   It does not replace looking at the page. The last two defects in this area
+   were a name that the model held correctly and the stylesheet then cut in half,
+   and a name the renderer drew outside its own bar. Neither was visible here. */
+function layoutModel(d) {
+  var list = visible(), keys = dayKeys(list);
+  var k = d || (view === "day" ? day : null) || keys.filter(function (x) { return x !== "TBA"; })[0];
+  var parts = split(onDay(list, k));
+  var items = placed(parts.timed);
+  var ppm = items.length ? scaleFor(items) : BASE_PPM;
+  var sc = items.length ? makeScale(items, ppm) : null;
+  return {
+    day: k, view: view, ppm: ppm, height: sc ? Math.round(sc.H) : 0,
+    columns: items.reduce(function (m, it) { return Math.max(m, it.ncol); }, 0),
+    events: items.map(function (it) {
+      var top = sc.pos(it.s), bot = sc.pos(it.e);
+      return {
+        title: it.ev.t, published: clock(it.s) + "-" + clock(it.e),
+        minutes: it.e - it.s,
+        drawnPx: Math.round(bot - top - 2),
+        /* The drawn length read back as minutes. Comparing pixels would report
+           the half-pixel left by rounding a difference as though the clock were
+           lying; comparing minutes asks the question actually worth asking, and
+           this must equal `minutes` to within rounding. */
+        drawnMinutes: Math.round((bot - top) / ppm * 100) / 100,
+        col: it.col, ncol: it.ncol,
+        overlaps: items.filter(function (o) {
+          return o !== it && o.s < it.e && it.s < o.e;
+        }).length
+      };
+    }),
+    // long-running and undated entries never reach the clock, and are listed so
+    // a reader of this object is not left wondering where they went
+    allDay: parts.long.map(function (e) { return e.t; }),
+    undated: onDay(list, "TBA").map(function (e) { return e.t; })
+  };
+}
+window.layoutModel = layoutModel;
 
 /* ---- the board ---------------------------------------------------------- */
 var looseCarry = [];
@@ -1419,7 +1526,6 @@ function drawBoard() {
    number of days, keeps the time axis honest (position and width are the real
    start and the real duration), and shows a collision as a stack.
 ------------------------------------------------------------------------- */
-var LANE_H = 22, LANE_GAP = 2;
 
 /* A title inside its own day column should not begin by naming that day. */
 function shortTitle(e, dayKey) {
@@ -1563,21 +1669,16 @@ function clashHtml(list) {
    free that far, and nothing only when neither is true. Where two entries share a
    title and a start time in one day, the room is appended so they can be told
    apart. */
+/* The name goes on the bar, always, and is cut to whatever the bar can hold — a
+   few letters and an ellipsis on a quarter-hour event. It used to be drawn beside
+   the bar when it would not fit inside, which read as text loose on the lane. The
+   bar is never widened to make the name fit: this view is a clock, and a wider bar
+   would say the event runs longer than it does. The full name is in the hover
+   title, in the detail sheet, and uncut in One day. */
 function barLabel(it, e, k, wide, room, laneW, byTitle, left, top, off) {
   var t = shortTitle(e, k);
   if (byTitle && byTitle[stripDay(e.t) + " @" + it.s] > 1 && e.w) t += " — " + e.w;
-  var insidePx = wide / 100 * laneW;
-  if (insidePx >= 46) return ['<span class="wbl">' + esc(t) + "</span>", ""];
-  var roomPx = room / 100 * laneW;
-  /* The spilled label is a sibling of the bar, not a child of it. As a child it
-     sat at left:100% inside a box with overflow:hidden and rendered at zero
-     width — five bars a week came out anonymous. As a sibling it also reads
-     against the lane it is actually drawn on rather than against the purple. */
-  if (roomPx >= 62)
-    return ["", '<span class="wbl out' + (off ? " goff" : "") + '" style="left:' +
-            (left + wide) + "%;width:" + (room - wide) + "%;top:" + top + 'px">' +
-            esc(t) + "</span>"];
-  return ["", ""];
+  return ['<span class="wbl">' + esc(t) + "</span>", ""];
 }
 
 function weekHtml(list, keys) {
@@ -1635,7 +1736,7 @@ function weekHtml(list, keys) {
       var tk = stripDay(it.ev.t) + " @" + it.s;
       byTitle[tk] = (byTitle[tk] || 0) + 1;
     });
-    var items = placed(pt.timed.concat(pt.long), 20);
+    var items = placed(pt.timed.concat(pt.long));
     var lanes = items.reduce(function (mx, it) { return Math.max(mx, it.col + 1); }, 1);
     var shown = items;
     var n = onDay(list, k).length;
@@ -1659,7 +1760,9 @@ function weekHtml(list, keys) {
         var room = Math.max(wide, (nxt ? pc(nxt.s) : 100) - left);
         var btop = it.col * (LANE_H + LANE_GAP) + 2;
         var lab = barLabel(it, e, k, wide, room, laneW, byTitle, left, btop, off);
-        return lab[1] + '<button class="wb' + (off ? " off" : (e.oa ? " open" : "")) +
+        // a bar this narrow cannot spare 5px each side for padding and still show a letter
+        var tight = wide / 100 * laneW < 46 ? " tightbar" : "";
+        return lab[1] + '<button class="wb' + tight + (off ? " off" : (e.oa ? " open" : "")) +
           (drawsClash(e) ? " clash" : "") +
           (isPicked(e) ? " mine" : "") +
           '" style="left:' + left + "%;width:" + wide + "%;top:" + btop + "px\" " +
@@ -1710,7 +1813,7 @@ function agendaHtml(items, of, within) {
     if (prevEnd !== null && it.s - prevEnd >= GAP_MIN)
       gap = '<div class="aggap">' + (of || "nothing published") + " between " +
             clock(prevEnd) + " and " + clock(it.s) + "</div>";
-    prevEnd = prevEnd === null ? it.de : Math.max(prevEnd, it.de);
+    prevEnd = prevEnd === null ? it.e : Math.max(prevEnd, it.e);
     var e = it.ev, a = assess(e), off = !a.ok;
     var clash = drawnClashes(e, within);
     return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) +
@@ -1807,8 +1910,8 @@ function dayHtml(list, keys) {
   var undated = day === "TBA", dt = undated ? null : new Date(day + "T00:00:00");
   var todays = onDay(list, day);
   var parts = split(todays);
-  var items = placed(parts.timed, 52);
-  var sc = items.length ? makeScale(items, 1.15) : null;
+  var items = placed(parts.timed);
+  var sc = items.length ? makeScale(items, scaleFor(items)) : null;
   /* How many events overlap is the Clashes lens's whole subject, and it answers
      it properly — which of them you have to choose between, and when. Counting
      them again in the day heading said less and said it twice. */
@@ -1937,9 +2040,9 @@ function planCalHtml(picks) {
   var all = [];
   var body = byDay(picks).map(function (g) {
     var pt = split(g.items);
-    var items = placed(pt.timed, 52);
+    var items = placed(pt.timed);
     var lanes = items.reduce(function (m, it) { return Math.max(m, it.ncol); }, 0);
-    var sc = items.length ? makeScale(items, 1.15) : null;
+    var sc = items.length ? makeScale(items, scaleFor(items)) : null;
     var tooDeep = lanes > MAX_LANES;
     /* PLAN is already keyed by dupKey, and it is the set planClashes() and the
        plan bar count against. Passing it here is what stops the plan's calendar
@@ -2333,7 +2436,7 @@ function printGrid(items, named, of) {
   h += '<div class="prslots">' + items.map(function (it) {
     var u = 100 / it.ncol, left = it.col * u;
     var w = u * Math.min(it.span || 1, it.ncol - it.col);
-    var top = sc.pos(it.s), bot = sc.pos(it.de);
+    var top = sc.pos(it.s), bot = sc.pos(it.e);
     return '<div class="prslot' + (isPicked(it.ev) ? " prmine" : "") + '" style="top:' +
       top.toFixed(1) + "pt;height:" + Math.max(13, bot - top - 1.5).toFixed(1) +
       "pt;left:" + left.toFixed(2) + "%;width:calc(" + w.toFixed(2) + '% - 2.5pt)">' +
@@ -2521,7 +2624,7 @@ function printHtml() {
 
   h += byDay(list).map(function (g) {
     var parts = split(g.items);
-    var items = placed(parts.timed, 30);
+    var items = placed(parts.timed);
     var lanes = items.reduce(function (mx, it) { return Math.max(mx, it.ncol); }, 0);
 
     /* Numbered down the day and, within one start time, left to right across
