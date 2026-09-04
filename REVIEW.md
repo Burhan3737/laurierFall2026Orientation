@@ -379,3 +379,23 @@ went on passing because their subject no longer existed. Finding 1 is the third 
 of a selector too narrow for how Laurier writes a page — `<div>` last round, `<ul>` this
 one — and both times the cost was information the student needed and no sign it was gone.
 
+## The names beside the short bars
+
+Reported from a screenshot of graduate Waterloo, whole run: three titles sitting after
+their block rather than on it. Only that selection, because only it has events short
+enough - Dean’s Welcome 6:30 to 6:45, Trivia 8:10 to 8:30, Check-In 5:00 to 5:30. A
+day is about 1,250px across in that view, so a quarter hour is roughly three pixels and
+the title cannot go inside; barLabel() draws it beside the bar rather than leave the bar
+anonymous, which is deliberate.
+
+The defect underneath was real though. The spilled label was display:flex, and
+text-overflow does not apply to a flex item, so it was cut mid-word - “Laurier Trivia
+Challeng”, “Orientation Check-” - which is what made it read as broken rather than as a
+label. It ellipsises now. It was also plain ink text on the lane with nothing tying it to
+its bar; it is a chip in the bar’s own colour, flush against it and carrying its purple
+left edge, so the two read as one object.
+
+The bar was not widened to fit the words. This view is a clock, and drawing a quarter
+hour as an hour would misstate the time and could make two events look like they overlap
+when they do not - which clashcheck.py exists to prevent.
+

@@ -591,11 +591,21 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 }
 .clashlist{margin-top:2px}
 /* the title sits beside its bar when the lane is free that far */
+/* A fifteen-minute event is a few pixels wide at this scale, so its title cannot
+   sit inside the bar and is drawn beside it. Plain ink text on the lane read as a
+   caption that belonged to nothing: it is a chip in the bar's own colour, flush
+   against it and carrying its left edge, so the bar and its name read as one
+   object. The bar keeps its true width — widening it to fit the words would draw
+   a quarter hour as an hour, and this view is a clock. */
 .wbl.out{
-  position:absolute;height:22px;display:flex;align-items:center;
-  padding-left:6px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;pointer-events:none;
+  /* not display:flex - text-overflow does not apply to a flex item, so the name
+     was cut mid-word ("Laurier Trivia Challeng") instead of ellipsised. */
+  position:absolute;height:22px;line-height:22px;
+  padding-left:7px;color:var(--purple-m);background:var(--field-d);
+  border-left:3px solid var(--purple);
+  overflow:hidden;text-overflow:ellipsis;pointer-events:none;
 }
-.wbl.out.goff{color:var(--meta)}
+.wbl.out.goff{color:var(--meta);background:transparent;border-left-color:var(--line-h)}
 .wb{position:absolute}
 /* a crowded day tightens rather than giving up the clock */
 .daygrid.tight .blk{padding:2px 5px}
