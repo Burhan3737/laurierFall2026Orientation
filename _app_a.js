@@ -1348,7 +1348,7 @@ function openSheet(i) {
      without this the student who opens day two sees one isolated afternoon and
      no sign that the welcome started yesterday and continues tomorrow. */
   row("More days", e.ro ? "Laurier publishes this welcome as one event running "
-      + esc(e.ro) + ". Each of those days is on this board on its own."  : "");
+      + esc(e.ro).replace(/\.$/, "") + ". Each of those days is on this board on its own."  : "");
   row("Where", esc(e.w) || "Not published by Laurier");
   row("Part of", esc(e.pt));
   row("Host", esc(e.h));
@@ -1514,10 +1514,13 @@ function readHash() {
    Four places where its own pages do not answer the question, kept beside the
    sources rather than folded into the events, because a student reading a room
    number should not have to step over them. Each is counted from the data on
-   every build, so a note cannot outlive the thing it describes. */
+   every build, so a note cannot outlive the thing it describes. The counts run
+   through onePerEvent because they describe cards a student can see, and the
+   board draws one card per event: counting Laurier's listings instead promised
+   20 undated Winter sessions where 14 exist. */
 function buildNotes() {
   var notes = [];
-  var undated = EV.filter(function (e) { return !e.d; });
+  var undated = onePerEvent(EV.filter(function (e) { return !e.d; }));
   if (undated.length) {
     var byTerm = {};
     undated.forEach(function (e) { byTerm[e.tm] = (byTerm[e.tm] || 0) + 1; });
@@ -1527,7 +1530,7 @@ function buildNotes() {
       "). They cannot be put on the clock, so they are gathered at the end of the " +
       "run under a heading reading “Undated”."]);
   }
-  var spring = EV.filter(function (e) { return e.tm === "Spring 2026" && e.d && e.d.slice(5, 7) === "01"; });
+  var spring = onePerEvent(EV.filter(function (e) { return e.tm === "Spring 2026" && e.d && e.d.slice(5, 7) === "01"; }));
   if (spring.length) {
     notes.push(["The Spring graduate schedule shows January dates",
       "The page titled “Laurier Spring Orientation: Graduate Schedule” lists its " +
@@ -1536,7 +1539,7 @@ function buildNotes() {
       "The dates are shown exactly as Laurier published them — confirm with " +
       "aspire@wlu.ca before relying on them."]);
   }
-  var winter = EV.filter(function (e) { return e.tm === "Winter 2027"; });
+  var winter = onePerEvent(EV.filter(function (e) { return e.tm === "Winter 2027"; }));
   if (winter.length && winter.every(function (e) { return !e.d; })) {
     var wVenue = winter.filter(function (e) { return (e.f || []).indexOf("no-venue") === -1; }).length;
     var wTime = winter.filter(function (e) { return (e.f || []).indexOf("no-time") === -1; }).length;
@@ -1547,7 +1550,7 @@ function buildNotes() {
                 (winter.length - wVenue) + " are TBD. " : "None gives a venue. ") +
       (wTime ? wTime + " give a time." : "None gives a time.")]);
   }
-  var prog = EV.filter(function (e) { return e.pg; }).length;
+  var prog = onePerEvent(EV.filter(function (e) { return e.pg; })).length;
   if (prog) {
     notes.push(["Program and faculty welcomes say nothing about who may come",
       prog + " events are held for one program or faculty, but Laurier states no audience " +

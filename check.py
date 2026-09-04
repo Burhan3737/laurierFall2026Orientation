@@ -15,7 +15,7 @@ render. So this does what a person cannot be relied on to remember:
 
 Run it after every write to an app script, before anything else proceeds.
 """
-import io
+import glob, io
 import os
 import re
 import subprocess
@@ -245,7 +245,34 @@ def check(v):
     return True
 
 
+def resolve_all():
+    """Every application script resolves every call it makes.
+
+    check(v) already does this, but only for the four variants that have a
+    matching stylesheet and body. _app.js and _app_classic.js have neither, so
+    they were checked by nothing: a blanket edit put four calls to onePerEvent
+    into both, which neither defines, and node --check passed because an
+    undefined identifier is a runtime error. orientation-classic.html rendered
+    an empty board, and because it is parity.py's yardstick the failure showed
+    up as all 83 selections disagreeing rather than as one dead page."""
+    ok = True
+    for js in sorted(glob.glob(os.path.join(HERE, "_app*.js"))):
+        r = subprocess.run(["node", "--check", js], capture_output=True, text=True)
+        if r.returncode:
+            print("  FAIL  %s syntax" % os.path.basename(js))
+            ok = False
+            continue
+        missing = refcheck(js)
+        if missing:
+            print("  FAIL  %s calls but never defines: %s"
+                  % (os.path.basename(js), ", ".join(missing)))
+            ok = False
+    print("  %s  all %d application scripts parse and resolve every call they make"
+          % ("ok  " if ok else "FAIL", len(glob.glob(os.path.join(HERE, "_app*.js")))))
+    return ok
+
+
 if __name__ == "__main__":
     which = [a for a in sys.argv[1:] if a in STATES] or ["a", "b", "c", "a_plus"]
-    results = [check(v) for v in which]
+    results = [resolve_all()] + [check(v) for v in which]
     sys.exit(0 if all(results) else 1)

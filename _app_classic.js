@@ -90,7 +90,7 @@ function card(e) {
      without this the student who opens day two sees one isolated afternoon and
      no sign that the welcome started yesterday and continues tomorrow. */
   row("More days", e.ro ? "Laurier publishes this welcome as one event running "
-      + esc(e.ro) + ". Each of those days is on this board on its own."  : "");
+      + esc(e.ro).replace(/\.$/, "") + ". Each of those days is on this board on its own."  : "");
   row("Where", esc(e.w) || "Not published by Laurier");
   row("Part of", esc(e.pt));
   row("Host", esc(e.h));
@@ -182,6 +182,9 @@ function render() {
 
 /* ---------- data notes --------------------------------------------------- */
 function buildNotes() {
+  // Not folded through onePerEvent as the variants are: this page draws one card
+  // per listing rather than one per event - that is what makes it the yardstick
+  // the others are measured against - so here the listing count is the true one.
   var notes = [];
   var undated = EV.filter(function (e) { return !e.d; });
   if (undated.length) {

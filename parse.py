@@ -141,7 +141,11 @@ def join_lead(lead, rest):
         return lead
     if re.match(r'[a-z]', rest) or lead.endswith((':', '-', '—')):
         return clean(lead + " " + rest)
-    return clean(lead.rstrip('.') + ". " + rest)
+    if lead.endswith(('.', '!', '?')):
+        # "Tickets are only $30!!!" is already a finished sentence; adding a stop
+        # after it produced "$30!!!. (+ $1.50 processing fee)".
+        return clean(lead + " " + rest)
+    return clean(lead + ". " + rest)
 
 def looks_like_title(s):
     return (bool(s) and len(s) < 90 and len(s.split()) <= 9
@@ -150,6 +154,10 @@ def looks_like_title(s):
 def parse_panel(panel, fallback_title):
     """-> list of sub-event dicts"""
     events, pend_title, pend_desc, pend_links, audience = [], None, [], [], None
+    # index into pend_desc at which the text under pend_title begins. Folding a
+    # heading into *all* accumulated prose rather than into its own paragraphs is
+    # what stacked the concert's seven policy headings at the front in reverse.
+    pend_at = 0
 
     blocks = [p for p in panel.find_all(['p', 'ul', 'ol', 'table', 'h3', 'h4', 'h5'], recursive=True)
               if not (p.name in ('p', 'ul', 'ol') and p.find_parent(['ul', 'ol', 'table']))]
@@ -200,18 +208,23 @@ def parse_panel(panel, fallback_title):
                 "links": pend_links + links_in(p),
                 "parent": fallback_title,
                 "_bold_title": pend_title,
+                "_bold_tail": " ".join(pend_desc[pend_at:]).strip(),
             })
             pend_title, pend_desc, pend_links, audience = None, [], [], None
+            pend_at = 0
             continue
 
         lead = p.find(['strong', 'b'])
         lt = clean(lead.get_text()) if lead else ""
         if lt and txt.startswith(lt[:12]) and looks_like_title(lt):
-            if pend_title and pend_desc:
+            if pend_title and len(pend_desc) > pend_at:
                 # a bold block that never got a Where/When is prose, not a sub-event:
-                # fold it in at the position it appears so the order matches the page
-                pend_desc = [join_lead(pend_title, " ".join(pend_desc))]
+                # fold it into the paragraphs that followed it, which are the ones from
+                # pend_at on. Folding into the whole list put each new heading ahead of
+                # every earlier one, so a run of them came out reversed.
+                pend_desc[pend_at:] = [join_lead(pend_title, " ".join(pend_desc[pend_at:]))]
             pend_title = lt.rstrip(':').strip()
+            pend_at = len(pend_desc)
             rest = clean(txt[len(lt):])
             if rest:
                 pend_desc.append(rest)
@@ -244,7 +257,12 @@ def parse_panel(panel, fallback_title):
 
     # trailing prose after the last Where/When belongs to the last event
     if events and (pend_desc or pend_links or pend_title):
-        tail = join_lead(pend_title, " ".join(pend_desc)) if pend_title else clean(" ".join(pend_desc))
+        if pend_title:
+            head = clean(" ".join(pend_desc[:pend_at]))
+            own = join_lead(pend_title, " ".join(pend_desc[pend_at:]))
+            tail = clean(head + " " + own) if head else own
+        else:
+            tail = clean(" ".join(pend_desc))
         if tail:
             events[-1]["desc"] = (events[-1]["desc"] + " " + tail).strip()
         events[-1]["links"] += [l for l in pend_links if l not in events[-1]["links"]]
@@ -256,9 +274,17 @@ def parse_panel(panel, fallback_title):
         bt = events[0]["_bold_title"]
         events[0]["title"] = fallback_title
         if bt and bt not in events[0]["desc"]:
-            events[0]["desc"] = join_lead(bt, events[0]["desc"])
+            # it belongs against the text that followed it on the page, not at the
+            # front: hoisting it left "(+ $1.50 processing fee)" attached to the
+            # headliner's name instead of to the ticket price.
+            own, d = events[0].get("_bold_tail") or "", events[0]["desc"]
+            if own and own in d:
+                events[0]["desc"] = d.replace(own, join_lead(bt, own), 1)
+            else:
+                events[0]["desc"] = join_lead(d, bt) if d else bt
     for e in events:
         e.pop("_bold_title", None)
+        e.pop("_bold_tail", None)
 
     # merge sub-events split across paragraphs (Where in one <p>, When in the next)
     merged = []

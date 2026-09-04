@@ -189,9 +189,33 @@ check("a suffixed program name folds into the bare one",
       str(sorted({e['program'] for e in rel})))
 
 fm2 = by_title('French Montana')
-check("policy headings survive and stay in source order",
-      bool(fm2) and 'Item Policy' in fm2[0]['desc']
-      and fm2[0]['desc'].find('CONCERT POLICIES') < fm2[0]['desc'].find('backpack'))
+# This test used to assert only that CONCERT POLICIES came before the word
+# "backpack", which both hold when every heading is hoisted to the front in
+# reverse order - which is exactly what the parser was doing. It now pins the
+# whole chain, in the order Laurier publishes it.
+POLICY_ORDER = ['CONCERT POLICIES', 'Venue Entrance', 'Transportation', 'Weather Policy',
+                'Food and Beverage', 'Smoking', 'Bag & Item Policy']
+found = [fm2[0]['desc'].find(h) for h in POLICY_ORDER] if fm2 else []
+check("every policy heading survives and stays in source order",
+      bool(fm2) and all(i >= 0 for i in found) and found == sorted(found),
+      str(list(zip(POLICY_ORDER, found))))
+
+# Each heading must sit against the rules it introduces, not merely before them.
+check("a policy heading is followed by its own rule, not another heading",
+      bool(fm2) and 'no re-entry' in fm2[0]['desc'][fm2[0]['desc'].find('Venue Entrance'):
+                                                    fm2[0]['desc'].find('Transportation')])
+
+check("a bold lead-in stays with the text it introduces",
+      bool(fm2) and 'Tickets are only $30!!! (+ $1.50 processing fee)' in fm2[0]['desc'],
+      "the price and its fee were separated")
+
+# join_lead punctuates a bold lead-in against the text after it, and used to do
+# so even when the lead-in already ended in a stop. Laurier's own prose contains
+# a stray ".." (the Science welcome), so a double full stop is not by itself a
+# defect; only the ones this parser can create are tested.
+check("a bold lead-in ending in a stop is not given a second one",
+      not any('!.' in e['desc'] or '?.' in e['desc'] for e in E),
+      str([e['title'] for e in E if '!.' in e['desc'] or '?.' in e['desc']][:3]))
 
 check("football keeps its ENTRANCE DETAILS heading",
       sum(1 for e in E if 'ENTRANCE DETAILS' in e['desc']) == 2)

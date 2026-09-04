@@ -683,7 +683,7 @@ function entryHtml(e, full) {
      without this the student who opens day two sees one isolated afternoon and
      no sign that the welcome started yesterday and continues tomorrow. */
   row("More days", e.ro ? "Laurier publishes this welcome as one event running "
-      + esc(e.ro) + ". Each of those days is on this board on its own."  : "");
+      + esc(e.ro).replace(/\.$/, "") + ". Each of those days is on this board on its own."  : "");
   row("Audience", esc(audienceLine(e)));
   row("Cost", esc(e.c));
   row("Stream", (e.tg || []).length ? esc((e.tg || []).join(", ")) : "");
@@ -1190,7 +1190,7 @@ function downloadIcs() {
 /* ---- data notes --------------------------------------------------------- */
 function buildNotes() {
   var notes = [];
-  var undated = EV.filter(function (e) { return !e.d; });
+  var undated = onePerEvent(EV.filter(function (e) { return !e.d; }));
   if (undated.length) {
     var byTerm = {};
     undated.forEach(function (e) { byTerm[e.tm] = (byTerm[e.tm] || 0) + 1; });
@@ -1199,7 +1199,7 @@ function buildNotes() {
       Object.keys(byTerm).map(function (t) { return byTerm[t] + " in " + t; }).join(", ") +
       "). Yours, if any, are gathered at the end under “no date published”."]);
   }
-  var spring = EV.filter(function (e) { return e.tm === "Spring 2026" && e.d && e.d.slice(5, 7) === "01"; });
+  var spring = onePerEvent(EV.filter(function (e) { return e.tm === "Spring 2026" && e.d && e.d.slice(5, 7) === "01"; }));
   if (spring.length) {
     notes.push(["Spring graduate schedule shows January dates",
       "The page titled “Laurier Spring Orientation: Graduate Schedule” lists its sessions on Jan. 5, 7 and 9, 2026. " +
@@ -1213,7 +1213,7 @@ function buildNotes() {
       noTime + " events have no usable time and " + noVenue + " no usable venue. This counts " +
       "Laurier's own “TBD” placeholders, not only the ones it leaves empty."]);
   }
-  var winter = EV.filter(function (e) { return e.tm === "Winter 2027"; });
+  var winter = onePerEvent(EV.filter(function (e) { return e.tm === "Winter 2027"; }));
   if (winter.length && winter.every(function (e) { return !e.d; })) {
     var wVenue = winter.filter(function (e) { return (e.f || []).indexOf("no-venue") === -1; }).length;
     var wTime = winter.filter(function (e) { return (e.f || []).indexOf("no-time") === -1; }).length;
@@ -1224,7 +1224,7 @@ function buildNotes() {
                 (winter.length - wVenue) + " are TBD. " : "None gives a venue. ") +
       (wTime ? wTime + " give a time." : "None gives a time.")]);
   }
-  var prog = EV.filter(function (e) { return e.pg; }).length;
+  var prog = onePerEvent(EV.filter(function (e) { return e.pg; })).length;
   if (prog) {
     notes.push(["Programme and faculty welcomes carry no audience on Laurier's page",
       prog + " events are specific to one programme or faculty, but Laurier states no audience " +

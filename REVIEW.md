@@ -195,3 +195,57 @@ backspace (0x08). It is invisible in every editor and the regex simply stops mat
 Sources tracked: 13 read, 2 watched, 15 in total. The built pages state these counts from
 `check_drift.py`'s own lists rather than from a literal, so they cannot disagree with it.
 
+## Ninth audit: what it found in the rest of the board
+
+The audit confirmed both changes above — the split is right in both directions (all 492
+published `when` strings are verbatim substrings of their own source page, no listing's
+date differs from what Laurier publishes, and a sweep of all 396 panels for other
+multi-date strings found none the regex missed), and it agreed the ASPIRE skills page is
+professionalization rather than orientation. It found three defects elsewhere.
+
+| # | Finding | Status |
+|---|---|---|
+| 1 | On the concert card, all seven safety and entry headings were hoisted to the front in **reverse order**, each detached from the rules it introduces. On the one ticketed event, a student could not tell which paragraph was the bag policy and which the re-entry policy | **fixed** — a heading now folds into the paragraphs that followed it, not into everything accumulated before it |
+| 2 | The same mechanism split `Tickets are only $30!!! (+ $1.50 processing fee)`, leaving the fee attached to the headliner's name | **fixed** — a bold lead-in is reinserted against its own text, and `join_lead` no longer adds a stop to a sentence already ending in one |
+| 3 | Data notes 01 and 03 counted Laurier's *listings* but called them events, promising 27 undated and 20 Winter 2027 events where the board can render at most 21 and 14 | **fixed** — the notes count through `onePerEvent`, the same fold the board draws with |
+| 4 | The "More days" row printed a double full stop, Laurier's string already ending in `p.m.` | **fixed** |
+
+Finding 1 was recorded as fixed in round 6 (#2) and was not. The round-6 fix handled one
+displaced heading correctly and reversed any run of two or more, because it prepended the
+pending heading to everything accumulated since the last flush rather than to the text
+that followed it. It survived three audits because **the test guarding it could not
+fail**: it asserted only that `CONCERT POLICIES` appeared before the word `backpack`,
+which is true of the reversed output too. The test now pins the whole chain of seven
+headings in source order, checks each heading sits against its own rule, and is verified
+to fail on the pre-fix data. That is the second time in this project a check has passed
+because it could not observe the thing it claimed to cover.
+
+Blast radius of the parser fix, measured against the previous build: 3 of 528 listings
+changed — the concert, and two copies of one event where `Students!.` became `Students!`.
+Nothing else moved.
+
+One assertion added here was wrong on its first run: it flagged any double full stop,
+and Laurier's own Science welcome ends `...as a Science student..`. Reproducing that is
+correct, so the test now covers only the double stops this parser can create.
+
+### A defect introduced while fixing finding 3, and the guard that now catches it
+
+Folding the note counts through `onePerEvent` was applied to all six application
+scripts at once. Two of them — `_app.js` and `_app_classic.js` — never define that
+function, because `orientation-classic.html` deliberately draws one card per *listing*
+rather than one per event; that is exactly what makes it the yardstick the variants are
+measured against. Both scripts died at load, and `orientation-classic.html` rendered an
+empty board.
+
+`node --check` passed, because an undefined identifier is a runtime error, not a syntax
+error. `check.py` already had the check that catches this — `refcheck()`, which resolves
+every call a script makes — but it ran only for the four variants, which have a matching
+stylesheet and body. The two scripts that broke had neither, so nothing checked them.
+`check.py` now resolves every call in every `_app*.js` before it does anything else, and
+that guard was verified by reintroducing the bug: `node --check` still passed, and the
+new check reported `onePerEvent`.
+
+The notes in `_app.js` and `_app_classic.js` keep the listing counts, which are the true
+ones for a page that draws listings. This is the third time in this project one rule has
+been applied in two places that were not the same place.
+
