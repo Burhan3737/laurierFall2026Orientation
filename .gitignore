@@ -1,5 +1,13 @@
 # scraped copies of Laurier's pages (regenerate by re-running the fetch)
 _src/
+# scratch builds the negative self-tests make and delete again. They are named
+# here because a run interrupted mid-test leaves them behind, and they were staged
+# for commit once already.
+_app_broken*.js
+_clashprobe-*.html
+orientation-broken*.html
+_probe-*.html
+
 # throwaway verification harnesses and screenshots
 _check.js
 _harness.js

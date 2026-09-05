@@ -96,8 +96,9 @@ LEVEL_LB = {"undergraduate":"Undergraduate","graduate":"Graduate","bachelor-of-e
 # Virtual is a delivery mode, not a campus: online events show under every campus.
 CAMPUSES = ["Waterloo", "Brantford", "Milton"]
 TERMS    = sorted({e['term'] for e in EV}, key=lambda t: ("Fall" not in t, t))
-STREAMS  = ["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence",
+STREAMS  = ["International & Exchange","Indigenous","Off-campus (LOCUS)","Residence",
             "Mature & Transfer","Accessible Learning","Virtual"]
+STREAMS_JSON = json.dumps(STREAMS, ensure_ascii=False)
 
 SOURCES = sorted({(e['source_file'], e['url'].split('#')[0]) for e in EV})
 PAGE_TITLES = d['page_titles']
@@ -295,6 +296,10 @@ TAIL = f"""
 <script>
 const EV = {PAYLOAD};
 const TODAY = "{TODAY}";
+/* The streams a student can tick, written once, here, for both pages. The board
+   could read it out of META; the yardstick has no META, so a list read from META
+   killed its script outright. This is the one place either of them gets it. */
+const STREAMS = {STREAMS_JSON};
 </script>
 <script>
 {APP}

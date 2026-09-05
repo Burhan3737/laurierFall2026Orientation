@@ -60,9 +60,15 @@ ungated = [e['title'] for e in E
            if re.search(r'Students Only', (e.get('desc') or '')[:150], re.I) and not e['tags']]
 check("'... Students Only' restrictions are gated", not ungated, str(ungated[:3]))
 
+# Laurier publishes one schedule for both audiences - "International and Exchange
+# Students Schedule" - and states no event for one without the other, so the board
+# carries a single stream. Two ticks made Exchange a strict subset of International
+# and ticking it dropped seven events from the exchange students' own page.
 ex = [e for e in E if e.get('anchor') == 'exchange-waterloo']
-check("Exchange Student Orientation is tagged Exchange",
-      bool(ex) and all('Exchange' in e['tags'] for e in ex))
+check("Exchange Student Orientation is gated to international and exchange students",
+      bool(ex) and all('International & Exchange' in e['tags'] for e in ex))
+check("the two audiences are one stream, not two",
+      not [t for e in E for t in (e.get('tags') or []) if t in ('International', 'Exchange')])
 
 # these must NOT be gated: the keyword is in the programme name / an exhibitor list
 for t, tag in [('International Public Policy', 'International'),

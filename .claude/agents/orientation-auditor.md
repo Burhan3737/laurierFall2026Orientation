@@ -161,6 +161,110 @@ the stylesheet then cut mid-word because `text-overflow` does not apply to a fle
 and a title the renderer drew outside its own bar. Check what is actually painted, at
 1400px and at 420px.
 
+## One rule, written down twice, is this project's recurring defect
+
+More findings here have come from a rule living in two places than from anything else.
+When you meet a rule, ask where else it is written, and check that copy too.
+
+Known copies, and what happened when they drifted:
+
+- **The stream list.** `build.py` defines it, and `_app_main.js` and `_app.js` each kept
+  their own. Collapsing International and Exchange into one stream updated four files and
+  missed the two scripts, so `gatesOf()` recognised none of those events as gated: thirty
+  events restricted to international and exchange students were shown to everybody and
+  the tick that controls them vanished from the chooser. It is now emitted once by
+  `build.py` as `const STREAMS` and read by both scripts.
+- **What the two pages are given.** `orientation.html` has `META`; the yardstick has only
+  `EV`, `TODAY` and `STREAMS`, because it is built with no body template. A fix that read
+  `META.streams` worked on the board and threw on the yardstick, which then rendered one
+  entry instead of eighty-seven — reported by parity as forty missing links, which reads
+  like lost data and is a dead page. Anything a script reads must exist on both.
+- **The eligibility core**, compared byte for byte between the two scripts, including its
+  comments.
+- **The models the gates keep.** `parity.py` and `plus_check.py` each hold their own
+  Python statement of eligibility and of what should print. A change to the board that
+  they do not also make means they are checking a board that does not ship.
+
+And the subtler one: **a fixture can rest on the bug you are fixing**. `plus_check`'s
+"online venue" fixture selects the first event whose venue starts with Zoom. Every
+genuinely online event is gated behind the online tick, so with that tick off there is no
+such event — it could only ever be satisfied by an event mis-filed as a room booking, and
+it was, until the venue started deciding what counts as online. When a fixture starts
+failing after a fix, ask whether it was only ever passing because of the defect.
+
+## Read the event's own facts, not the heading it sits under
+
+Three defects of one shape have been fixed. Each was a rule deciding something about an
+event from the prose around it rather than from what Laurier published about the event
+itself. Look for more of them; that is a standing instruction, not a one-off.
+
+**Virtual is decided by the venue.** It used to come only from the section heading, so
+CSEDI 101 and the MSW Indigenous Field of Study orientation — both published with
+`Where: Zoom` under a Waterloo heading — were drawn as Waterloo room bookings and never
+appeared when a student ticked the online stream, while identical Zoom sessions filed on
+the virtual page did. `ONLINE_VENUE` in `parse.py` now matches the start of the venue. An
+event whose published venue is Zoom, Online, Teams or the Discord server and which is not
+flagged virtual is a finding. A description mentioning "online tools" is not a venue and
+must not flag anything.
+
+**International and Exchange are one stream.** Laurier's schedule for them is titled
+"International and Exchange Students Schedule" and says "International and Exchange"
+eighteen times; no event it publishes names one audience without the other. As two ticks,
+Exchange was a strict subset — 0 listings Exchange-only, 7 International-only — so ticking
+Exchange silently dropped seven events from the exchange students' own schedule page,
+including the Welcome Breakfast and Meet and Greet Your International Peer Leaders. The
+board carries one stream, `International & Exchange`. Two ticks that always select the
+same set, or a tick that hides events published for the people ticking it, are both
+findings.
+
+**A stream page serves everyone its title names.** `parse.py`'s META assigns one stream
+per source page. Check each page's own `<h1>` against the stream assigned to it: a title
+naming an audience the stream does not is the bug above, waiting to happen again on
+another page.
+
+Already swept and clean, so do not re-report without new evidence: no event's venue names
+a campus it is not filed under; no event's stated audience names a level it is not filed
+under; drop-in status is decided from the published hours rather than from the word
+"drop-in" in the prose.
+
+## How a registration is decided, and why it is not the label alone
+
+**To register** lists the events a student still has to book. Whether a link counts is
+decided by `isReg()` in `_app_main.js`, and it asks two questions, not one:
+
+- does the **label** match `regist|rsvp|sign up|ticket|book now|purchase`, or
+- does the **address** match a booking host or path — eventbrite, qualtrics, forms.gle,
+  Google Forms, bookings.cloud, universitytickets, calendly, ticketleap, regfox, or a
+  path containing `/register`, `/rsvp`, `/signup`, `/book/`.
+
+It used to ask the label only. Laurier labels the SIN clinic's Microsoft Bookings form
+"Book Your Appointment!", which matches nothing in that list, so **both SIN clinics were
+absent from To register entirely** — for international students, on the one thing they
+must book in person. Neither test subsumes the other: Laurier's Zoom registrations are
+recognisable only from the label (`zoom.us/meeting/register` is not a booking host we
+list, though the path now catches it), and "Book Your Appointment!" only from the address.
+
+**Page banners are deliberately not per-event registrations.** Laurier prints one
+"Register Now!" at the top of each schedule page and it is copied onto every event on that
+page — 189 of them. Those live in `page_links` and are excluded from an event's own
+registrations and from its detail card. They are stated once, at the top of To register,
+labelled with the schedule they came from. An event card showing "Register Now!
+(undergraduate)" and "Register Now! (graduate)" side by side is a regression, and one of
+them points at the wrong level's form.
+
+What to check, and what has already been swept:
+
+- Every link label on the board (76 distinct) was classified both ways. One label-only
+  miss existed ("Book Your Appointment!") and no false positives. Re-run that sweep: a new
+  Laurier label or a new form host is exactly how this breaks again.
+- `plus_check.py` keeps its own copy of the rule. If it and `_app_main.js` disagree, the
+  gate is checking a board that does not ship.
+- Events whose prose says register or book but which carry no booking link are a
+  judgement call, not automatically a defect: Academic Skills workshops, one-on-one
+  learning appointments and peer coaching all point at the Student Success portal, which
+  is an ongoing service rather than a place in an orientation event. Report them if the
+  balance looks wrong; do not assume they belong.
+
 **Scraping requirement.** Most event detail is inside **collapsed accordion panels**
 (`button.accordion-trigger` paired with `div.accordion-panel`, which carries the `hidden`
 attribute). Venue, host, cost, audience and registration links live almost entirely in

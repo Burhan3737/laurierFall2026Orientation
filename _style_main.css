@@ -851,10 +851,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 }
 /* Said once above the whole plan, because a reader who has just pressed
    Calendar is entitled to know the cards did not go away. */
-.pcalnote{
-  margin-top:14px;font-size:12.5px;color:var(--meta);line-height:1.5;max-width:76ch;
-  border-left:3px solid var(--line-h);padding-left:11px;
-}
 .plegend{padding-left:0;margin:14px 0 0}
 .plancal{margin-top:2px}
 .pcalday{margin-top:20px}

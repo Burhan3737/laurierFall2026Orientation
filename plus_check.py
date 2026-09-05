@@ -49,7 +49,12 @@ from _chrome import chrome_flags
 HERE = os.path.abspath(os.path.dirname(__file__))
 CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 PAGE = os.path.join(HERE, "orientation.html")
-BOARD = "level=undergraduate&campus=Waterloo&term=Fall%202026"
+# The online tick is on. One of the fixtures below is an event held on Zoom, and
+# every genuinely online event is gated behind this tick — so with it off there
+# is no online event to choose, and the fixture could only ever be satisfied by
+# an event mis-filed as a room booking. It was, until the venue started deciding
+# what counts as online.
+BOARD = "level=undergraduate&campus=Waterloo&term=Fall%202026&streams=Virtual"
 LSPLAN = "wlu-orientation.plan.v1"
 LSREG = "wlu-orientation.registered.v1"
 
@@ -60,6 +65,13 @@ SCRIPT = re.compile(r"<script[\s>].*?</script>", re.S | re.I)
 # "Daily - ", and a gate that strips differently from the page it is checking proves
 # nothing. dupkey.shown_title() runs the page's own stripDay(), so there is one of it.
 REGRE = re.compile(r"regist|rsvp|sign ?up|ticket|book now|purchase", re.I)
+# The board asks the address as well as the label, because a label is Laurier's
+# prose: "Book Your Appointment!" is a Microsoft Bookings form and was read as an
+# ordinary reference, so neither SIN clinic reached To register. This model asks
+# the same question, or it is checking a different board.
+REGHOST = re.compile(r"eventbrite|qualtrics|forms[.]gle|docs[.]google[.]com/forms"
+                     r"|bookings[.]cloud|universitytickets|calendly|ticketleap"
+                     r"|regfox|/register|/rsvp|/signup|/book/", re.I)
 
 FAILURES = []
 
@@ -94,7 +106,7 @@ def cite_urls(e):
     return {o["url"] for o in copies_of(e)}
 
 
-GATES = ["International", "Exchange", "Indigenous", "Off-campus (LOCUS)", "Residence",
+GATES = ["International & Exchange", "Indigenous", "Off-campus (LOCUS)", "Residence",
          "Mature & Transfer", "Accessible Learning", "Virtual"]
 
 
@@ -111,16 +123,19 @@ def eligible_here(e):
         return False
     if e.get("program"):
         return False
-    return not [t for t in (e.get("tags") or []) if t in GATES]
+    return not [t for t in (e.get("tags") or []) if t in GATES and t != "Virtual"]
 
 
 def own_reg_links(e):
     seen, out = set(), []
     for l in (e.get("links") or []) + (e.get("section_links") or []):
-        if REGRE.search(l.get("text") or "") and "//cms03.wlu.ca" not in l["href"] \
-           and l["href"] not in seen:
-            seen.add(l["href"])
-            out.append(l)
+        label, href = l.get("text") or "", l.get("href") or ""
+        if not (REGRE.search(label) or REGHOST.search(href)):
+            continue
+        if "//cms03.wlu.ca" in href or href in seen:
+            continue
+        seen.add(href)
+        out.append(l)
     return out
 
 

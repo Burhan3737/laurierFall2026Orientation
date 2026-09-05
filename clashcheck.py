@@ -112,9 +112,15 @@ setTimeout(function () {
     };
   }
 
-  /* legendKeys() names clash, open and off whenever they are present, and names
-     the ordinary state only alongside something else -- on its own "an ordinary
-     event on your board" tells nobody anything. */
+  /* legendKeys() names every state the board draws and no state it does not.
+     Those two directions are the invariant and are checked below.
+
+     It also used to refuse to name the ordinary state on its own, on the
+     grounds that "an ordinary event on your board" alone says too little. The
+     cost was a day holding one event and no collision having no key at all, so
+     the key came and went as a reader stepped across the run with no rule they
+     could see. That was a rule about taste. It is gone; the rules about truth
+     are not. */
   function keyFaults(where, key, st) {
     var out = [];
     ["clash", "open", "off"].forEach(function (k) {
@@ -124,7 +130,6 @@ setTimeout(function () {
     var named = key.clash || key.open || key.off;
     if (key.plain && !st.plain) out.push(where + " key names an ordinary event; every event drawn is marked");
     if (named && st.plain && !key.plain) out.push(where + " board draws an unmarked event; the key does not name it");
-    if (!named && key.plain) out.push(where + " key names the ordinary state alone");
 
     return out;
   }
@@ -190,7 +195,7 @@ setTimeout(function () {
 
 def selections():
     ev = json.load(open(os.path.join(HERE, "events.json"), encoding="utf-8"))["events"]
-    gates = ["International", "Exchange", "Indigenous", "Off-campus (LOCUS)", "Residence",
+    gates = ["International & Exchange", "Indigenous", "Off-campus (LOCUS)", "Residence",
              "Mature & Transfer", "Accessible Learning", "Virtual"]
 
     def pool(lv, cp, tm):

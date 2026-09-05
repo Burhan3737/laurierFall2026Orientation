@@ -25,7 +25,7 @@ META = {
  "graduate__fall-brantford.html":       ("graduate", "Brantford", "Fall 2026", None),
  "graduate__fall-virtual.html":         ("graduate", "Virtual",   "Fall 2026", None),
  "bachelor-of-education.html":          ("bachelor-of-education", "split", "Fall 2026", None),
- "international.html":                  ("all", "split", "Fall 2026", "International"),
+ "international.html":                  ("all", "split", "Fall 2026", "International & Exchange"),
  "indigenous.html":                     ("all", "split", "Fall 2026", "Indigenous"),
  "locus.html":                          ("undergraduate", "split", "Fall 2026", "Off-campus (LOCUS)"),
 }
@@ -619,8 +619,13 @@ def parse_page(fname):
 # Never against free-text descriptions: "Accessible Learning" appears in Resource Fair
 # exhibitor lists, and "Indigenous"/"International" appear inside program NAMES.
 TAG_RULES = [
- ("International",        r'international|exchange'),
- ("Exchange",             r'\bexchange\b'),
+ # Laurier does not separate these. Its schedule for them is titled "International
+ # and Exchange Students Schedule" and says "International and Exchange" eighteen
+ # times; every audience it states naming one names the other. Two ticks made one a
+ # strict subset of the other - 0 listings were Exchange-only and 7 were
+ # International-only - so ticking Exchange silently dropped seven events from the
+ # exchange students' own schedule page. One stream, as Laurier publishes it.
+ ("International & Exchange", r'international|exchange'),
  ("Indigenous",           r'indigenous|seeds'),
  ("Off-campus (LOCUS)",   r'off-?campus|locus'),
  ("Residence",            r'\bresidence\b'),
@@ -655,7 +660,20 @@ def program_of(e):
         return clean(m.group(1))
     return None
 
+# An event held on Zoom is an online event whichever heading Laurier filed it under.
+# Virtual status came only from the section heading, so CSEDI 101 and the MSW
+# Indigenous Field of Study orientation - both published with Where: Zoom, on a
+# Waterloo heading - were drawn as Waterloo room bookings and never appeared when a
+# student ticked the online stream, while identical Zoom sessions on the virtual
+# page did. The venue Laurier published is the fact; the heading is where it filed
+# it. Matched at the start of the venue only: 'GHG Discord Server' is online too and
+# already handled, while a description mentioning 'online tools' is not a venue.
+ONLINE_VENUE = re.compile(r'^\s*(zoom|online|virtual|ms ?teams|microsoft teams)\b', re.I)
+
+
 def enrich(e):
+    if not e.get("virtual") and ONLINE_VENUE.search(e.get("where") or ""):
+        e["virtual"] = True
     hay = e.get("audience") or ""
     m = ONLY_PHRASE.search(e.get("title", "") + " " + (e.get("section") or "")
                            + " " + e.get("desc", "")[:250])

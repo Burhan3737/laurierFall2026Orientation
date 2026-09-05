@@ -90,7 +90,7 @@ CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 # one reusable profile per run, and a sweep of what Chrome leaves behind
 from _chrome import chrome_flags
 
-GATES = ["International", "Exchange", "Indigenous", "Off-campus (LOCUS)", "Residence",
+GATES = ["International & Exchange", "Indigenous", "Off-campus (LOCUS)", "Residence",
          "Mature & Transfer", "Accessible Learning", "Virtual"]
 
 # ---------------------------------------------------------------- chrome ----

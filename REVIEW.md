@@ -577,3 +577,69 @@ Also: My plan moved to the end of the tabs, and the printed identity line no lon
 “program welcomes hidden” — true, but it is the state every sheet starts in, so it printed
 on all of them and described a setting rather than a week.
 
+## Reading the event, not the heading above it
+
+Three defects of one shape, reported from the board and then swept for.
+
+**Registration was decided by the label alone.** Laurier calls the SIN clinic's Microsoft
+Bookings form "Book Your Appointment!", which matched nothing in the word list, so both
+clinics were absent from To register entirely - for international students, on the one
+thing they must book in person. The rule asks the address as well now. All 76 distinct
+link labels were classified both ways: one label-only miss, no false positives, and the
+Zoom registrations are recognisable only from the label, so neither test subsumes the
+other. Two listings gained, none lost.
+
+**The page banners were on every card.** Laurier prints one "Register Now!" at the top of
+each schedule and copies it onto all 189 events there. Every detail card ended with two of
+them, and one pointed at the wrong level's form. They are the whole orientation's
+registration and To register already states them once, named by the schedule they came
+from; the card now shows only links belonging to the event.
+
+**Virtual came from the section heading and never from the venue.** CSEDI 101 and the MSW
+Indigenous Field of Study orientation both publish Where: Zoom under a Waterloo heading,
+so they were drawn as room bookings while identical Zoom sessions filed on the virtual
+page were gated correctly. Same venue string, opposite treatment, decided by which page
+Laurier happened to use.
+
+**International and Exchange are one stream.** Laurier's schedule for them is titled
+"International and Exchange Students Schedule" and never names one audience without the
+other. As two ticks, Exchange was a strict subset - 0 listings Exchange-only, 7
+International-only - so ticking Exchange dropped seven events from the exchange students
+own page, including the Welcome Breakfast.
+
+Swept and clean: no event venue names a campus it is not filed under; no stated audience
+names a level it is not filed under; drop-in is decided from the published hours. Every
+source page title now matches the stream assigned to it.
+
+### And then the same defect three more times, one layer down
+
+Collapsing the streams broke the board, and the sequence is worth keeping.
+
+`_app_main.js` and `_app.js` each held their own copy of the stream list. Four files were
+updated and those two were not, so `gatesOf()` recognised none of the newly named events:
+thirty events restricted to international and exchange students were shown to everybody,
+with no tick to control them. The tick going missing is what was reported; the lost
+restriction is what mattered. parity caught it - it was still running when the report came
+in.
+
+The first fix read `META.streams`. The board has META; the yardstick has only EV, TODAY
+and whatever else build.py hands it, because it is built with no body template. The
+yardstick script threw on load and rendered one entry instead of eighty-seven, which
+parity reported as forty missing links - which reads like lost data and was a dead page.
+I had checked the load order on the board and not on the yardstick, which is the same
+mistake as the one being fixed.
+
+The list is now emitted once, by build.py, as a const both pages are given. The build
+refused to write the yardstick while STREAMS was undeclared to check.py refcheck, which is
+that gate doing exactly its job.
+
+Last, a fixture was resting on the bug. plus_check picks "the first event whose venue
+starts with Zoom" as its online-venue case. Every genuinely online event is gated behind
+the online tick, so with that tick off no such event exists - it could only ever be
+satisfied by an event mis-filed as a room booking, and it was. Its board has the tick on
+now. When a fixture starts failing after a fix, the question is whether it was only ever
+passing because of the defect.
+
+The auditor brief gained a standing section naming this: one rule written down twice is
+this project's recurring defect, with the known copies listed.
+

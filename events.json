@@ -1997,8 +1997,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html#sept-8-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -2116,7 +2115,7 @@
    "campuses": [
     "Waterloo"
    ],
-   "virtual": false,
+   "virtual": true,
    "term": "Fall 2026",
    "stream": null,
    "source_file": "bachelor-of-education.html",
@@ -2131,7 +2130,9 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html#sept-8-waterloo",
-   "tags": [],
+   "tags": [
+    "Virtual"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -2780,8 +2781,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html#sept-9-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -4230,7 +4230,7 @@
    "page_links": [],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-brantford.html#sept-8-12",
    "tags": [
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -5539,8 +5539,7 @@
    "page_links": [],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-waterloo.html#sept-8-12",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -7185,7 +7184,7 @@
    "campuses": [
     "Waterloo"
    ],
-   "virtual": false,
+   "virtual": true,
    "term": "Fall 2026",
    "stream": null,
    "source_file": "graduate__fall-waterloo.html",
@@ -7193,7 +7192,9 @@
    "section_links": [],
    "page_links": [],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-waterloo.html#program-welcomes",
-   "tags": [],
+   "tags": [
+    "Virtual"
+   ],
    "open_to_all": false,
    "program": "Master of Social Work (Indigenous Field of Study)",
    "flags": []
@@ -8180,7 +8181,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8196,7 +8197,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-7-13-brantford",
    "tags": [
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8229,7 +8230,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8245,7 +8246,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-7-13-brantford",
    "tags": [
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8274,7 +8275,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8290,7 +8291,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-7-13-brantford",
    "tags": [
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8323,7 +8324,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8339,8 +8340,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-14-20-brantford",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8373,7 +8373,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8389,8 +8389,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-14-20-brantford",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8427,7 +8426,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8443,8 +8442,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-21-27-brantford",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8473,7 +8471,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8489,8 +8487,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-28-oct-4-brantford",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": [
@@ -8517,7 +8514,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8533,8 +8530,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8558,7 +8554,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8574,8 +8570,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8599,7 +8594,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8615,8 +8610,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8640,7 +8634,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8656,8 +8650,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8681,7 +8674,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8697,8 +8690,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8722,7 +8714,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8738,8 +8730,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8763,7 +8754,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8779,8 +8770,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#exchange-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8809,7 +8799,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8825,7 +8815,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-7-13-waterloo",
    "tags": [
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8858,7 +8848,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8874,7 +8864,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-7-13-waterloo",
    "tags": [
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8903,7 +8893,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8919,7 +8909,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-7-13-waterloo",
    "tags": [
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -8956,7 +8946,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -8972,8 +8962,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-14-20-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -9006,7 +8995,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -9022,8 +9011,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-14-20-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -9056,7 +9044,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -9072,8 +9060,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-14-20-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -9102,7 +9089,7 @@
    ],
    "virtual": false,
    "term": "Fall 2026",
-   "stream": "International",
+   "stream": "International & Exchange",
    "source_file": "international.html",
    "section_info": {},
    "section_links": [],
@@ -9118,8 +9105,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/international.html#sept-28-oct-4-waterloo",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": [
@@ -11735,8 +11721,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-8",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -12407,7 +12392,7 @@
    "campuses": [
     "Brantford"
    ],
-   "virtual": false,
+   "virtual": true,
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-brantford.html",
@@ -12426,7 +12411,9 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-8",
-   "tags": [],
+   "tags": [
+    "Virtual"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -12941,8 +12928,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-brantford.html#sept-9",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -13862,7 +13848,7 @@
    "campuses": [
     "Milton"
    ],
-   "virtual": false,
+   "virtual": true,
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-milton.html",
@@ -13875,7 +13861,9 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-milton.html#sept-8",
-   "tags": [],
+   "tags": [
+    "Virtual"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -17638,8 +17626,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-8",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -17765,7 +17752,7 @@
    "campuses": [
     "Waterloo"
    ],
-   "virtual": false,
+   "virtual": true,
    "term": "Fall 2026",
    "stream": null,
    "source_file": "undergraduate__fall-waterloo.html",
@@ -17784,7 +17771,9 @@
     }
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-8",
-   "tags": [],
+   "tags": [
+    "Virtual"
+   ],
    "open_to_all": false,
    "flags": []
   },
@@ -18311,8 +18300,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-9",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []
@@ -18834,8 +18822,7 @@
    ],
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/undergraduate/fall-waterloo.html#sept-9",
    "tags": [
-    "Exchange",
-    "International"
+    "International & Exchange"
    ],
    "open_to_all": false,
    "flags": []

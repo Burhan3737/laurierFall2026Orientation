@@ -7,8 +7,13 @@
    ========================================================================= */
 
 /* ---- ELIGIBILITY CORE — copied verbatim from _app.js. Must not diverge. --- */
-var GATES = ["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence",
-             "Mature & Transfer","Accessible Learning","Virtual"];
+/* The streams a student can tick. Written once, in build.py, and handed to both
+   pages as STREAMS. It used to be a second copy of that list, written out here as
+   well: when the two audiences Laurier publishes together were collapsed into one
+   stream the copy was not updated, gatesOf() recognised none of those events as
+   gated, and thirty events restricted to international and exchange students were
+   shown to everybody with the tick that controls them missing from the chooser. */
+var GATES = STREAMS.slice();
 var NO_PROGRAM = "__none__";
 var sel = null;
 
@@ -365,7 +370,22 @@ function $(id) { return document.getElementById(id); }
    registration list, the calendar file and the printed schedule. It began as a
    local inside openSheet; four features asking the same question is exactly how
    two answers to one rule get written. */
+/* Whether a link is how you get a place at an event.
+
+   The label was the whole test, and a label is Laurier's prose. "Book Your
+   Appointment!" on both SIN clinics is a Microsoft Bookings form and was read as
+   an ordinary reference, so neither clinic appeared under To register at all —
+   for international students, on the one thing they must book in person.
+
+   Where a link goes is a fact about the link rather than about the words above
+   it, so both are asked. Neither test subsumes the other: Laurier's Zoom
+   registrations are only recognisable from the label, and "Book Your
+   Appointment!" only from the address. */
 var REGRE = /regist|rsvp|sign ?up|ticket|book now|purchase/i;
+var REGHOST = /eventbrite|qualtrics|forms\.gle|docs\.google\.com\/forms|bookings\.cloud|universitytickets|calendly|ticketleap|regfox|\/register|\/rsvp|\/signup|\/book\//i;
+function isReg(l) {
+  return REGRE.test(l && l.text || "") || REGHOST.test(l && l.href || "");
+}
 
 /* One link assembly, so the sheet, the .ics, the printout and the registration
    list read the same fields in the same order. It spans every listing Laurier
@@ -386,7 +406,7 @@ function regLinksOf(e) {
   var seen = {}, out = [];
   sourcesOf(e).forEach(function (o) {
     (o.l || []).concat(o.sl || []).forEach(function (l) {
-      if (!REGRE.test(l.text || "") || isDead(l.href) || seen[l.href]) return;
+      if (!isReg(l) || isDead(l.href) || seen[l.href]) return;
       seen[l.href] = 1; out.push({ href: l.href, text: String(l.text || ""), from: o });
     });
   });
@@ -422,7 +442,7 @@ function regLinksOf(e) {
 function pageRegLinksOf(e) {
   var seen = {}, out = [];
   (e.pl || []).forEach(function (l) {
-    if (!REGRE.test(l.text || "") || isDead(l.href) || seen[l.href]) return;
+    if (!isReg(l) || isDead(l.href) || seen[l.href]) return;
     seen[l.href] = 1; out.push(l);
   });
   return out;
@@ -1911,11 +1931,12 @@ function legendKeys(st) {
   var k = "";
   if (st.clash) k += '<span class="lg lg-clash">runs at the same time as something else</span>';
   if (st.off) k += '<span class="lg lg-off">not open to you</span>';
-  /* On its own, "an ordinary event" tells nobody anything, so it earns its place
-     only beside another key. The row it sits in does not disappear with it: the
-     list/clock toggle is drawn whenever there is a clock, which is what actually
-     kept vanishing on a quiet day. */
-  if (k && st.plain)
+  /* The ordinary key stands on its own. It was suppressed for saying too little
+     beside nothing, which meant a day holding one event and no collision had no
+     key at all — and a reader stepping across the run watched the key appear and
+     vanish with no rule they could see. It still names only a state the board
+     actually draws, which is the part that has to stay true. */
+  if (st.plain)
     k = '<span class="lg lg-plain">an ordinary event on your board</span>' + k;
   return k;
 }
@@ -2109,15 +2130,8 @@ function planCalHtml(picks) {
     return h + "</section>";
   }).join("");
 
-  /* The list carries a Details button, a calendar file and a Remove beside
-     every event; the clock has room for none of them, and a reader who cannot
-     see them may reasonably think this form has taken them away. It has not:
-     every block opens the same card, which holds all three. */
   var keys = legendKeys(clockStates(all));
-  return '<p class="pcalnote">Every block, ribbon and chip below opens its own ' +
-    "card \u2014 that is where the venue, the links, the calendar file and the tick " +
-    "that removes it from your plan live. Nothing here is only readable.</p>" +
-    (keys ? '<div class="legend plegend">' + keys + "</div>" : "") +
+  return (keys ? '<div class="legend plegend">' + keys + "</div>" : "") +
     '<div class="planlist plancal">' + body + "</div>";
 }
 
@@ -2181,14 +2195,14 @@ function planHtml() {
         "</button>" +
       '<button class="abtn ghost" id="clearplan">Empty the plan</button>' +
     "</div>" +
-    '<p class="acct">The calendar file will carry <b>' + t.timed + '</b> timed entr' +
-      (t.timed === 1 ? "y" : "ies") +
-      (t.allday ? " and <b>" + t.allday + "</b> all-day entr" + (t.allday === 1 ? "y" : "ies") +
-        " where Laurier publishes a day but no usable time" : "") +
-      (t.none ? ". <b class=\"warnn\">" + t.none + "</b> cannot go in at all — Laurier publishes " +
-        "no date for " + (t.none === 1 ? "it" : "them") + ", and a calendar entry without a date " +
-        "is not a thing. " + (t.none === 1 ? "It is" : "They are") + " listed below, unexported." : ".") +
-    "</p></div></div>";
+    /* Counting what the calendar file will contain told a student nothing they
+       could act on. What they cannot see for themselves is that some of their
+       picks will be missing from it, so that alone is still said. */
+    (t.none ? '<p class="acct"><b class="warnn">' + t.none + "</b> of your picks cannot go " +
+      "into a calendar file — Laurier publishes no date for " +
+      (t.none === 1 ? "it" : "them") + ". " + (t.none === 1 ? "It is" : "They are") +
+      " listed below.</p>" : "") +
+    "</div></div>";
 
   h += planCal ? planCalHtml(picks) : '<div class="planlist">' + byDay(picks).map(function (g) {
     return '<section class="pday' + (g.k !== "TBA" && g.k < NOW ? " past" : "") + '">' +
@@ -2440,6 +2454,10 @@ var PR_PT_HOUR = 30;   // points per hour at full scale
 var PR_PT_GAP = 13;    // a collapsed stretch of nothing, named rather than drawn
 var PR_PT_MAX = 560;   // the tallest grid that still leaves the page room to breathe
 var PR_SLOT_MIN = 13;  // a slot may grow to this to stay readable, never past its neighbour
+var PR_NAME_MIN = 24;  // and needs this much before a name fits under the time.
+                       // A 45-minute block comes out at exactly 21pt and the name
+                       // overflowed it by a couple of points, so the border sliced
+                       // the lettering in half. Measured, not guessed at.
 
 function printGrid(items, named, of) {
   /* The same piecewise axis the screen uses: occupied stretches run to scale,
@@ -2481,7 +2499,14 @@ function printGrid(items, named, of) {
       "pt;left:" + left.toFixed(2) + "%;width:calc(" + w.toFixed(2) + '% - 2.5pt)">' +
       '<span class="prno">' + it.no + "</span>" +
       '<span class="prslott">' + esc(clock(it.s)) + "–" + esc(clock(it.e)) + "</span>" +
-      (named ? '<span class="prslotn">' + esc(title(it.ev)) + "</span>" : "") + "</div>";
+      /* A block is as tall as its event is long, and a short one has room for the
+         time or for the name but not for both. The name went in regardless and
+         the box cut it through the middle: "Group Exercise: Cycle Class" printed
+         with its lower half sliced off by the border. What gives way is the text,
+         never the drawn length — the number carries on to the list at the end,
+         where the name is written out in full. */
+      (named && hpt >= PR_NAME_MIN
+        ? '<span class="prslotn">' + esc(title(it.ev)) + "</span>" : "") + "</div>";
   }).join("") + "</div></div>";
   return h;
 }
@@ -2874,18 +2899,26 @@ function openSheet(i) {
       (e.vr ? "Online — open to all campuses" : esc((e.cp || []).join(", "))) + " &middot; " + esc(e.tm));
   Object.keys(e.si || {}).forEach(function (k) { row(k, esc(e.si[k])); });
 
-  /* Every page this event was published on, and every link any of them carries. */
+  /* Every page this event was published on, and every link any of them carries —
+     except the banner Laurier prints at the top of a schedule, which it copies
+     onto all 189 events on that page. Two of those banners both read "Register
+     Now!" and point at different levels' forms, so every card ended with a pair
+     of buttons that had nothing to do with the event and one of which was the
+     wrong level's. They are the whole orientation's registration, and To register
+     already states them once, at the top, named by the schedule they came from. */
   var src = sourcesOf(e);
-  var links = linksOf(e);
+  var banners = {};
+  src.forEach(function (o) { (o.pl || []).forEach(function (l) { banners[l.href] = 1; }); });
+  var links = linksOf(e).filter(function (l) { return !banners[l.href]; });
   /* Registration is the only one of these with a deadline attached, so it leads
      and it is the only filled button. The rest are references. */
   var linkHtml = links.length ? '<div class="links">' + links.slice().sort(function (x, y) {
-      return (REGRE.test(y.text || "") ? 1 : 0) - (REGRE.test(x.text || "") ? 1 : 0);
+      return (isReg(y) ? 1 : 0) - (isReg(x) ? 1 : 0);
     }).map(function (l) {
       if (isDead(l.href))
         return '<span class="lk dead" title="' + esc(l.href) + '">' + esc(l.text) +
                " — link broken on Laurier’s site</span>";
-      return '<a class="lk' + (REGRE.test(l.text || "") ? " primary" : "") + '" href="' +
+      return '<a class="lk' + (isReg(l) ? " primary" : "") + '" href="' +
         esc(l.href) + '" target="_blank" rel="noopener">' + esc(l.text) + " →</a>";
     }).join("") + "</div>" : "";
 

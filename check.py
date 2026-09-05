@@ -32,7 +32,7 @@ from _chrome import chrome_flags
 # Everything the browser supplies, plus the globals build.py injects, plus the
 # keywords that look like calls to a regex.
 KNOWN = set("""
-EV META TODAY console document window Math JSON Object Array String Number Boolean
+EV META TODAY STREAMS console document window Math JSON Object Array String Number Boolean
 Date RegExp Error parseInt parseFloat isNaN isFinite encodeURIComponent Blob URL
 decodeURIComponent setTimeout setInterval clearTimeout clearInterval localStorage
 sessionStorage history location navigator alert confirm FormData Promise Set Map

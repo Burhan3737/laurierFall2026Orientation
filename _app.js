@@ -3,8 +3,13 @@
    oa open-to-all override. An event is "mine" when level+campus+term line up
    AND every identity gate it sits behind is one the user claimed.
 ------------------------------------------------------------------------- */
-var GATES = ["International","Exchange","Indigenous","Off-campus (LOCUS)","Residence",
-             "Mature & Transfer","Accessible Learning","Virtual"];
+/* The streams a student can tick. Written once, in build.py, and handed to both
+   pages as STREAMS. It used to be a second copy of that list, written out here as
+   well: when the two audiences Laurier publishes together were collapsed into one
+   stream the copy was not updated, gatesOf() recognised none of those events as
+   gated, and thirty events restricted to international and exchange students were
+   shown to everybody with the tick that controls them missing from the chooser. */
+var GATES = STREAMS.slice();
 var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"];
 var DOW = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
