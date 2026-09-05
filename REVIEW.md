@@ -513,8 +513,8 @@ different captions. A real defect, and an old one. The rule read
 There is no legend inside a legend, so it matched nothing and the collision swatch never
 took its gold cap. Fixed by deleting the repeated selector.
 
-Worth noting why nothing caught it.  measures painted text against its
-background, and a swatch is a  box with no text in it.  proves
+Worth noting why nothing caught it. `contrast.py` measures painted text against its
+background, and a swatch is a `::before` box with no text in it. `clashcheck.py` proves
 the key names exactly the states the board draws, which it did — two captions for two
 states, both correct. Neither gate was wrong; a key whose two swatches are indistinguish-
 able is simply outside what either can see.
