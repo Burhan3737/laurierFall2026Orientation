@@ -474,3 +474,32 @@ narrower than 504 CSS px in headless mode whatever `--window-size` asks for, so 
 504 and the 320-503 band is exercised by nothing. The claims now say 504, and `_chrome.py`
 records the floor and what it costs, rather than leaving a true-sounding number in place.
 
+## Four things taken off the page
+
+Asked for directly, and the first three are removals.
+
+The **Clashes** tab is hidden behind a flag rather than deleted: the lens still answers on
+`&view=clash` and every gate still drives it, so it cannot rot while it is off. It was one
+tab too many on a page a student reads once, and the collisions it named are drawn on the
+clock anyway.
+
+The key names **two states**, colliding and ordinary. “Open to all Laurier students” is
+gone — the caption, the lilac reading edge, and the badge the Clashes lens was still
+printing. It told a student nothing they could act on: every event on their board is one
+they may attend, and which of them are also open to somebody else is not their question.
+`clockStates()` no longer reports the state either, or the key would name fewer states
+than the board draws, which is the thing `clashcheck.py` exists to catch.
+
+**“Before you rely on this”** is gone. It had been asked for before and I kept it. What
+went with it: the note counting undated events and the one explaining that programme
+welcomes state no audience. Both remain true of the board as behaviour — undated events
+sit under their own heading, the programme dropdown still filters — it is the prose about
+them that has been removed.
+
+And an answer rather than a change. The Niagara Falls trip **is** in To register, on
+19 September, on both Waterloo and Brantford. It disappears in exactly two situations:
+without International or Exchange ticked, because Laurier publishes it for “International
+and Exchange Students” and it is gated accordingly; and on Milton at any setting, because
+Laurier runs one bus from Waterloo and one from Brantford and publishes no Milton
+departure. Both are the board reporting Laurier faithfully.
+

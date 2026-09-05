@@ -1151,7 +1151,10 @@ function drawNav() {
        /* the plan comes before the clashes: it is the thing a student is here to
           build, and the clash list is a check on it rather than a view of its own. */
        vb("plan", "My plan", planN) +
-       vb("clash", "Clashes", clashN) +
+       /* Clashes is hidden, not removed: the lens still answers on &view=clash and
+          every gate still drives it, but it was one tab too many on a page a
+          student reads once. */
+       (SHOW_CLASH ? vb("clash", "Clashes", clashN) : "") +
        vb("reg", "To register", regN) +
        '<div class="qwrap">' +
        '<input id="qbox" class="qbox" type="search" autocomplete="off" spellcheck="false" ' +
@@ -1290,6 +1293,11 @@ function placed(items) {
    GAP_PX     ...to this, so a quiet afternoon does not push the evening off screen.
    LANE_H     the height of one bar in the whole-run view, and
    LANE_GAP   the space between two of them. */
+/* The Clashes lens is hidden, not removed. It still answers on &view=clash and
+   every gate still drives it; it was simply one tab too many on a page a student
+   reads once, and the collisions it names are already drawn on the clock. */
+var SHOW_CLASH = false;
+
 var BASE_PPM = 1.15, LINE_PX = 26, COMPACT_PX = 40, TIGHT_PX = 56;
 var GAP_MIN = 120, GAP_PX = 46;
 var LANE_H = 22, LANE_GAP = 2;
@@ -1319,7 +1327,7 @@ function split(list) {
 }
 function ribbonHtml(it) {
   var e = it.ev, a = assess(e), off = !a.ok;
-  return '<button class="rib' + (off ? " off" : (e.oa ? " open" : "")) + (isPicked(e) ? " mine" : "") + '" ' +
+  return '<button class="rib' + (off ? " off" : "") + (isPicked(e) ? " mine" : "") + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="rt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
     '<span class="rh">' + esc(title(e)) + "</span>" +
@@ -1421,7 +1429,7 @@ function blockHeight(sc, it) {
 function blockHtml(it, sc, within) {
   var e = it.ev, a = assess(e), off = !a.ok;
   var u = 100 / it.ncol, left = it.col * u, w = u * Math.min(it.span || 1, it.ncol - it.col);
-  var cls = "blk" + (off ? " off" : (e.oa ? " open" : "")) + (drawsClash(e, within) ? " clash" : "") +
+  var cls = "blk" + (off ? " off" : "") + (drawsClash(e, within) ? " clash" : "") +
             (e.d && e.d < NOW ? " past" : "") + (isPicked(e) ? " mine" : "");
   var top = sc.pos(it.s), h = blockHeight(sc, it);
   /* Three lines need about 56px. What gives way is what is written in the box,
@@ -1447,7 +1455,7 @@ function blockHtml(it, sc, within) {
 }
 function looseHtml(e) {
   var a = assess(e), off = !a.ok;
-  return '<button class="chipev' + (off ? " off" : (e.oa ? " open" : "")) + (isPicked(e) ? " mine" : "") + '" ' +
+  return '<button class="chipev' + (off ? " off" : "") + (isPicked(e) ? " mine" : "") + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="ch">' + esc(title(e)) + "</span>" +
     '<span class="cw">' + esc(off ? a.reason
@@ -1672,7 +1680,6 @@ function clashHtml(list) {
           '<span class="clname">' + esc(title(e)) + "</span>" +
           '<span class="clw">' + esc(e.w || (e.vr ? "Online" : "Venue not published")) +
             (e.h ? ' <span class="cldot">·</span> ' + esc(e.h) : "") + "</span>" +
-          (e.oa ? '<span class="clopen">open to all Laurier students</span>' : "") +
           "</button>" + pickBtn(e, "clash") + "</li>";
       }).join("") + "</ul></section>";
   }).join("") + "</div>";
@@ -1778,7 +1785,7 @@ function weekHtml(list, keys) {
         var lab = barLabel(it, e, k, wide, room, laneW, byTitle, left, btop, off);
         // a bar this narrow cannot spare 5px each side for padding and still show a letter
         var tight = wide / 100 * laneW < 46 ? " tightbar" : "";
-        return lab[1] + '<button class="wb' + tight + (off ? " off" : (e.oa ? " open" : "")) +
+        return lab[1] + '<button class="wb' + tight + (off ? " off" : "") +
           (drawsClash(e) ? " clash" : "") +
           (isPicked(e) ? " mine" : "") +
           '" style="left:' + left + "%;width:" + wide + "%;top:" + btop + "px\" " +
@@ -1832,7 +1839,7 @@ function agendaHtml(items, of, within) {
     prevEnd = prevEnd === null ? it.e : Math.max(prevEnd, it.e);
     var e = it.ev, a = assess(e), off = !a.ok;
     var clash = drawnClashes(e, within);
-    return gap + '<article class="ag' + (off ? " off" : (e.oa ? " open" : "")) +
+    return gap + '<article class="ag' + (off ? " off" : "") +
       (clash.length ? " clash" : "") +
       (isPicked(e) ? " mine" : "") + '" ' +
       (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '" tabindex="0">' +
@@ -1868,7 +1875,7 @@ function agendaHtml(items, of, within) {
    events collide is a fact about the placement rather than about the list.
 ------------------------------------------------------------------------- */
 function clockStates(entries, capped) {
-  var st = { plain: false, open: false, clash: false, off: false };
+  var st = { plain: false, clash: false, off: false };
   entries.forEach(function (p) {
     var e = p[0], clash = p[1], aside = p[2];
     if (!assess(e).ok) { st.off = true; return; }
@@ -1887,18 +1894,19 @@ function clockStates(entries, capped) {
        the key still offered "an ordinary event on your board" with a swatch
        matching nothing. They keep the marked states, which really are the same
        colour wherever they appear, and give up the unmarked one. */
-    if (aside) { if (e.oa) st.open = true; return; }
-    if (e.oa) st.open = true; else st.plain = true;
+    if (aside) return;
+    st.plain = true;
   });
   return st;
 }
+/* Two states, and the second is the absence of the first. "Open to all Laurier
+   students" was a third colour and a third caption, and it told a student nothing
+   they could act on: every event on their board is one they may attend, and which
+   ones are also open to somebody else is not their question. */
 function legendKeys(st) {
   var k = "";
   if (st.clash) k += '<span class="lg lg-clash">runs at the same time as something else</span>';
-  if (st.open) k += '<span class="lg lg-open">open to all Laurier students</span>';
   if (st.off) k += '<span class="lg lg-off">not open to you</span>';
-  /* On its own, "an ordinary event" tells nobody anything. It earns its place
-     only as the thing the other keys are not. */
   if (k && st.plain)
     k = '<span class="lg lg-plain">an ordinary event on your board</span>' + k;
   return k;
@@ -3046,41 +3054,6 @@ function readHash() {
   }
 }
 
-/* ---- what Laurier leaves unsettled --------------------------------------
-   The places where its own pages do not answer the question, kept beside the
-   sources rather than folded into the events, because a student reading a room
-   number should not have to step over them. Each is counted from the data on
-   every build, so a note cannot outlive the thing it describes. The counts run
-   through onePerEvent because they describe cards a student can see, and the
-   board draws one card per event: counting Laurier's listings instead promised
-   more of them than the board can ever draw. */
-function buildNotes() {
-  var notes = [];
-  var undated = onePerEvent(EV.filter(function (e) { return !e.d; }));
-  if (undated.length) {
-    var byTerm = {};
-    undated.forEach(function (e) { byTerm[e.tm] = (byTerm[e.tm] || 0) + 1; });
-    notes.push(["Some events are published without a date",
-      undated.length + " events carry no date on Laurier's page (" +
-      Object.keys(byTerm).map(function (t) { return byTerm[t] + " in " + t; }).join(", ") +
-      "). They cannot be put on the clock, so they are gathered at the end of the " +
-      "run under a heading reading “Undated”."]);
-  }
-  var prog = onePerEvent(EV.filter(function (e) { return e.pg; })).length;
-  if (prog) {
-    notes.push(["Program and faculty welcomes say nothing about who may come",
-      prog + " events are held for one program or faculty, but Laurier states no audience " +
-      "on them, so by default they all show. Use the “My program” dropdown to " +
-      "narrow to your own, or choose “Not listed” to hide them all — Laurier " +
-      "does not publish a welcome for every program."]);
-  }
-  if (!notes.length) return;
-  $("noteslist").innerHTML = notes.map(function (n, i) {
-    return "<li><b>" + String(i + 1).padStart(2, "0") + "</b><div><strong>" + n[0] +
-      "</strong><p>" + n[1] + "</p></div></li>";
-  }).join("");
-  $("notes").hidden = false;
-}
 
 /* ---- go ----------------------------------------------------------------- */
 EV.forEach(function (e, i) { e.__i = i; });
@@ -3127,7 +3100,6 @@ function announce() {
   SPOKEN = true;
 }
 redraw();
-buildNotes();
 $("scrim").onclick = closeSheet;
 $("skip").onclick = function () {
   var b = $("board");

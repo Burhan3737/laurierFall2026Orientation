@@ -196,7 +196,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .blk.tiny .bh{font-size:11.5px;line-height:1.15;font-stretch:88%;-webkit-line-clamp:2}
 .blk.tiny .bt{font-size:9.5px}
 .blk.tiny .bw{display:none}
-.blk.open{border-left:6px double var(--lilac)}
 .blk.open .bt{color:#6E2C86}
 .blk.clash{border-left:4px solid var(--gold)}
 .blk.clash .bt{color:var(--gold-d)}
@@ -241,7 +240,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .chipev:hover{border-color:var(--purple);box-shadow:2px 2px 0 rgba(51,0,114,.18)}
 .chipev .ch{font-size:13px;font-weight:600;line-height:1.2}
 .chipev .cw{font-size:11.5px;color:var(--meta)}
-.chipev.open{border-left:6px double var(--lilac)}
 .chipev.off{border-left:4px dotted var(--line-h);background:repeating-linear-gradient(
   135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px)}
 .chipev.off .ch{font-weight:500;color:var(--meta)}
@@ -310,13 +308,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .tailin{max-width:1440px;margin:0 auto;padding:0 26px}
 .tail h2{font-size:22px;font-weight:800;font-stretch:86%;color:var(--purple)}
 .tail .lede{margin-top:8px;font-size:14px;color:var(--meta);max-width:78ch}
-.notelist{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:0}
-.notelist li{display:flex;gap:16px;padding:14px 0;border-top:1px solid var(--line)}
-.notelist b{
-  font-size:11px;font-weight:700;color:var(--gold-d);letter-spacing:.08em;padding-top:3px;flex:0 0 auto;
-}
-.notelist strong{display:block;font-size:14.5px;font-weight:700}
-.notelist p{margin-top:4px;font-size:13.5px;color:var(--meta);max-width:82ch}
 .srcgrid{margin-top:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0 26px}
 .src{padding:11px 0;border-top:1px solid var(--line);font-size:12.5px;min-width:0}
 .src b{display:block;font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--purple)}
@@ -367,7 +358,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .rt{font-size:9.5px;font-weight:700;color:#5B2A8C;white-space:nowrap;flex:0 0 auto}
 .rh{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   font-stretch:88%;color:var(--ink)}
-.rib.open{border-left:6px double var(--lilac)}
 .rib.off{background:repeating-linear-gradient(135deg,#fff,#fff 5px,#F2EFF6 5px,#F2EFF6 10px);
   border-left:4px dotted var(--line-h)}
 .rib.off .rh,.rib.off .rt{color:var(--meta);font-weight:500}
@@ -395,14 +385,11 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 /* ---- a phone reads the day as an agenda -------------------------------- */
 .agenda{margin-top:14px;border-top:2px solid var(--purple)}
 /* The list is the same day with the same events in it, so it carries the same
-   reading edges as the clock and is covered by the same key. Before this the
-   only sign that something was open to all Laurier students was a slightly
-   different purple on its start time, explained nowhere. */
+   reading edges as the clock and is covered by the same key. */
 .ag{
   display:grid;grid-template-columns:66px minmax(0,1fr);gap:0 12px;padding:11px 0 12px 9px;
   border-bottom:1px solid var(--line);border-left:4px solid var(--purple);cursor:pointer;
 }
-.ag.open{border-left:6px double var(--lilac);padding-left:7px}
 /* the same order the clock resolves them in: a collision takes the edge, and
    an event you cannot attend takes it back */
 .ag.clash{border-left:4px solid var(--gold);padding-left:9px}
@@ -453,7 +440,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .lg::before{content:"";width:14px;height:11px;background:#fff;border:1px solid var(--line-h);
   border-left:4px solid var(--purple);flex:0 0 auto}
 .lg-clash::before{border-left-color:var(--gold)}
-.lg-open::before{border-left:6px double var(--lilac)}
 .lg-off::before{border-left:4px dotted var(--line-h);
   background:repeating-linear-gradient(135deg,#fff,#fff 3px,#F2EFF6 3px,#F2EFF6 6px)}
 /* The whole-run view draws filled bars rather than edged boxes, so its key
@@ -461,8 +447,7 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
    one more thing to decode. */
 .legend-run{padding-left:0;margin:10px 0 2px}
 .legend-run .lg::before{background:var(--purple);border-left:0}
-.legend-run .lg-open::before{background:var(--lilac);border-left:0}
-.legend-run .lg-clash::before{background:var(--purple);border-top:4px solid var(--gold)}
+.legend-run .legend-run .lg-clash::before{background:var(--purple);border-top:4px solid var(--gold)}
 .legend-run .lg-off::before{border-left:0;
   background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
 
@@ -540,7 +525,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 /* A bar too narrow to spare 5px a side gives the padding back to the name, so a
    quarter-hour event still shows a letter or two rather than nothing. */
 .wb.tightbar{padding:0 1px}
-.wb.open{background:var(--lilac)}
 .wb.clash{border-top-color:var(--gold)}
 .wb.off{background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
 .wb.off .wbl{color:var(--meta)}
@@ -588,10 +572,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .clname{display:block;font-size:14.5px;font-weight:600;line-height:1.25;margin-top:2px}
 .clw{display:block;font-size:12.5px;color:var(--meta);margin-top:2px}
 .cldot{color:var(--meta)}
-.clopen{
-  display:inline-block;margin-top:4px;font-size:10px;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;color:#6E2C86;
-}
 @media (max-width:900px){
   .clashlist{grid-template-columns:1fr}
 }
