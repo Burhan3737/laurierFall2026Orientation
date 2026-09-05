@@ -652,9 +652,13 @@ def eligible(e, s):
     g = [t for t in (e.get("tags") or []) if t in GATES]
     if g and not [t for t in g if t in s["streams"]]:
         return False
-    if s["program"] == "__none__" and e.get("program"):
+    # No programme chosen is the same state as "__none__": the board holds the
+    # programme welcomes back until a student names theirs. There is no longer a
+    # setting that shows all of them, so an empty selection cannot mean that here.
+    prog = s["program"] or "__none__"
+    if prog == "__none__" and e.get("program"):
         return False
-    if s["program"] and s["program"] != "__none__" and e.get("program") and e["program"] != s["program"]:
+    if prog != "__none__" and e.get("program") and e["program"] != prog:
         return False
     return True
 

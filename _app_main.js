@@ -38,9 +38,9 @@ function assess(e) {
         : g.join(" / ") + " students only" };
     }
   }
-  // A program/faculty welcome belongs to one program. Naming yours hides the rest;
-  // "All programs" shows them all; NO_PROGRAM hides every one, for the many graduate
-  // programs Laurier publishes no welcome for.
+  // A program/faculty welcome belongs to one program. Naming yours hides the rest.
+  // NO_PROGRAM is the state a board starts in: until the student says which is
+  // theirs, it does not put two dozen other people's welcomes in front of them.
   if (sel.program === NO_PROGRAM && e.pg) {
     return { ok: false, reason: "Program-specific welcome" };
   }
@@ -988,8 +988,9 @@ function settle() {
   var live = liveStreams(sel);
   sel.streams = sel.streams.filter(function (t) { return live[t]; });
   var progs = livePrograms(sel);
-  if (sel.program && sel.program !== NO_PROGRAM && progs.indexOf(sel.program) === -1) sel.program = "";
-  if (!progs.length) sel.program = "";
+  if (sel.program && sel.program !== NO_PROGRAM && progs.indexOf(sel.program) === -1)
+    sel.program = NO_PROGRAM;
+  if (!progs.length) sel.program = NO_PROGRAM;
 }
 
 /* ---- identity band ------------------------------------------------------ */
@@ -1024,9 +1025,13 @@ function drawIdbar() {
   var extras = "";
   if (progs.length) {
     extras += '<div class="idq"><span class="idlab"><label for="prog">My program</label></span><select id="prog" class="idsel">' +
-      '<option value="">Every program’s welcome</option>' +
+      /* Two states, not three. The old "Every program's welcome" asked a student to
+         pick a thing nobody is — you are in one programme — so it is gone, and the
+         board starts here instead: programme welcomes held back, everything not
+         tied to a programme shown as normal. It is a real choice with real
+         wording, not a greyed placeholder, so a student can come back to it. */
       '<option value="' + NO_PROGRAM + '"' + (sel.program === NO_PROGRAM ? " selected" : "") +
-        '>Not listed — hide them all</option>' +
+        '>Not listed</option>' +
       progs.map(function (p) {
         return '<option value="' + esc(p) + '"' + (p === sel.program ? " selected" : "") + ">" + esc(p) + "</option>";
       }).join("") + "</select></div>";
@@ -2087,11 +2092,6 @@ function planCalHtml(picks) {
                "</span></h4><div class=\"chips\">" + pt.loose.map(looseHtml).join("") + "</div></div>";
 
     if (items.length && (narrow || tooDeep)) {
-      /* Not advice: without a line here the clock simply vanishes and the day
-         changes shape with no reason given. Kept, and cut to the fact. */
-      h += '<p class="lgnote">' + (narrow
-        ? "Too narrow for the clock — this day is in time order."
-        : "Too many run at once to draw a clock — this day is in time order.") + "</p>";
       h += agendaHtml(items, "nothing in your plan", PLAN);
     } else if (items.length) {
       h += '<div class="daygrid"><div class="gutcol"><div class="gut" style="height:' +
@@ -3030,7 +3030,9 @@ function readHash() {
     campus: META.campuses.indexOf(p.campus) >= 0 ? p.campus : META.campuses[0],
     term:   META.terms.indexOf(p.term) >= 0 ? p.term : META.terms[0],
     streams: p.streams ? p.streams.split("|").filter(function (s) { return GATES.indexOf(s) >= 0; }) : [],
-    program: p.program || ""
+    /* No programme in the address means none chosen, and none chosen hides the
+       programme welcomes rather than showing all of them. */
+    program: p.program || NO_PROGRAM
   };
   settle();
   if (["day", "week", "clash", "plan", "reg"].indexOf(p.view) >= 0) view = p.view;

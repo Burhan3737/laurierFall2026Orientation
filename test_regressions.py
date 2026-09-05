@@ -139,8 +139,16 @@ check("Master of Applied Computing welcome present", bool(mac),
 # strings they name had changed on the board, and deleting _app_main.js entirely
 # would not have reddened one of them.
 app = open('_app_main.js', encoding='utf-8').read()
-check("chooser offers a way out for an unlisted program",
-      'NO_PROGRAM' in app and 'Not listed' in app)
+# The dropdown starts on NO_PROGRAM and offers no way to show every programme's
+# welcome at once, because nobody is in every programme. The way out for a student
+# whose programme Laurier publishes nothing for is simply to leave it alone.
+# Asserted against the markup the chooser emits, not the text of the file: the
+# first version of this read the source and went red on the comment above the
+# code, which mentions the two labels it was checking had gone.
+check("the programme dropdown starts on the none state",
+      "'<option value=\"' + NO_PROGRAM + '\"'" in app
+      and ">Not listed</option>" in app
+      and '<option value=""' not in app)
 check("that option hides every program welcome",
       'sel.program === NO_PROGRAM && e.pg' in app)
 

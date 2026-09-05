@@ -100,10 +100,16 @@ GATES = ["International", "Exchange", "Indigenous", "Off-campus (LOCUS)", "Resid
 
 def eligible_here(e):
     """The BOARD selection above, in Python: undergraduate / Waterloo / Fall 2026,
-    no streams, no programme narrowing."""
+    no streams, and the programme dropdown on the state it starts in.
+
+    That state used to be "every programme's welcome" and is now "Not listed": a
+    programme welcome belongs to one cohort, and the board does not put two dozen
+    other people's in front of a student who has not said which is theirs."""
     if e["term"] != "Fall 2026" or "Waterloo" not in (e.get("campuses") or []):
         return False
     if not (e["level"] == "undergraduate" or e["level"] == "all" or e.get("open_to_all")):
+        return False
+    if e.get("program"):
         return False
     return not [t for t in (e.get("tags") or []) if t in GATES]
 

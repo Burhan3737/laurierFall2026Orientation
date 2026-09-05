@@ -49,9 +49,9 @@ function assess(e) {
         : g.join(" / ") + " students only" };
     }
   }
-  // A program/faculty welcome belongs to one program. Naming yours hides the rest;
-  // "All programs" shows them all; NO_PROGRAM hides every one, for the many graduate
-  // programs Laurier publishes no welcome for.
+  // A program/faculty welcome belongs to one program. Naming yours hides the rest.
+  // NO_PROGRAM is the state a board starts in: until the student says which is
+  // theirs, it does not put two dozen other people's welcomes in front of them.
   if (sel.program === NO_PROGRAM && e.pg) {
     return { ok: false, reason: "Program-specific welcome" };
   }
@@ -225,7 +225,8 @@ function readChooser() {
   var streams = [].slice.call(document.querySelectorAll('input[name="stream"]:checked')).map(function (i) { return i.value; });
   var prog = document.getElementById("program");
   return { level: one("level"), campus: one("campus"), term: one("term"),
-           streams: streams, program: (prog && !prog.disabled) ? prog.value : "" };
+           streams: streams,
+           program: (prog && !prog.disabled) ? prog.value : NO_PROGRAM };
 }
 
 document.getElementById("go").onclick = function () {
@@ -308,8 +309,7 @@ function refreshConditional(s) {
   var box = document.getElementById("qprogram"), sel2 = document.getElementById("program");
   var keep = sel2.value;
   sel2.innerHTML =
-    '<option value="">All programs — show every welcome</option>' +
-    '<option value="' + NO_PROGRAM + '">My program is not listed — hide them all</option>' +
+    '<option value="' + NO_PROGRAM + '">Not listed</option>' +
     names.map(function (n) {
       return '<option value="' + esc(n) + '">' + esc(n) + "</option>";
     }).join("");

@@ -53,7 +53,36 @@ a{color:var(--purple)}
 /* ---- masthead ---------------------------------------------------------- */
 .mast{background:var(--purple-d);color:#fff;border-bottom:4px solid var(--gold)}
 .mastin{max-width:1440px;margin:0 auto;padding:13px 26px 15px}
-.crest{display:flex;align-items:baseline;gap:10px;margin-bottom:7px}
+.crest{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:7px}
+/* The credit sits at the far end of the crest row: seen on arrival, never in the
+   way of the board. Gold on the deep purple is the masthead's own accent, so it
+   reads as part of the page rather than as something bolted onto it, and the
+   small square mark says LinkedIn without spelling it out. */
+.by-top{
+  margin-left:auto;display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  font-stretch:88%;color:var(--gold);text-decoration:none;
+  border-bottom:1px solid rgba(242,169,0,.45);padding-bottom:1px;
+}
+.by-top:hover,.by-top:focus-visible{color:#fff;border-bottom-color:#fff}
+.by-top .in,.by .byin{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:15px;height:15px;border-radius:3px;background:var(--gold);color:var(--purple-d);
+  font-size:9px;font-weight:800;letter-spacing:0;text-transform:lowercase;
+}
+.by-top:hover .in{background:#fff}
+/* the fuller credit, where somebody who read to the end will look for it */
+.by{
+  margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.16);
+  font-size:12.5px;color:#D8CEE9;
+}
+.by a{
+  color:var(--gold);font-weight:700;text-decoration:none;
+  border-bottom:1px solid rgba(242,169,0,.5);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.by a:hover,.by a:focus-visible{color:#fff;border-bottom-color:#fff}
+.by a:hover .byin{background:#fff}
 .crest-w{
   font-size:11px;font-weight:700;letter-spacing:.19em;text-transform:uppercase;
   font-stretch:88%;color:#fff;
@@ -490,9 +519,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   color:var(--purple);border-bottom:2px solid var(--gold);padding-bottom:2px;
 }
 .modebtn:hover{border-bottom-color:var(--purple)}
-.lgnote{
-  flex-basis:100%;font-size:11.5px;color:var(--gold-d);font-weight:600;
-}
 .peak{margin-top:4px;font-size:13px;color:var(--meta)}
 .peakbtn{
   font-size:13px;font-weight:700;color:var(--purple);border-bottom:2px solid var(--gold);
@@ -1156,6 +1182,11 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
     <div class="crest">
       <span class="crest-w">Wilfrid Laurier University</span>
       <span class="crest-o">Orientation</span>
+      <!-- Right of the crest, on screen from the first moment. A student who
+           never reaches the foot of the page still sees who made this, and it
+           takes nothing from the board: no dialog, no banner, no overlay. -->
+      <a class="by-top" href="https://www.linkedin.com/in/mburhantahir" target="_blank"
+         rel="noopener">Built by Burhan Tahir<span class="in" aria-hidden="true">in</span></a>
     </div>
     <h1>The Timetable</h1>
     <p class="standfirst">Every published orientation event, laid out on the clock. Say who you are and read your week the way you would read a departures board &mdash; by the hour, with the overlaps showing.</p>
@@ -1182,7 +1213,7 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 <section class="tail">
   <div class="tailin">
     <h2>Sources</h2>
-    <p class="lede">Every event links back to the exact section of the page it came from. All 11 schedules were read on 5 Sep 2026.</p>
+    <p class="lede">Every event links back to the exact section of the page it came from.</p>
     <div class="srcgrid">
     <div class="src"><b>bachelor-of-education</b><span>Laurier Orientation:Bachelor of Education Students Schedule</span><a href="https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html" target="_blank" rel="noopener">students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html</a></div>
     <div class="src"><b>graduate / fall-brantford</b><span>Laurier Fall Orientation:Brantford Graduate Schedule</span><a href="https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-brantford.html" target="_blank" rel="noopener">students.wlu.ca/support-and-wellness/orientation/assets/schedules/graduate/fall-brantford.html</a></div>
@@ -1201,8 +1232,9 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 
 <footer class="foot">
   <div class="tailin">
-    330 events across 11 Laurier schedules &middot; compiled 5 Sep 2026<br>
+    330 events across 11 Laurier schedules, read on 5 Sep 2026<br>
     Laurier updates these schedules continuously &mdash; reconfirm before travelling to a venue &middot; eligibility shown here is an interpretation of each page&rsquo;s stated audience, not an official ruling
+    <p class="by">Built by <a href="https://www.linkedin.com/in/mburhantahir" target="_blank" rel="noopener">Burhan Tahir<span class="byin" aria-hidden="true">in</span></a> &middot; not affiliated with Wilfrid Laurier University</p>
   </div>
 </footer>
 
@@ -1251,9 +1283,9 @@ function assess(e) {
         : g.join(" / ") + " students only" };
     }
   }
-  // A program/faculty welcome belongs to one program. Naming yours hides the rest;
-  // "All programs" shows them all; NO_PROGRAM hides every one, for the many graduate
-  // programs Laurier publishes no welcome for.
+  // A program/faculty welcome belongs to one program. Naming yours hides the rest.
+  // NO_PROGRAM is the state a board starts in: until the student says which is
+  // theirs, it does not put two dozen other people's welcomes in front of them.
   if (sel.program === NO_PROGRAM && e.pg) {
     return { ok: false, reason: "Program-specific welcome" };
   }
@@ -2201,8 +2233,9 @@ function settle() {
   var live = liveStreams(sel);
   sel.streams = sel.streams.filter(function (t) { return live[t]; });
   var progs = livePrograms(sel);
-  if (sel.program && sel.program !== NO_PROGRAM && progs.indexOf(sel.program) === -1) sel.program = "";
-  if (!progs.length) sel.program = "";
+  if (sel.program && sel.program !== NO_PROGRAM && progs.indexOf(sel.program) === -1)
+    sel.program = NO_PROGRAM;
+  if (!progs.length) sel.program = NO_PROGRAM;
 }
 
 /* ---- identity band ------------------------------------------------------ */
@@ -2237,9 +2270,13 @@ function drawIdbar() {
   var extras = "";
   if (progs.length) {
     extras += '<div class="idq"><span class="idlab"><label for="prog">My program</label></span><select id="prog" class="idsel">' +
-      '<option value="">Every program’s welcome</option>' +
+      /* Two states, not three. The old "Every program's welcome" asked a student to
+         pick a thing nobody is — you are in one programme — so it is gone, and the
+         board starts here instead: programme welcomes held back, everything not
+         tied to a programme shown as normal. It is a real choice with real
+         wording, not a greyed placeholder, so a student can come back to it. */
       '<option value="' + NO_PROGRAM + '"' + (sel.program === NO_PROGRAM ? " selected" : "") +
-        '>Not listed — hide them all</option>' +
+        '>Not listed</option>' +
       progs.map(function (p) {
         return '<option value="' + esc(p) + '"' + (p === sel.program ? " selected" : "") + ">" + esc(p) + "</option>";
       }).join("") + "</select></div>";
@@ -3300,11 +3337,6 @@ function planCalHtml(picks) {
                "</span></h4><div class=\"chips\">" + pt.loose.map(looseHtml).join("") + "</div></div>";
 
     if (items.length && (narrow || tooDeep)) {
-      /* Not advice: without a line here the clock simply vanishes and the day
-         changes shape with no reason given. Kept, and cut to the fact. */
-      h += '<p class="lgnote">' + (narrow
-        ? "Too narrow for the clock — this day is in time order."
-        : "Too many run at once to draw a clock — this day is in time order.") + "</p>";
       h += agendaHtml(items, "nothing in your plan", PLAN);
     } else if (items.length) {
       h += '<div class="daygrid"><div class="gutcol"><div class="gut" style="height:' +
@@ -4243,7 +4275,9 @@ function readHash() {
     campus: META.campuses.indexOf(p.campus) >= 0 ? p.campus : META.campuses[0],
     term:   META.terms.indexOf(p.term) >= 0 ? p.term : META.terms[0],
     streams: p.streams ? p.streams.split("|").filter(function (s) { return GATES.indexOf(s) >= 0; }) : [],
-    program: p.program || ""
+    /* No programme in the address means none chosen, and none chosen hides the
+       programme welcomes rather than showing all of them. */
+    program: p.program || NO_PROGRAM
   };
   settle();
   if (["day", "week", "clash", "plan", "reg"].indexOf(p.view) >= 0) view = p.view;
