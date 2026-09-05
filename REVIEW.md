@@ -525,3 +525,26 @@ to advise a student about its own rendering. The note that appears when a day ge
 cannot be drawn as a clock is kept and cut to the fact — without it the clock vanishes and
 the day changes shape with nothing said.
 
+## One printed document, and less of the page talking about itself
+
+Printing followed the on-screen toggle: the list form carried the venues and web
+addresses against each entry and drew no clock, the calendar form drew the clock and
+collected the addresses at the end. On paper a student needs both answers at once, so
+every sheet is the calendar now, whichever way the plan is being read on screen. The
+toggle governs the screen and nothing else.
+
+Removed with it: the sentence beside the toggle explaining that both forms hold the same
+events and that printing follows the one you are reading; “Kept in this browser on this
+device — not sent anywhere”; the print button’s “(as a calendar)” / “(as a list)”
+suffix; the printed header sentence naming the form; and the two lines apologising for how
+a crowded day had to be drawn.
+
+The printed date follows the screen and says when the schedules were read rather than when
+the file was built.
+
+plus_check had the old design written into it — “the two documents are alternatives, never
+both” — and six assertions went red. Every one was the gate correctly refusing the change
+until the contract was restated. It now asserts both toggle states produce the same
+document, and a new assertion goes red if the sheet ever starts describing its own format
+again.
+

@@ -3395,7 +3395,7 @@ function planHtml() {
     " ticked" +
     (nClash ? ", <b class=\"warnn\">" + nClash + " of them overlapping</b>"
             : drop.length ? ", and no two timed sessions overlap" : ", nothing overlapping") +
-    ". Kept in this browser on this device — not sent anywhere.</p>" +
+    ".</p>" +
     (drop.length ? '<p class="dropnote"><b>' + drop.length + "</b> of your picks " +
       (drop.length === 1 ? "is a session that stays" : "are sessions that stay") +
       " open across the middle of the day — a desk, a fair, a drop-in. This page never " +
@@ -3403,26 +3403,20 @@ function planHtml() {
       "walk up to them whenever suits you. They are marked below; nothing else is hidden.</p>"
       : "") +
     lostNote() +
-    /* The plan is the one place this page lets a student read their own week,
-       and until now it could only be read as a column of paragraphs on a page
-       whose whole argument is the clock. The toggle is a view and not a filter:
-       both forms hold exactly these events, and the sentence beside it says so,
-       because a control that looks like a filter beside a count that does not
-       move is a control a student stops trusting. */
+    /* How the plan is read on screen. Printing no longer follows it: a sheet of
+       paper gets the calendar and the details both, because that is the one form
+       that answers every question away from the screen. */
     '<div class="pviews" role="group" aria-label="How to show the plan">' +
       '<span class="pvlab">Show as</span>' +
       '<button class="pv' + (planCal ? "" : " on") + '" data-planview="list" ' +
         'aria-pressed="' + (!planCal) + '">List</button>' +
       '<button class="pv' + (planCal ? " on" : "") + '" data-planview="cal" ' +
         'aria-pressed="' + planCal + '">Calendar</button>' +
-      '<span class="pvnote">Both hold the same ' + picks.length + " event" +
-        (picks.length === 1 ? "" : "s") + " — this changes how they are drawn, " +
-        "not which ones are here. Printing follows whichever you are reading.</span>" +
     "</div>" +
     '<div class="planacts">' +
       '<button class="abtn" id="dlplan">Add all to my calendar (.ics)</button>' +
       '<button class="abtn" id="printplan">Print my schedule' +
-        (planCal ? " (as a calendar)" : " (as a list)") + "</button>" +
+        "</button>" +
       '<button class="abtn ghost" id="clearplan">Empty the plan</button>' +
     "</div>" +
     '<p class="acct">The calendar file will carry <b>' + t.timed + '</b> timed entr' +
@@ -3809,12 +3803,8 @@ function printSheetHead(usingPlan, list) {
       : "Nothing is ticked, so this is not a chosen schedule: it is every event I am " +
         "eligible for" + (q ? ' matching the search "' + esc(q) + '"' : "") + ", " +
         list.length + " in all.") + " " +
-    (planCal
-      ? "Drawn on the clock, a day at a time; the venues and the web addresses are " +
-        "collected at the end, because a grid has room for neither."
-      : "Written out in time order, with the venue, the host and every web address " +
-        "against each event.") +
-    " Compiled from Laurier’s published schedules on " + META.compiled + ".</p></header>";
+    " Read from Laurier’s published schedules on " + META.readOn.replace(/^on /, "") +
+    ".</p></header>";
 }
 
 /* ---- the addresses a grid cannot carry ----------------------------------
@@ -3963,7 +3953,10 @@ function printHtml() {
       return printEntry(e, no[e.__i], cm[dupKey(e)] || [], common);
     }).join("") + "</div>";
 
-    if (!planCal) return head + loose + written + "</section>";
+    /* Printing does not follow the on-screen toggle. On paper a student needs the
+       shape of the day AND the room numbers and web addresses, and a grid has room
+       for neither, so every printout is the calendar with the details listed after
+       it. Only a day the grid genuinely cannot carry falls back to prose, below. */
 
     /* How much a box can hold depends on how many have to share the width. Four
        abreast on an A4 page is about 110pt each and a name fits. Six is 70pt,
@@ -3973,17 +3966,9 @@ function printHtml() {
        read as a list — which is what it becomes, with the reason printed above. */
     var drew = false;
     if (items.length && lanes <= PR_LANES_MAX) {
-      if (lanes > PR_LANES) {
-        head += '<p class="prwhy">' + lanes + " of these run at once, so the blocks below " +
-          "carry their number and their time; read the names off the list at the end.</p>";
-      }
       head += printGrid(items, lanes <= PR_LANES,
         usingPlan ? "nothing in my plan" : "nothing published");
       drew = true;
-    } else if (items.length) {
-      head += '<p class="prwhy">' + lanes + " of these run at the same time. Drawn " +
-        lanes + " abreast each block is a hairline, too narrow to carry even its own " +
-        "number, so this day alone is written out in time order rather than drawn.</p>";
     }
 
     /* The stated fallback writes that one day out in full, so it needs nothing
@@ -3993,7 +3978,7 @@ function printHtml() {
     return head + loose + "</section>";
   }).join("");
 
-  if (planCal) h += printAddresses(appendix);
+  h += printAddresses(appendix);
 
   h += '<footer class="prfoot"><p>Printed from the Laurier Orientation Event Finder, ' +
     "compiled " + META.compiled + " from " + META.nSources + " published Laurier schedules. " +

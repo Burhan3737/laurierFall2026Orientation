@@ -433,18 +433,19 @@ def check_one_print(txt, label, want, others, mode, usingPlan):
     ok(not leak, "%s: no event outside it is on the sheet (%d others checked)"
        % (label, len(others)), str(leak[:3]))
 
-    # The two documents are alternatives, never both. The calendar collects its
-    # addresses at the end; the written list carries them against each event and
-    # draws no grid at all.
+    # There is one printed document, whichever way the plan is being read on
+    # screen. Paper has to answer both questions at once - when is it, and where
+    # and how do I book it - and a grid has room for neither a room number nor a
+    # web address, so every sheet is the clock followed by the addresses. The
+    # toggle governs the screen and nothing else, which is why both modes assert
+    # the same document rather than two different ones.
     appendix = "WHERE EACH ONE IS" in up
     grid = bool(re.search(r"nothing published between|\bnoon\b|\b\d{1,2}(am|pm)\b", flat))
-    if mode == "calendar":
-        ok(appendix, "%s: the addresses a grid cannot carry are collected after it" % label)
-        ok("Drawn on the clock" in flat, "%s: and it says that is what it is" % label)
-        ok(grid, "%s: a clock is actually drawn" % label)
-    else:
-        ok(not appendix, "%s: no address appendix \u2014 the entries carry their own" % label)
-        ok("Written out in time order" in flat, "%s: and it says that is what it is" % label)
+    ok(appendix, "%s: the addresses a grid cannot carry are collected after it" % label)
+    ok(grid, "%s: a clock is actually drawn" % label)
+    # and it no longer explains its own shape to the reader
+    ok("Drawn on the clock" not in flat and "Written out in time order" not in flat,
+       "%s: the sheet does not describe its own format" % label)
 
 
 def test_print(picks, chosen):
