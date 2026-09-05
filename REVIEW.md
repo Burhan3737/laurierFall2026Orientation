@@ -562,7 +562,7 @@ shedding, and the row survives without it.
 I changed the key first, and clashcheck refused the build — it forbids a key naming the
 ordinary state alone. That rule is taste rather than truth, so overruling it was arguable,
 and removing it exposed something worse: one of clashcheck’s three negative tests had
-stopped detecting anything. Its mutation dropped  from the run’s key calculation,
+stopped detecting anything. Its mutation dropped `capped` from the run’s key calculation,
 which used to leave the key missing a state the board drew — until the open-to-all state
 was removed, after which the mutation had nothing left to disagree about. It had gone on
 passing only because the lone-key rule caught the mutant instead, which is not what it was
