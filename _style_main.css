@@ -447,7 +447,10 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
    one more thing to decode. */
 .legend-run{padding-left:0;margin:10px 0 2px}
 .legend-run .lg::before{background:var(--purple);border-left:0}
-.legend-run .legend-run .lg-clash::before{background:var(--purple);border-top:4px solid var(--gold)}
+/* `.legend-run .legend-run` matched nothing — there is no legend inside a
+   legend — so the collision swatch never got its gold cap and the run key
+   showed two identical purple blocks against two different captions. */
+.legend-run .lg-clash::before{background:var(--purple);border-top:4px solid var(--gold)}
 .legend-run .lg-off::before{border-left:0;
   background:repeating-linear-gradient(135deg,#EFEAF5,#EFEAF5 4px,#E3DCEC 4px,#E3DCEC 8px)}
 

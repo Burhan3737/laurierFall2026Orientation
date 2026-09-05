@@ -1970,13 +1970,12 @@ function dayHtml(list, keys) {
       /* The list reads the same events with the same edges, so the key holds in
          both modes; it is the day that decides what is in it, not the form. */
       var keys2 = legendKeys(clockStates(dayEntries(parts, items)));
-      var extra =
-        (narrow || items.length < 2 ? "" :
-          '<button class="modebtn" data-mode="1">' +
-          (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>") +
-        (tight && !asList
-          ? '<span class="lgnote">' + lanes + " run at once here — the clock is tight; " +
-            "the list may read easier</span>" : "");
+      /* The mode button is a control and stays. The line beside it that told a
+         student the clock was tight and the list "may read easier" was the page
+         advising them about its own rendering; the button is right there. */
+      var extra = (narrow || items.length < 2 ? "" :
+        '<button class="modebtn" data-mode="1">' +
+        (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>");
       /* An empty <div class="legend"> is not nothing: it is 6px of margin and a
          flex row holding a day apart from its own clock. */
       return (keys2 || extra) ? '<div class="legend">' + keys2 + extra + "</div>" : "";
@@ -2088,10 +2087,11 @@ function planCalHtml(picks) {
                "</span></h4><div class=\"chips\">" + pt.loose.map(looseHtml).join("") + "</div></div>";
 
     if (items.length && (narrow || tooDeep)) {
+      /* Not advice: without a line here the clock simply vanishes and the day
+         changes shape with no reason given. Kept, and cut to the fact. */
       h += '<p class="lgnote">' + (narrow
-        ? "The clock is too narrow to draw here, so this day is read in time order."
-        : lanes + " of these run at once, which is more than the clock can draw and " +
-          "still be read, so this day is written out in time order.") + "</p>";
+        ? "Too narrow for the clock — this day is in time order."
+        : "Too many run at once to draw a clock — this day is in time order.") + "</p>";
       h += agendaHtml(items, "nothing in your plan", PLAN);
     } else if (items.length) {
       h += '<div class="daygrid"><div class="gutcol"><div class="gut" style="height:' +

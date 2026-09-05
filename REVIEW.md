@@ -503,3 +503,25 @@ and Exchange Students” and it is gated accordingly; and on Milton at any setti
 Laurier runs one bus from Waterloo and one from Brantford and publishes no Milton
 departure. Both are the board reporting Laurier faithfully.
 
+## A key whose two swatches were the same colour
+
+Reported from the whole-run legend: both keys drawn as the same purple block against two
+different captions. A real defect, and an old one. The rule read
+
+    .legend-run .legend-run .lg-clash::before { ... }
+
+There is no legend inside a legend, so it matched nothing and the collision swatch never
+took its gold cap. Fixed by deleting the repeated selector.
+
+Worth noting why nothing caught it.  measures painted text against its
+background, and a swatch is a  box with no text in it.  proves
+the key names exactly the states the board draws, which it did — two captions for two
+states, both correct. Neither gate was wrong; a key whose two swatches are indistinguish-
+able is simply outside what either can see.
+
+Also removed: the line beside the mode button reading “N run at once here — the clock is
+tight; the list may read easier”. The button is the control; the page does not also need
+to advise a student about its own rendering. The note that appears when a day genuinely
+cannot be drawn as a clock is kept and cut to the fact — without it the clock vanishes and
+the day changes shape with nothing said.
+
