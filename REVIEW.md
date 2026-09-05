@@ -548,3 +548,32 @@ until the contract was restated. It now asserts both toggle states produce the s
 document, and a new assertion goes red if the sheet ever starts describing its own format
 again.
 
+## Controls that came and went, and a self-test that had stopped biting
+
+Reported: on a day holding one event, the key and the list/clock toggle both disappeared.
+Two rules, both defensible alone and wrong together. The toggle wanted two timed events
+before it drew, and the key names the ordinary state only beside another key — so after
+the open-to-all key was removed, a quiet day had neither, and the row went with them.
+
+The toggle draws whenever there is a clock now. The key rule stands: a lone “an ordinary
+event on your board” is exactly the kind of self-explanatory text this page has been
+shedding, and the row survives without it.
+
+I changed the key first, and clashcheck refused the build — it forbids a key naming the
+ordinary state alone. That rule is taste rather than truth, so overruling it was arguable,
+and removing it exposed something worse: one of clashcheck’s three negative tests had
+stopped detecting anything. Its mutation dropped  from the run’s key calculation,
+which used to leave the key missing a state the board drew — until the open-to-all state
+was removed, after which the mutation had nothing left to disagree about. It had gone on
+passing only because the lone-key rule caught the mutant instead, which is not what it was
+testing. It now breaks the invariant the gate exists for: the board draws a collision and
+the key is made not to name it. Caught and named.
+
+Two commits had shipped between that breaking and it being noticed, because the negative
+tests were written, run once, and then left out of the loop. They are run alongside the
+nine gates now.
+
+Also: My plan moved to the end of the tabs, and the printed identity line no longer says
+“program welcomes hidden” — true, but it is the state every sheet starts in, so it printed
+on all of them and described a setting rather than a week.
+

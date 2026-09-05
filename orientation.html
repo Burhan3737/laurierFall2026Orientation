@@ -2398,14 +2398,13 @@ function drawNav() {
   h += '<div class="views">' +
        (wide ? vb("week", "Whole run", 0) : "") +
        vb("day", "One day", 0) +
-       /* the plan comes before the clashes: it is the thing a student is here to
-          build, and the clash list is a check on it rather than a view of its own. */
-       vb("plan", "My plan", planN) +
        /* Clashes is hidden, not removed: the lens still answers on &view=clash and
           every gate still drives it, but it was one tab too many on a page a
           student reads once. */
        (SHOW_CLASH ? vb("clash", "Clashes", clashN) : "") +
        vb("reg", "To register", regN) +
+       /* Last: the plan is where a student ends up, not where they start. */
+       vb("plan", "My plan", planN) +
        '<div class="qwrap">' +
        '<input id="qbox" class="qbox" type="search" autocomplete="off" spellcheck="false" ' +
        'aria-label="Search the board by title, venue, host or description" ' +
@@ -3157,6 +3156,10 @@ function legendKeys(st) {
   var k = "";
   if (st.clash) k += '<span class="lg lg-clash">runs at the same time as something else</span>';
   if (st.off) k += '<span class="lg lg-off">not open to you</span>';
+  /* On its own, "an ordinary event" tells nobody anything, so it earns its place
+     only beside another key. The row it sits in does not disappear with it: the
+     list/clock toggle is drawn whenever there is a clock, which is what actually
+     kept vanishing on a quiet day. */
   if (k && st.plain)
     k = '<span class="lg lg-plain">an ordinary event on your board</span>' + k;
   return k;
@@ -3223,7 +3226,11 @@ function dayHtml(list, keys) {
       /* The mode button is a control and stays. The line beside it that told a
          student the clock was tight and the list "may read easier" was the page
          advising them about its own rendering; the button is right there. */
-      var extra = (narrow || items.length < 2 ? "" :
+      /* Shown whenever there is a clock to toggle. It used to need two events
+         before it appeared, so stepping across the run made it come and go — a
+         control that is there on Tuesday and gone on Sunday is one a student
+         stops looking for. One event still reads either way. */
+      var extra = (narrow || !items.length ? "" :
         '<button class="modebtn" data-mode="1">' +
         (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>");
       /* An empty <div class="legend"> is not nothing: it is 6px of margin and a
@@ -3574,13 +3581,15 @@ function regHtml(list) {
    This is built into the document on every redraw rather than assembled when the
    print dialog opens, so Ctrl+P prints the same thing as the button does.
 ------------------------------------------------------------------------- */
-/* Who the sheet is for, in one line, shared by both printed documents. */
+/* Who the sheet is for, in one line. It names a programme when one is chosen and
+   says nothing when none is: "program welcomes hidden" was true, but it is the
+   state every sheet starts in, so it printed on all of them and told a reader
+   about a setting rather than about their week. */
 function printWho() {
   return (META.levelLabels[sel.level] || sel.level) + " · " + sel.campus +
     " campus · " + sel.term +
     (sel.streams.length ? " · also " + sel.streams.map(streamLabel).join(", ") : "") +
-    (sel.program && sel.program !== NO_PROGRAM ? " · program: " + sel.program : "") +
-    (sel.program === NO_PROGRAM ? " · program welcomes hidden" : "");
+    (sel.program && sel.program !== NO_PROGRAM ? " · program: " + sel.program : "");
 }
 
 /* The registration list is the second thing here worth carrying on paper: a

@@ -125,6 +125,7 @@ setTimeout(function () {
     if (key.plain && !st.plain) out.push(where + " key names an ordinary event; every event drawn is marked");
     if (named && st.plain && !key.plain) out.push(where + " board draws an unmarked event; the key does not name it");
     if (!named && key.plain) out.push(where + " key names the ordinary state alone");
+
     return out;
   }
 
@@ -287,8 +288,18 @@ BREAKS = [
         ('  return items.map(function (it) { return [it.ev, drawsClash(it.ev, within), false]; })',
          '  return items.map(function (it) { return [it.ev, it.ncol > 1, false]; })'),
     ]),
-    ("the printed key asked without capped", "the key does not name it", [
-        ('legendKeys(clockStates(wentries, true))', 'legendKeys(clockStates(wentries))'),
+    # This used to drop `capped` from the run's clockStates call, so a colliding
+    # bar stopped counting as ordinary as well. That produced a key missing a
+    # state the board drew - until the open-to-all state was removed from the
+    # board, after which the mutation had nothing left to disagree about and the
+    # test quietly stopped biting. For a while it was caught by the separate rule
+    # against a lone ordinary key, which is not what it was testing.
+    #
+    # It breaks what this gate is actually for instead: the board draws a
+    # collision and the key is made not to name it.
+    ("a collision the key is not allowed to mention", "the key does not name it", [
+        ("""  if (st.clash) k += '<span class="lg lg-clash">runs at the same time as something else</span>';""",
+         """  if (false) k += '<span class="lg lg-clash">runs at the same time as something else</span>';"""),
     ]),
     ("a collision mark on an event the student cannot attend",
      "marked as colliding and as not open to you", [
