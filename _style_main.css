@@ -706,24 +706,30 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 .qnote b{color:var(--purple);font-weight:700}
 
 /* ---- who made this ------------------------------------------------------ */
-/* At the end of the control row, beside the views and the search, rather than in
-   the masthead, which scrolls away the moment a student starts reading their week.
+/* Under the standfirst, in the masthead. It sat at the end of the control row for
+   a while, on the reasoning that the masthead scrolls away — but among the things
+   a student is there to press, a byline reads as one more thing asking to be
+   tapped, which is the opposite of what a credit should do. Seen once on arrival
+   and then out of the way is the right trade.
 
-   Drawn in the page's own link idiom — purple on the paper with a gold rule
-   beneath, hovering to purple, the same as the other inline controls — because a
+   Drawn in the page's own link idiom — lettering over a gold rule — because a
    credit that is a link should look like the other links and not like a badge.
    The rule sits under the word alone, so the logo is not underlined. Two links,
    one per profile, each named: hanging both off the name would have meant linking
    one of two equal profiles and reaching the same place twice. */
+.by-mast{margin-top:10px}
 .by-nav{
-  /* align-self:center, or the credit stretches to the height of the button row and
-     its lettering sits at the top of that box instead of on the line the button
-     labels and the search placeholder share. Inside it, baseline rather than
-     centre: an underlined word is 3px taller than the words beside it, and
-     centring lifted the lettering off the line they share. */
-  margin-left:auto;align-self:center;display:inline-flex;align-items:baseline;gap:10px;
+  /* baseline rather than centre: an underlined word is 3px taller than the words
+     beside it, and centring lifts the lettering off the line they share. */
+  display:inline-flex;align-items:baseline;gap:10px;
   font-size:12px;color:var(--meta);white-space:nowrap;
 }
+/* The masthead's paper is deep purple, so the idiom inverts here: white lettering
+   on the gold rule instead of purple, and gold on hover instead of lilac. */
+.by-mast .by-nav{color:#CFC4E2}
+.by-mast .mk{color:#fff}
+.by-mast .mk:hover,.by-mast .mk:focus-visible{color:var(--gold)}
+.by-mast .mk:hover .lbl,.by-mast .mk:focus-visible .lbl{border-bottom-color:#fff}
 .by-nav .who{font-weight:600}
 .mk{
   display:inline-flex;align-items:baseline;gap:5px;

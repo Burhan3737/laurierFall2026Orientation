@@ -204,7 +204,7 @@ HEAD = f"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Laurier Orientation — Event Finder</title>
+<title>Laurier Orientation</title>
 {FONTHEAD}{CSS}
 </style>
 </head>

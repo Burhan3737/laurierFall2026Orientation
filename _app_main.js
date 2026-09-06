@@ -1133,17 +1133,19 @@ function drawIdbar() {
   /* On a phone the program select and the stream ticks were 180px of controls
      between the question and the answer, and a student scrolled a screen and a
      half before seeing a single event. They are refinements, not the question,
-     so below 900px they start folded behind a line that says what they are and
-     how many are on. Once folded or unfolded by hand that choice sticks through
-     redraws — MORE stays null only until someone expresses a preference. */
+     so below 900px they start folded behind a line that says what they are. Once
+     folded or unfolded by hand that choice sticks through redraws — MORE stays
+     null only until someone expresses a preference.
+
+     The line names the controls and nothing else. It used to read "2 refinements
+     on" once anything was ticked, which described the page's own state in the
+     page's own vocabulary rather than naming what was behind it. */
   if (extras) {
-    var nOn = sel.streams.length + (sel.program ? 1 : 0);
     var openNow = MORE === null
       ? !(window.matchMedia && window.matchMedia("(max-width:900px)").matches)
       : MORE;
     h += '<details class="idmore"' + (openNow ? " open" : "") + '><summary>' +
-      (nOn ? nOn + " refinement" + (nOn === 1 ? "" : "s") + " on"
-           : "My program, and anything else I am") +
+      "My program, and anything else I am" +
       "</summary>" + '<div class="idrow idrow-2">' + extras + "</div></details>";
   }
 
@@ -1252,7 +1254,7 @@ function drawNav() {
        'aria-label="Search the board by title, venue, host or description" ' +
        'placeholder="Search title, venue, host" value="' + esc(q) + '">' +
        (q ? '<button class="qclr" id="qclr">clear</button>' : "") +
-       "</div>" + credit() + "</div>";
+       "</div></div>";
   if (q) {
     var onBoard = list.filter(function (e) { return ghosts || assess(e).ok; });
     var shown = onBoard.length;
@@ -1638,6 +1640,14 @@ function credit() {
   return '<span class="by-nav"><span class="who">Built by Burhan</span>' +
     marks() + "</span>";
 }
+/* The credit belongs beside the title, not beside the buttons. In the control row
+   it sat among the things a student is meant to press, which made a byline read
+   as one more thing asking to be tapped. Here it is seen on arrival and then
+   scrolls away, which is the whole of what a credit should do. */
+(function () {
+  var slot = document.getElementById("credit");
+  if (slot) slot.innerHTML = credit();
+})();
 
 /* ---- the board ---------------------------------------------------------- */
 var looseCarry = [];
