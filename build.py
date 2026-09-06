@@ -200,15 +200,26 @@ else:
                 '<style>' + _NL)
 
 # A student sends this to another student, and a link with no card attached looks
-# like nothing. The description is what the page is, not a pitch. The icon is the
-# masthead in miniature -- deep purple with the gold rule under it -- inline as a
-# data URI so the page stays a single file that needs no second request.
+# like nothing. The description is what the page is, not a pitch.
+#
+# The icon is a plain leaf, drawn here from two curves and a stem. It carries the
+# page's own colours and nothing of anyone's identity: no hawk, no crest, no
+# lettering that could be read as a wordmark. This is not Laurier's page, so it
+# must not wear Laurier's marks -- an icon that borrows them claims an authority
+# the footer explicitly disclaims, quite apart from being someone else's property.
 FAVICON = ("data:image/svg+xml,"
            "%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E"
            "%3Crect%20width='64'%20height='64'%20fill='%23210049'/%3E"
-           "%3Crect%20y='52'%20width='64'%20height='12'%20fill='%23F2A900'/%3E"
-           "%3Crect%20x='12'%20y='14'%20width='8'%20height='28'%20fill='%23ffffff'/%3E"
-           "%3Crect%20x='12'%20y='34'%20width='30'%20height='8'%20fill='%23ffffff'/%3E"
+           # Tilted, with a stem. Upright and symmetrical it read as an almond,
+           # not a leaf; the lean and the stalk are what make the shape legible.
+           # One vein, not five: at 16px -- the only size a tab ever shows -- four
+           # side veins closed up into a smudge.
+           "%3Cg%20transform='rotate(-25%2032%2032)'%3E"
+           "%3Cpath%20d='M32%2010c14%2013%2019%2028%200%2042C13%2038%2018%2023%2032%2010z'"
+           "%20fill='%23F2A900'/%3E"
+           "%3Cpath%20d='M32%2017v39'%20stroke='%23210049'%20stroke-width='3'"
+           "%20stroke-linecap='round'/%3E"
+           "%3C/g%3E"
            "%3C/svg%3E")
 DESCRIPTION = ("Every published Wilfrid Laurier orientation event for Fall 2026, laid out "
                "on the clock. Say who you are and read your week by the hour, with the "
