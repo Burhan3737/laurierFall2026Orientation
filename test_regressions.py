@@ -158,6 +158,24 @@ check("the programme dropdown starts on the none state",
 check("that option hides every program welcome",
       'sel.program === NO_PROGRAM && e.pg' in app)
 
+# One day is the question a student arrives with, so it leads the view buttons.
+_views = app[app.index("h += '<div class=\"views\">'"):]
+check("One day leads the view buttons",
+      _views.index('vb("day"') < _views.index('vb("week"')
+      and _views.index('vb("day"') < _views.index('vb("reg"')
+      and _views.index('vb("plan"') > _views.index('vb("reg"'))
+
+# The chosen board is kept on the device, because an address is only kept if the
+# page was bookmarked -- a student who typed the URL again got a stranger's board.
+check("the selection is written to storage whenever the address is",
+      "function saveSel()" in app and "saveSel();" in app and "LSSEL" in app)
+# ...but a link someone sends must open their board, not the reader's, or sharing
+# quietly stops working. Memory is consulted only when there is no address at all.
+check("an address beats what the device remembers",
+      "var mem = h ? null : lsGet(LSSEL);" in app)
+check("the day is not restored from storage",
+      "day: day" not in app[app.index("function saveSel()"):app.index("function saveSel()") + 700])
+
 
 # --- audit round 4 -------------------------------------------------------
 ind = [e for e in E if e['source_file'] == 'indigenous.html']

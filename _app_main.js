@@ -635,6 +635,7 @@ function mapLink(e) {
 ------------------------------------------------------------------------- */
 var LSPLAN = "wlu-orientation.plan.v1";
 var LSREG  = "wlu-orientation.registered.v1";
+var LSSEL  = "wlu-orientation.selection.v1";
 var PLAN = {};        // dupKey -> 1, the events ticked
 var REGDONE = {};     // dupKey -> 1, the registrations already done
 /* Opened from a memory stick with storage switched off, every one of these is a
@@ -650,6 +651,18 @@ function lsRead(key) {
 }
 function lsWrite(key, obj) {
   try { localStorage.setItem(key, JSON.stringify(Object.keys(obj))); } catch (x) {}
+}
+/* The plan and the ticks are sets of keys; a selection is a record, so it is
+   stored whole rather than as its key list. Same indifference to storage being
+   unavailable: the page works, it just forgets. */
+function lsGet(key) {
+  try {
+    var raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (x) { return null; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (x) {}
 }
 function isPicked(e) { return !!PLAN[dupKey(e)]; }
 function togglePick(k) {
@@ -1215,6 +1228,10 @@ function drawNav() {
       (n ? '<span class="vbn">' + n + "</span>" : "") + "</button>";
   }
   h += '<div class="views">' +
+       /* One day leads. It is the question a student actually arrives with — what
+          is on today — and it is where the board already lands on load; the run is
+          the wider second look, not the opening one. */
+       vb("day", "One day", 0) +
        /* The run used to be withheld below 900px, on the reading that a week grid
           cannot work on a phone. That reading described the old view — a column
           per day, minimum 116px each, inside a sideways scroller. This one is a
@@ -1223,7 +1240,6 @@ function drawNav() {
           sideways, and it is the same height it is on a laptop. Withholding it
           left a phone with three tabs where a laptop has four. */
        vb("week", "Whole run", 0) +
-       vb("day", "One day", 0) +
        /* Clashes is hidden, not removed: the lens still answers on &view=clash and
           every gate still drives it, but it was one tab too many on a page a
           student reads once. */
@@ -3046,6 +3062,23 @@ function writeHash() {
   if (q) p += "&q=" + encodeURIComponent(q);
   LASTHASH = "#" + p;
   history.replaceState(null, "", LASTHASH);
+  saveSel();
+}
+/* Everything the student chose, kept on the device so the next visit opens where
+   the last one left off. The address already carried all of it -- that is what
+   makes a board shareable -- but an address is only kept if the page is
+   bookmarked, and a student who types the URL again got a stranger's board:
+   undergraduate, first campus, no streams, no programme.
+
+   Only what was chosen. The day is deliberately not stored: it moves on by
+   itself, and a stored one would open a stale morning on a page whose whole
+   subject is what is happening now. */
+function saveSel() {
+  lsSet(LSSEL, {
+    level: sel.level, campus: sel.campus, term: sel.term,
+    streams: sel.streams, program: sel.program,
+    view: view, ghosts: ghosts, list: asList, plan: planCal
+  });
 }
 var LASTHASH = "";
 function readHash() {
@@ -3054,6 +3087,23 @@ function readHash() {
     var i = kv.indexOf("=");
     if (i > 0) p[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, " "));
   });
+  /* An address beats what this device remembers, and remembering beats the
+     defaults. A link someone sends must open their board, not the reader's, or
+     sharing quietly stops working; arriving with no address at all is the case
+     that used to lose everything. Written into p rather than applied afterwards
+     so there is one path that settles a selection, not two. */
+  var mem = h ? null : lsGet(LSSEL);
+  if (mem) {
+    if (mem.level) p.level = mem.level;
+    if (mem.campus) p.campus = mem.campus;
+    if (mem.term) p.term = mem.term;
+    if (mem.streams && mem.streams.length) p.streams = mem.streams.join("|");
+    if (mem.program) p.program = mem.program;
+    if (mem.view) p.view = mem.view;
+    if (mem.ghosts) p.ghosts = "1";
+    if (typeof mem.list === "boolean") p.list = mem.list ? "1" : "0";
+    if (mem.plan) p.plan = "cal";
+  }
   sel = {
     level:  META.levels.indexOf(p.level) >= 0 ? p.level : META.levels[0],
     campus: META.campuses.indexOf(p.campus) >= 0 ? p.campus : META.campuses[0],
