@@ -99,16 +99,24 @@ def adjacent(prev_a, a):
         node = node.next_sibling
     return node is a
 
+def link_of(a):
+    """One anchor as {text, href}, or None if it carries neither."""
+    t = clean(a.get_text())
+    h = a.get('href') or ""
+    if not t or h.startswith('#'):
+        return None
+    if h.startswith('/'):
+        h = "https://students.wlu.ca" + h
+    return {"text": t, "href": h}
+
 def links_in(node):
     out, prev = [], None
     for a in node.find_all('a', href=True):
-        t = clean(a.get_text())
-        h = a['href']
-        if not t or h.startswith('#'):
+        l = link_of(a)
+        if l is None:
             prev = a
             continue
-        if h.startswith('/'):
-            h = "https://students.wlu.ca" + h
+        t, h = l["text"], l["href"]
         if out and prev is not None and out[-1]["href"] == h and adjacent(prev, a):
             out[-1]["text"] += t              # mid-word split, rejoin
         else:
@@ -337,6 +345,23 @@ SECT_LABELS = ("Registration Deadline", "Early Bird Registration",
 SECT_STOP = re.compile(r'\s*(?:' + '|'.join(SECT_LABELS) + r')\s*:', re.I)
 
 
+def section_ctas(cont):
+    """Call-to-action anchors a section publishes outside any paragraph or list.
+
+    Laurier writes the SEEDs registration button twice on the Indigenous page and
+    the two are not shaped alike: Waterloo's sits in a <p>, Brantford's is a bare
+    child of the section's heading <div>. section_prose() reads p/ul/ol and the
+    text_block_ sweep reads only those blocks, so Brantford's was captured by
+    neither, and its six events carried no registration link at all. That was
+    survivable while "Orientation itself" listed every page banner; once it was
+    filtered to the reader's own level, the page-wide copy stopped being shown
+    too and a Brantford student had no route to a form Laurier requires."""
+    return [a for a in cont.find_all('a', class_='call__action', href=True)
+            if not a.find_parent('div', class_='accordion-panel')
+            and not a.find_parent(['p', 'ul', 'ol'])
+            and not a.find_parent('div', id=re.compile(r'^text_block_'))]
+
+
 def section_prose(cont):
     """Blocks of a section that sit OUTSIDE any accordion panel.
 
@@ -503,6 +528,10 @@ def parse_page(fname):
                 for l in links_in(blk):
                     if l not in sect_links and not re.search(r'/orientation/(undergraduate|graduate)\.html', l['href']):
                         sect_links.append(l)
+        for a in section_ctas(cont):
+            l = link_of(a)
+            if l and l not in sect_links and                not re.search(r'/orientation/(undergraduate|graduate)\.html', l['href']):
+                sect_links.append(l)
         if re.search(r'open to ALL new to Laurier undergraduate students only', " ".join(prose_txt), re.I):
             sect_info["Note"] = "Laurier states events on this page are open to new undergraduate students only unless otherwise noted."
 

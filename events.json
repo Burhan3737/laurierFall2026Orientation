@@ -3402,16 +3402,16 @@
   },
   {
    "title": "Welcome Back Concert",
-   "desc": "Something big is coming! 👀 Get ready for Laurier's biggest night of the year! A global superstar, one stage, and a name we're not ready to drop yet. Mark your calendar and follow @campuslifewaterloo on Instagram for the reveal and ticket information!",
-   "where": "TBD",
-   "when": "TBD",
+   "desc": "Get ready for an unforgettable night at Laurier Orientation 2026! Join us outdoors at Bingemans in Kitchener for an evening of live music, DJs, entertainment, and brand activations featuring: Daniel Monte DJ Order 66 Headliner: French Montana Tickets are only $30!!! (+ $1.50 processing fee) Come early to explore the brand activations, grab food and drinks, and get ready for a full night of entertainment. This is an outdoor event, so please plan accordingly and come prepared for the weather. Get Your Ticket Now! CONCERT POLICIES AND NOTES. Attendees are expected to follow all venue and event policies, as well as the direction of event staff and security. Venue Entrance & Re-Entry. All attendees are subject to security screening upon entry. The concert entrance is located along the walkway to the left of the Boston Pizza/Kingpin building. Please do not enter through the building to access the concert. Concert attendees are welcome to enter the Boston Pizza/Kingpin building to use the arcade and bowling facilities. These activities are not included with your concert ticket and will be at your own expense. Please bring your Laurier student ID with you to the event. It may be required for entry or access to student-only and 19+ areas. Please note: There are no re-entry privileges for the concert. Once you leave the concert area, you will not be permitted to re-enter. Transportation. Bussing will be available to and from Laurier's Waterloo campus and Bingemans. Additional information about pickup locations and schedules will be provided closer to the event. Parking is available at the venue. Weather Policy. The concert is an outdoor event and will take place rain or shine unless severe or inclement weather makes the event unsafe. In the event of cancellation due to weather, every effort will be made to reschedule the concert for a later date. Food and Beverage. Food and beverages will be available for purchase on site. No external food or beverages will be permitted A designated beer garden will be available for attendees who are 19+. Anyone wishing to access the beer garden or other 19+ areas must provide both a valid Laurier student ID and government-issued photo ID. Smoking. A designated smoking area will be available for attendees who are 19+. Bag & Item Policy. For the safety and security of all attendees, all bags and personal items are subject to inspection upon entry. Small clutches and wristlets up to approximately 6\"\" x 9\"\" are permitted. Clear plastic, vinyl, or PVC bags up to approximately 12\"\" x 6\"\" x 12\"\" are permitted and recommended. Large backpacks, oversized bags, and large non-clear bags are not permitted. Weapons, illegal substances, glass containers, and other prohibited or dangerous items are not permitted. Professional cameras, recording equipment, and other large photography equipment are not permitted. Items that could disrupt the event or pose a safety concern may be refused entry at the discretion of venue or event security. Please leave prohibited items at home, as there is no bag or item check available at the venue.",
+   "where": "Bingemans | 425 Bingemans Centre Dr., Kitchener, ON",
+   "when": "Doors open at 5 p.m. | Concert begins at 7 p.m.",
    "host": "Your Students' Union",
-   "cost": "",
+   "cost": "$30 (+ $1.50 processing fee)",
    "audience": null,
    "links": [
     {
-     "text": "@campuslifewaterloo",
-     "href": "https://www.instagram.com/campuslifewaterloo/"
+     "text": "Get Your Ticket Now!",
+     "href": "https://laurieractivities.universitytickets.com/w/event.aspx?id=2020&p=1"
     },
     {
      "text": "Your Students' Union",
@@ -3443,10 +3443,7 @@
    "url": "https://students.wlu.ca/support-and-wellness/orientation/assets/schedules/bachelor-of-education.html#sept-10-waterloo",
    "tags": [],
    "open_to_all": false,
-   "flags": [
-    "no-time",
-    "no-venue"
-   ]
+   "flags": []
   },
   {
    "title": "Lane Swim",
@@ -7401,7 +7398,12 @@
    "stream": "Indigenous",
    "source_file": "indigenous.html",
    "section_info": {},
-   "section_links": [],
+   "section_links": [
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
    "page_links": [
     {
      "text": "Register Now For SEEDs Orientation!",
@@ -7437,7 +7439,12 @@
    "stream": "Indigenous",
    "source_file": "indigenous.html",
    "section_info": {},
-   "section_links": [],
+   "section_links": [
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
    "page_links": [
     {
      "text": "Register Now For SEEDs Orientation!",
@@ -7473,7 +7480,12 @@
    "stream": "Indigenous",
    "source_file": "indigenous.html",
    "section_info": {},
-   "section_links": [],
+   "section_links": [
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
    "page_links": [
     {
      "text": "Register Now For SEEDs Orientation!",
@@ -7511,7 +7523,12 @@
    "stream": "Indigenous",
    "source_file": "indigenous.html",
    "section_info": {},
-   "section_links": [],
+   "section_links": [
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
    "page_links": [
     {
      "text": "Register Now For SEEDs Orientation!",
@@ -7549,7 +7566,12 @@
    "stream": "Indigenous",
    "source_file": "indigenous.html",
    "section_info": {},
-   "section_links": [],
+   "section_links": [
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
    "page_links": [
     {
      "text": "Register Now For SEEDs Orientation!",
@@ -7587,7 +7609,12 @@
    "stream": "Indigenous",
    "source_file": "indigenous.html",
    "section_info": {},
-   "section_links": [],
+   "section_links": [
+    {
+     "text": "Register Now!",
+     "href": "https://wlu.ca1.qualtrics.com/jfe/form/SV_enB9GE8BCBrmwDk"
+    }
+   ],
    "page_links": [
     {
      "text": "Register Now For SEEDs Orientation!",
@@ -15243,7 +15270,7 @@
    "when": "5 to 6 p.m.",
    "host": "Department of Residence",
    "cost": "",
-   "audience": "Laurier Residence Students",
+   "audience": "Laurier Residence Students who moved in on Friday, Sept. 4",
    "links": [
     {
      "text": "Department of Residence",
@@ -15290,7 +15317,7 @@
    "when": "6:30 to 7:30 p.m.",
    "host": "Department of Residence",
    "cost": "",
-   "audience": "Laurier Residence Students",
+   "audience": "Laurier Residence Students who moved in on Friday, Sept. 4",
    "links": [
     {
      "text": "Department of Residence",
@@ -15529,7 +15556,7 @@
    "when": "5 to 6 p.m.",
    "host": "Department of Residence",
    "cost": "",
-   "audience": "Laurier Residence Students",
+   "audience": "Laurier Residence Students who moved in on Saturday, Sept. 5",
    "links": [
     {
      "text": "Department of Residence",
@@ -15574,7 +15601,7 @@
    "when": "6:30 to 7:30 p.m.",
    "host": "Department of Residence",
    "cost": "",
-   "audience": "Laurier Residence Students",
+   "audience": "Laurier Residence Students who moved in on Saturday, Sept. 5",
    "links": [
     {
      "text": "Department of Residence",
@@ -15903,7 +15930,7 @@
    "when": "5 to 6 p.m.",
    "host": "Department of Residence",
    "cost": "",
-   "audience": "Laurier Residence Students",
+   "audience": "Laurier Residence Students who moved in on Sunday, Sept. 6",
    "links": [
     {
      "text": "Department of Residence",
@@ -15950,7 +15977,7 @@
    "when": "6:30 to 7:30 p.m.",
    "host": "Department of Residence",
    "cost": "",
-   "audience": "Laurier Residence Students",
+   "audience": "Laurier Residence Students who moved in on Sunday, Sept. 6",
    "links": [
     {
      "text": "Department of Residence",
@@ -19166,8 +19193,8 @@
    "flags": []
   },
   {
-   "title": "Women's-Only Lane Swim",
-   "desc": "Ready to dive in? Discover how lane swimming works and learn the ropes from our lifeguards. All lane swim sessions are set in short course (25m) configuration. This lane swim is women's only. Everyone has the right to use the Athletic Complex in accordance with their lived gender identity and/or gender expression.",
+   "title": "Lane Swim",
+   "desc": "Ready to dive in? Discover how lane swimming works and learn the ropes from our lifeguards. All lane swim sessions are set in short course (25m) configuration.",
    "where": "Pool | Athletic Complex",
    "when": "7:30 to 9 a.m.",
    "host": "",
@@ -19412,8 +19439,8 @@
    "flags": []
   },
   {
-   "title": "Lane Swim",
-   "desc": "Ready to dive in? Discover how lane swimming works and learn the ropes from our lifeguards. All lane swim sessions are set in short course (25m) configuration.",
+   "title": "Women's-Only Lane Swim",
+   "desc": "Ready to dive in? Discover how lane swimming works and learn the ropes from our lifeguards. All lane swim sessions are set in short course (25m) configuration. This lane swim is women's only. Everyone has the right to use the Athletic Complex in accordance with their lived gender identity and/or gender expression.",
    "where": "Pool | Athletic Complex",
    "when": "8:15 to 9:15 p.m.",
    "host": "",
@@ -19602,7 +19629,7 @@
    "links": [
     {
      "text": "Get Your Ticket Now!",
-     "href": "https://laurieractivities.universitytickets.com/w/event.aspx?id=2014&p=1"
+     "href": "https://laurieractivities.universitytickets.com/w/event.aspx?id=2020&p=1"
     },
     {
      "text": "Your Students' Union",

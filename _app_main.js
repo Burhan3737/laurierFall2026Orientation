@@ -39,8 +39,8 @@ function assess(e) {
     var claimed = g.filter(function (t) { return sel.streams.indexOf(t) >= 0; });
     if (!claimed.length) {
       return { ok: false, reason: g.indexOf("Virtual") >= 0 && g.length === 1
-        ? "Online — tick Virtual to show"
-        : g.join(" / ") + " students only" };
+        ? "Tick " + streamLabel("Virtual") + " to show"
+        : g.map(streamLabel).join(" / ") + " students only" };
     }
   }
   // A program/faculty welcome belongs to one program. Naming yours hides the rest.
@@ -465,12 +465,21 @@ function namesLevel(text, lvl) {
    "Register Now! (undergraduate)" and "Register Now! (graduate)" on the
    International and Exchange schedule, whose title names no level, and the
    graduate one is the only route to graduate registration anywhere in the data.
-   Reading the heading alone would have hidden it from every student. */
+   Reading the heading alone would have hidden it from every student.
+
+   A banner naming no level, on a page naming no level, is nobody else's either.
+   The first version of this returned false for it and dropped it, which took the
+   SEEDs registration off the Brantford Indigenous board entirely -- Laurier
+   requires that form, and its page-wide button was the only copy those six events
+   could reach. Not-mine and not-anyone's are different answers. */
 function ownLevel(g) {
   var named = null;
   for (var k in LEVELWORD) if (namesLevel(g.text, k)) { named = k; break; }
   if (named) return named === sel.level;
-  return namesLevel(g.pages.join(" "), sel.level);
+  for (var j in LEVELWORD) if (namesLevel(g.pages.join(" "), j)) {
+    return namesLevel(g.pages.join(" "), sel.level);
+  }
+  return true;
 }
 /* The orientation-wide registrations reachable from a set of events, one entry
    per link, each naming the schedules it was printed on and how many events
@@ -937,11 +946,23 @@ function parseWhen(str) {
   while ((m = re.exec(t)) !== null) {
     var h = +m[1];
     if (h < 1 || h > 12) continue;
-    hits.push({ h: h, mm: m[2] ? +m[2] : 0, ap: m[3] ? m[3].charAt(0) : null });
+    hits.push({ h: h, mm: m[2] ? +m[2] : 0, ap: m[3] ? m[3].charAt(0) : null,
+                at: m.index, to: m.index + m[0].length });
     if (hits.length === 2) break;
   }
   if (!hits.length) return null;
   var a = hits[0], b = hits[1] || null;
+  /* "Doors open at 5 p.m. | Concert begins at 7 p.m." is two starts, not a range.
+     Taking the first two clock times as from-and-to drew the concert as finishing
+     at 7, which is when the act comes on, and said so on the clock, the run bar,
+     the printed sheet and the calendar file a student leaves by. A range connector
+     between the two times means it is a range; a starting cue and no connector
+     means the second time is another beginning, so there is no published end. */
+  if (b) {
+    var between = t.slice(a.to, b.at);
+    if (!/\b(?:to|until|till|through)\b|[\u2013\u2014-]/.test(between)
+        && /\b(?:begins?|starts?|doors?|opens?)\b/.test(between)) b = null;
+  }
   var aHadAp = !!a.ap;
   if (!a.ap && b && b.ap) a.ap = b.ap;
   if (b && !b.ap && a.ap)  b.ap = a.ap;
@@ -1368,12 +1389,30 @@ function split(list) {
   long.sort(function (a, b) { return a.s - b.s; });
   return { timed: timed, long: long, loose: loose };
 }
-function ribbonHtml(it) {
+/* Two entries sharing a title and a start time but sitting in different rooms are
+   not the same event — the Get Involved Fair runs in the Quad and outside the
+   Athletic Complex at the same hour — so both are drawn and the label says which
+   is which. The run view had this rule and the day view did not, so the "Open most
+   of the day" band showed two identical rows and a reader had to open both cards to
+   learn there were two of them. One index, both callers. */
+function titleIndex(entries) {
+  var ix = {};
+  entries.forEach(function (it) {
+    var tk = stripDay(it.ev.t) + " @" + it.s;
+    ix[tk] = (ix[tk] || 0) + 1;
+  });
+  return ix;
+}
+function needsRoom(e, s, ix) {
+  return !!(ix && ix[stripDay(e.t) + " @" + s] > 1 && e.w);
+}
+function ribbonHtml(it, ix) {
   var e = it.ev, a = assess(e), off = !a.ok;
+  var nm = title(e) + (needsRoom(e, it.s, ix) ? " — " + e.w : "");
   return '<button class="rib' + (off ? " off" : "") + (isPicked(e) ? " mine" : "") + '" ' +
     (off ? 'data-ev-off="' : 'data-ev-title="') + esc(title(e)) + '" data-id="' + e.__i + '">' +
     '<span class="rt">' + clock(it.s) + "–" + clock(it.e) + "</span>" +
-    '<span class="rh">' + esc(title(e)) + "</span>" +
+    '<span class="rh">' + esc(nm) + "</span>" +
     (isPicked(e) ? '<span class="mymark" aria-hidden="true">✓</span>' : "") + "</button>";
 }
 /* ---- a clock with the dead hours squeezed out ---------------------------
@@ -1754,7 +1793,7 @@ function clashHtml(list) {
    title, in the detail sheet, and uncut in One day. */
 function barLabel(it, e, k, wide, room, laneW, byTitle, left, top, off) {
   var t = shortTitle(e, k);
-  if (byTitle && byTitle[stripDay(e.t) + " @" + it.s] > 1 && e.w) t += " — " + e.w;
+  if (needsRoom(e, it.s, byTitle)) t += " — " + e.w;
   return ['<span class="wbl">' + esc(t) + "</span>", ""];
 }
 
@@ -1807,11 +1846,7 @@ function weekHtml(list, keys) {
     // outside the Athletic Complex at the same hour -- so both are drawn and the
     // label says which is which. (Laurier's own repeats were folded before the
     // board was built; there is nothing left to de-duplicate here.)
-    var byTitle = {};
-    pt.timed.concat(pt.long).forEach(function (it) {
-      var tk = stripDay(it.ev.t) + " @" + it.s;
-      byTitle[tk] = (byTitle[tk] || 0) + 1;
-    });
+    var byTitle = titleIndex(pt.timed.concat(pt.long));
     var items = placed(pt.timed.concat(pt.long));
     var lanes = items.reduce(function (mx, it) { return Math.max(mx, it.col + 1); }, 1);
     var shown = items;
@@ -2030,7 +2065,10 @@ function dayHtml(list, keys) {
 
   if (parts.long.length)
     h += '<div class="allday"><h3>Open most of the day <span>' + parts.long.length + '</span></h3>' +
-         '<div class="ribs wide">' + parts.long.map(ribbonHtml).join("") + "</div></div>";
+         '<div class="ribs wide">' + (function () {
+           var ix = titleIndex(parts.timed.concat(parts.long));
+           return parts.long.map(function (it) { return ribbonHtml(it, ix); }).join("");
+         })() + "</div></div>";
 
   if (parts.loose.length)
     h += '<div class="loosebar tight"><h3>Time not published <span>' + parts.loose.length + "</span></h3><div class=\"chips\">" +
@@ -2127,7 +2165,10 @@ function planCalHtml(picks) {
 
     if (pt.long.length)
       h += '<div class="allday"><h4>Open most of the day <span>' + pt.long.length +
-               "</span></h4><div class=\"ribs wide\">" + pt.long.map(ribbonHtml).join("") + "</div></div>";
+               "</span></h4><div class=\"ribs wide\">" + (function () {
+                 var ix = titleIndex(pt.timed.concat(pt.long));
+                 return pt.long.map(function (it) { return ribbonHtml(it, ix); }).join("");
+               })() + "</div></div>";
 
     if (pt.loose.length)
       h += '<div class="loosebar tight"><h4>Time not published <span>' + pt.loose.length +

@@ -10,6 +10,13 @@
    gated, and thirty events restricted to international and exchange students were
    shown to everybody with the tick that controls them missing from the chooser. */
 var GATES = STREAMS.slice();
+/* The tick labels, needed here because the shared eligibility core names a stream
+   in the reason it gives for hiding an event. Kept identical to the board's copy:
+   assess() said "tick Virtual to show" while the control has always been labelled
+   "Online sessions (Zoom)", so ten board states told a student to tick something
+   that does not exist. */
+var STREAM_LABEL = { "Virtual": "Online sessions (Zoom)" };
+function streamLabel(t) { return STREAM_LABEL[t] || t; }
 var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"];
 var DOW = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
@@ -50,8 +57,8 @@ function assess(e) {
     var claimed = g.filter(function (t) { return sel.streams.indexOf(t) >= 0; });
     if (!claimed.length) {
       return { ok: false, reason: g.indexOf("Virtual") >= 0 && g.length === 1
-        ? "Online — tick Virtual to show"
-        : g.join(" / ") + " students only" };
+        ? "Tick " + streamLabel("Virtual") + " to show"
+        : g.map(streamLabel).join(" / ") + " students only" };
     }
   }
   // A program/faculty welcome belongs to one program. Naming yours hides the rest.
