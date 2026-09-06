@@ -1,0 +1,7 @@
+# The build and its gates. The page itself needs none of this — it is one static
+# file — but nothing can be rebuilt or re-checked without them. Only these three
+# are third-party; everything else the pipeline imports is in the standard library
+# (check_drift.py fetches with urllib, not requests).
+beautifulsoup4>=4.12     # parse.py reads Laurier's snapshots
+PyMuPDF>=1.24            # plus_check.py reads back the PDFs Chrome prints
+websocket-client>=1.7    # _mobile.py drives Chrome over the DevTools Protocol

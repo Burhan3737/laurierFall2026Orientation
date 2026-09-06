@@ -35,6 +35,23 @@ for out, args in PAGES:
     if before != after:
         changed.append(out)
 
+# What Vercel serves. It is a copy of the board under the name a web server looks
+# for, written here rather than by hand or by a deploy script, because a deployed
+# page that has drifted from its sources is exactly the failure this file exists
+# to prevent -- and it would drift silently, since nothing else opens it.
+DEPLOY = os.path.join("public", "index.html")
+if not failed:
+    if not os.path.isdir("public"):
+        os.makedirs("public")
+    board = open("orientation.html", "rb").read()
+    before = md5(DEPLOY)
+    if hashlib.md5(board).hexdigest() != before:
+        open(DEPLOY, "wb").write(board)
+        print("  %-26s %s" % (DEPLOY, "rebuilt (changed)"))
+        changed.append(DEPLOY)
+    else:
+        print("  %-26s %s" % (DEPLOY, "unchanged"))
+
 print()
 if failed:
     for out, err in failed:

@@ -1,0 +1,23 @@
+# Only public/ is ever served, but this file must not be an allowlist: a leading
+# "*" also hides vercel.json from the deployment that is meant to read it, and the
+# failure looks like a 404 with nothing to explain it. Name what to leave out.
+_src/
+_watch/
+_fonts/
+__pycache__/
+.claude/
+*.py
+*.pyc
+*.pdf
+*.ics
+*.txt
+*.json
+!vercel.json
+*.md
+_app.js
+_app_main.js
+_body_main.html
+_style_main.css
+_style_min.css
+_yardstick.html
+orientation.html

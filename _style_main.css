@@ -643,20 +643,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   .mastin{padding:10px 26px 11px}
 }
 
-/* The refinements disclosure. Open and invisible on a wide screen — there is room,
-   so there is no reason to make anyone ask for it. */
-.idmore>summary{display:none}
-@media (max-width:900px){
-  .idmore>summary{
-    display:block;list-style:none;cursor:pointer;margin-top:8px;padding:7px 0 6px;
-    border-top:1px dotted var(--line-h);font-size:12px;font-weight:700;
-    letter-spacing:.12em;text-transform:uppercase;color:var(--purple);
-  }
-  .idmore>summary::-webkit-details-marker{display:none}
-  .idmore>summary::after{content:" \002B";float:right;font-weight:700}
-  .idmore[open]>summary::after{content:" \2212"}
-  .idmore>summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-}
 @media (max-width:700px){
   /* the standfirst has done its work by the time you have read it once */
   .standfirst{display:none}
@@ -989,7 +975,11 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   /* five view buttons and a search field will not share one line on a phone;
      the search takes a line of its own rather than shrinking to "Se" */
   .views{flex-wrap:wrap}
-  .qwrap{flex:1 0 100%;margin:6px 0 0}
+  /* On its own line the field sat hard against the board below it. The margin is
+     written here, inside the narrow query, and not on .qwrap itself: at full width
+     the field shares a line with the view buttons, where a bottom margin would
+     push the whole control row down. */
+  .qwrap{flex:1 0 100%;margin:6px 0 10px}
   .qbox{width:100%}
   .pl{grid-template-columns:1fr;gap:6px 0}
   .rg{grid-template-columns:26px minmax(0,1fr)}

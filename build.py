@@ -199,12 +199,38 @@ else:
                 '<link href="%s" rel="stylesheet">' % FONTS + _NL +
                 '<style>' + _NL)
 
+# A student sends this to another student, and a link with no card attached looks
+# like nothing. The description is what the page is, not a pitch. The icon is the
+# masthead in miniature -- deep purple with the gold rule under it -- inline as a
+# data URI so the page stays a single file that needs no second request.
+FAVICON = ("data:image/svg+xml,"
+           "%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E"
+           "%3Crect%20width='64'%20height='64'%20fill='%23210049'/%3E"
+           "%3Crect%20y='52'%20width='64'%20height='12'%20fill='%23F2A900'/%3E"
+           "%3Crect%20x='12'%20y='14'%20width='8'%20height='28'%20fill='%23ffffff'/%3E"
+           "%3Crect%20x='12'%20y='34'%20width='30'%20height='8'%20fill='%23ffffff'/%3E"
+           "%3C/svg%3E")
+DESCRIPTION = ("Every published Wilfrid Laurier orientation event for Fall 2026, laid out "
+               "on the clock. Say who you are and read your week by the hour, with the "
+               "overlaps showing.")
+
 HEAD = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Laurier Orientation</title>
+<meta name="description" content="{DESCRIPTION}">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#210049">
+<link rel="icon" href="{FAVICON}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Laurier Orientation">
+<meta property="og:description" content="{DESCRIPTION}">
+<meta property="og:locale" content="en_CA">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Laurier Orientation">
+<meta name="twitter:description" content="{DESCRIPTION}">
 {FONTHEAD}{CSS}
 </style>
 </head>

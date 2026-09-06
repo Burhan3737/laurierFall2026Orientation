@@ -928,7 +928,6 @@ function eligibleSet() {
 /* ---- state -------------------------------------------------------------- */
 var view = "day";       // "day" | "week" | "clash"
 var day  = null;        // ISO date when view === "day"
-var MORE = null;        // null until the refinements row is folded or unfolded by hand
 var ghosts = false;     // draw events this student may not attend
 var picked = null;      // index of the event open in the sheet
 var asList = false;     // read the day as an agenda instead of a clock
@@ -1130,24 +1129,13 @@ function drawIdbar() {
                "</span></button>";
       }).join("") + "</div></div>";
   }
-  /* On a phone the program select and the stream ticks were 180px of controls
-     between the question and the answer, and a student scrolled a screen and a
-     half before seeing a single event. They are refinements, not the question,
-     so below 900px they start folded behind a line that says what they are. Once
-     folded or unfolded by hand that choice sticks through redraws — MORE stays
-     null only until someone expresses a preference.
-
-     The line names the controls and nothing else. It used to read "2 refinements
-     on" once anything was ticked, which described the page's own state in the
-     page's own vocabulary rather than naming what was behind it. */
-  if (extras) {
-    var openNow = MORE === null
-      ? !(window.matchMedia && window.matchMedia("(max-width:900px)").matches)
-      : MORE;
-    h += '<details class="idmore"' + (openNow ? " open" : "") + '><summary>' +
-      "My program, and anything else I am" +
-      "</summary>" + '<div class="idrow idrow-2">' + extras + "</div></details>";
-  }
+  /* The programme select and the stream ticks used to sit on a phone behind a
+     disclosure, on the grounds that they are refinements rather than the question
+     and were putting a screen and a half between the two. The fold cost more than
+     it saved: it needed a line of its own to label itself, and a control a student
+     cannot see is one they do not know they have. They flow with the rest of the
+     band now, at every width. */
+  if (extras) h += '<div class="idrow idrow-2">' + extras + "</div>";
 
   h += '<div class="idfoot"><span class="tally"><b>' + n + "</b> event" + (n === 1 ? "" : "s") +
        " you can attend</span>" +
@@ -1155,9 +1143,6 @@ function drawIdbar() {
        (ghosts ? "Hide" : "Show") + " what you cannot attend</button></div>";
   h += "</div>";
   $("idbar").innerHTML = h;
-
-  var dm = $("idbar").querySelector(".idmore");
-  if (dm) dm.addEventListener("toggle", function () { MORE = dm.open; });
 
   [].slice.call($("idbar").querySelectorAll("[data-k]")).forEach(function (b) {
     b.onclick = function () {
