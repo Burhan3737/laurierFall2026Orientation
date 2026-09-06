@@ -331,6 +331,15 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   .mast h1{font-size:34px}
   .standfirst{font-size:14.5px}
   .chipev{max-width:100%;width:100%}
+  /* Four tabs will not sit across a phone. Left as one flexible row they wrapped
+     three-and-one at 320px — My plan alone on a full-width line, reading as a
+     different kind of control from the three above it -- and every label broke
+     over two lines from 414px down. Two by two instead: four equal cells, each
+     label on one line at every width from 320 up. The padding is 13px rather than
+     the 6px above because a one-line label in a 6px box is 31px tall, and these
+     are the four controls a student uses most; 45px clears the 44px touch target.
+     This stops at 560 because from 561 up four across still fits on one line. */
+  .views .vb{flex:1 1 calc(50% - 1px);padding:13px 8px}
 }
 
 /* Printing is not handled here. Variant A printed whatever view happened to be
@@ -515,6 +524,22 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 @media (max-width:900px){
   .wkhead,.wkrow{grid-template-columns:60px minmax(0,1fr)}
   .wbl{font-size:10px}
+}
+/* The hour labels are absolutely positioned at a percentage of the lane, so they
+   close up as the lane narrows and eventually print on top of each other. An hour
+   label is 27px wide at its widest ("10am"), and the lane is the viewport less
+   102px of margin and day column, spread over the sixteen hours Laurier's run
+   covers — so hourly labelling stops fitting a little above 600px, and at 390px
+   sixteen of the seventeen labels overlapped the one before. The gridlines are
+   drawn separately and still mark every hour; it is only the labelling that
+   thins, which is the difference between a sparse axis and an illegible one. */
+@media (max-width:700px){
+  .wkaxis .wt:nth-child(even){display:none}
+}
+@media (max-width:560px){
+  /* every second hour still collides by 320px; every third clears at 40px pitch */
+  .wkaxis .wt{display:none}
+  .wkaxis .wt:nth-child(3n+1){display:block}
 }
 
 /* ---- clashes: the choices the run forces on you ------------------------ */

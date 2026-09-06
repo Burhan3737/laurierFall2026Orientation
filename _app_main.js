@@ -1201,7 +1201,6 @@ function drawNav() {
   var max = Math.max.apply(null, counts.concat([1]));
   var h = '<div class="navin">';
   var clashN = clashClusters(list).length;
-  var wide = window.innerWidth >= 900;
   var planN = planEvents().length;
   /* Deduplicated the same way the list below deduplicates, or the badge says 6
      and the sentence under it says 5 — Laurier lists one breakfast twice. */
@@ -1216,7 +1215,14 @@ function drawNav() {
       (n ? '<span class="vbn">' + n + "</span>" : "") + "</button>";
   }
   h += '<div class="views">' +
-       (wide ? vb("week", "Whole run", 0) : "") +
+       /* The run used to be withheld below 900px, on the reading that a week grid
+          cannot work on a phone. That reading described the old view — a column
+          per day, minimum 116px each, inside a sideways scroller. This one is a
+          row per day with time running left to right, so it narrows instead of
+          overflowing: at 390px it draws all nine days, the page does not scroll
+          sideways, and it is the same height it is on a laptop. Withholding it
+          left a phone with three tabs where a laptop has four. */
+       vb("week", "Whole run", 0) +
        vb("day", "One day", 0) +
        /* Clashes is hidden, not removed: the lens still answers on &view=clash and
           every gate still drives it, but it was one tab too many on a page a
@@ -2032,11 +2038,18 @@ function dayHtml(list, keys) {
      it properly — which of them you have to choose between, and when. Counting
      them again in the day heading said less and said it twice. */
   var lanes = items.reduce(function (m, it) { return Math.max(m, it.ncol); }, 0);
-  var narrow = window.innerWidth < 700;
   // Surrendering the clock on the busiest day gives up the one thing this view
-  // is for. Past MAX_LANES it tightens instead, and only a phone forces the list.
+  // is for. Past MAX_LANES it tightens instead.
   var tight = lanes > MAX_LANES;
-  var listNow = asList || narrow;
+  /* A phone used to be held to the agenda whatever it asked for: listNow was
+     `asList || innerWidth < 700`, so the toggle below could not have moved it and
+     was hidden as well. The agenda is still what a phone opens on — on the
+     busiest day of this run a 390px clock draws eight lanes at 48px a block, and
+     with every stream ticked ten lanes at 31px, which is a column of colour with
+     no room for a title — but that is a default, set once in readHash(), not a
+     prohibition. Most days are two to four lanes and read perfectly well on the
+     clock, and My plan has offered a phone this same choice all along. */
+  var listNow = asList;
 
   var h = '<div class="dayhead"><div class="dayin">' +
     '<button class="step" data-step="-1"' + (i <= 0 ? " disabled" : "") + ' aria-label="Previous day">‹</button>' +
@@ -2055,7 +2068,7 @@ function dayHtml(list, keys) {
          before it appeared, so stepping across the run made it come and go — a
          control that is there on Tuesday and gone on Sunday is one a student
          stops looking for. One event still reads either way. */
-      var extra = (narrow || !items.length ? "" :
+      var extra = (!items.length ? "" :
         '<button class="modebtn" data-mode="1">' +
         (listNow ? "Draw it on the clock" : "Read it as a list") + "</button>");
       /* An empty <div class="legend"> is not nothing: it is 6px of margin and a
@@ -2144,7 +2157,6 @@ function regRow(e) {
    to it.
 ------------------------------------------------------------------------- */
 function planCalHtml(picks) {
-  var narrow = window.innerWidth < 700;
   var all = [];
   var body = byDay(picks).map(function (g) {
     var pt = split(g.items);
@@ -2174,7 +2186,11 @@ function planCalHtml(picks) {
       h += '<div class="loosebar tight"><h4>Time not published <span>' + pt.loose.length +
                "</span></h4><div class=\"chips\">" + pt.loose.map(looseHtml).join("") + "</div></div>";
 
-    if (items.length && (narrow || tooDeep)) {
+    /* Only a day too deep to draw falls back to the agenda. It used to be that
+       and any screen under 700px, which made the Calendar button on a phone —
+       a button that has always been drawn there — produce something all but
+       indistinguishable from the List it was offered against. */
+    if (items.length && tooDeep) {
       h += agendaHtml(items, "nothing in your plan", PLAN);
     } else if (items.length) {
       h += '<div class="daygrid"><div class="gutcol"><div class="gut" style="height:' +
@@ -3025,6 +3041,7 @@ function writeHash() {
      friend was sending a different page from the one they were looking at. */
   if (ghosts) p += "&ghosts=1";
   if (asList) p += "&list=1";
+  else if (window.innerWidth < 700) p += "&list=0";
   if (planCal) p += "&plan=cal";
   if (q) p += "&q=" + encodeURIComponent(q);
   LASTHASH = "#" + p;
@@ -3050,10 +3067,12 @@ function readHash() {
   if (["day", "week", "clash", "plan", "reg"].indexOf(p.view) >= 0) view = p.view;
   q = p.q || "";
   ghosts = p.ghosts === "1";
-  asList = ghosts || p.list === "1";
+  /* Which form the day is read in. A phone opens on the agenda unless the link
+     says otherwise, which is why writeHash() spells out list=0 there: without it
+     a student who switched to the clock got the agenda back on every reload. */
+  asList = ghosts || p.list === "1" ||
+           (!("list" in p) && window.innerWidth < 700);
   planCal = p.plan === "cal";
-  /* a week grid is no use on a phone; the clash list reads fine there */
-  if (window.innerWidth < 900 && view === "week") view = "day";
   if (p.day) { day = p.day; if (p.view !== "week") view = "day"; }
   // Land on today if Laurier publishes anything for today; otherwise on the next
   // day that actually has something on the clock, so the first screen is a
