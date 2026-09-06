@@ -2003,25 +2003,11 @@ function dayHtml(list, keys) {
   var tight = lanes > MAX_LANES;
   var listNow = asList || narrow;
 
-  /* The board opens on the busiest day ahead, so it points at where the run
-     starts. That sentence is only true until the run does start: from the second
-     morning onward the next day with events on it is not the beginning of
-     anything, and the week this page exists for is exactly the week it would be
-     saying so. The label follows the clock rather than going quietly false. */
-  var dated = keys.filter(function (k) { return k !== "TBA"; });
-  var begun = dated.length > 0 && dated[0] < NOW;
-  var firstK = begun ? dated.filter(function (k) { return k >= NOW; })[0] : dated[0];
-  var away = firstK && firstK !== day;
-  var fdt = away ? new Date(firstK + "T00:00:00") : null;
-
   var h = '<div class="dayhead"><div class="dayin">' +
     '<button class="step" data-step="-1"' + (i <= 0 ? " disabled" : "") + ' aria-label="Previous day">‹</button>' +
     '<div class="dtitle"><h2>' + (undated ? "Undated" : DOW[dt.getDay()] + " " + dt.getDate() + " " + MON[dt.getMonth()] + " " + dt.getFullYear()) + "</h2>" +
-    "<p>" + todays.length + " event" + (todays.length === 1 ? "" : "s") +
-    (parts.loose.length ? " · " + parts.loose.length + " without a clock time" : "") + "</p>" +
-    (away ? '<p class="peak">' + (begun ? "Next up" : "Orientation starts on") + " " +
-      '<button class="peakbtn" data-day="' + firstK + '">' + DOW[fdt.getDay()] + " " +
-      fdt.getDate() + " " + MON[fdt.getMonth()] + " ›</button></p>" : "") + "</div>" +
+    "<p>" + todays.length + " event" + (todays.length === 1 ? "" : "s") + "</p>" +
+    "</div>" +
     '<button class="step" data-step="1"' + (i >= keys.length - 1 ? " disabled" : "") + ' aria-label="Next day">›</button>' +
     "</div>" + (function () {
       /* The list reads the same events with the same edges, so the key holds in
@@ -2768,7 +2754,7 @@ function wireBlocks() {
       if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openSheet(+n.dataset.id); }
     };
   });
-  [].slice.call(document.querySelectorAll(".dhead[data-day], .smore[data-day], .peakbtn[data-day], .wkday[data-day], .clwhen[data-day]")).forEach(function (b) {
+  [].slice.call(document.querySelectorAll(".dhead[data-day], .smore[data-day], .wkday[data-day], .clwhen[data-day]")).forEach(function (b) {
     b.onclick = function (ev) { ev.stopPropagation(); day = b.dataset.day; view = "day"; redraw(); };
   });
   var mb = document.querySelector("[data-mode]");

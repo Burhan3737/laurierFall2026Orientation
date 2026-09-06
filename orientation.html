@@ -58,12 +58,6 @@ a{color:var(--purple)}
   font-size:11px;font-weight:700;letter-spacing:.19em;text-transform:uppercase;
   font-stretch:88%;color:#fff;
 }
-.crest-o{
-  font-size:11px;font-weight:600;letter-spacing:.19em;text-transform:uppercase;
-  color:var(--gold);font-stretch:88%;
-}
-.crest-o::before{content:"";display:inline-block;width:22px;height:1px;background:var(--gold);
-  vertical-align:.28em;margin-right:10px}
 .mast h1{
   font-size:clamp(26px,3.2vw,38px);line-height:.98;font-weight:800;font-stretch:78%;
   text-transform:uppercase;letter-spacing:-.005em;
@@ -230,9 +224,12 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 }
 .step:hover:not(:disabled){background:var(--purple);color:#fff}
 .step:disabled{border-color:var(--line-h);color:#5F5872;cursor:default}
-.dtitle{flex:1;min-width:0}
+/* One line, so the date sits on the arrows' own line instead of riding above a
+   second row of text while the buttons centre on the pair. Baseline, not centre:
+   the count should sit on the date's baseline, not on the middle of its cap. */
+.dtitle{flex:1;min-width:0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .dtitle h2{font-size:clamp(20px,2.9vw,29px);font-weight:800;font-stretch:84%;line-height:1.05}
-.dtitle p{margin-top:5px;font-size:13.5px;color:var(--meta)}
+.dtitle p{font-size:13.5px;color:var(--meta)}
 .clashn{color:var(--gold-d);font-weight:700}
 
 /* ---- untimed events ---------------------------------------------------- */
@@ -481,12 +478,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   color:var(--purple);border-bottom:2px solid var(--gold);padding-bottom:2px;
 }
 .modebtn:hover{border-bottom-color:var(--purple)}
-.peak{margin-top:4px;font-size:13px;color:var(--meta)}
-.peakbtn{
-  font-size:13px;font-weight:700;color:var(--purple);border-bottom:2px solid var(--gold);
-  padding-bottom:1px;
-}
-.peakbtn:hover{border-bottom-color:var(--purple)}
 .sdesc p + p{margin-top:.7em}
 
 /* ---- the whole run: one row per day, time left to right ---------------- */
@@ -710,7 +701,7 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
    the masthead, which scrolls away the moment a student starts reading their week.
 
    Drawn in the page's own link idiom — purple on the paper with a gold rule
-   beneath, hovering to purple, the same as the "Next up" control — because a
+   beneath, hovering to purple, the same as the other inline controls — because a
    credit that is a link should look like the other links and not like a badge.
    The rule sits under the word alone, so the logo is not underlined. Two links,
    one per profile, each named: hanging both off the name would have meant linking
@@ -1153,9 +1144,8 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   <div class="mastin">
     <div class="crest">
       <span class="crest-w">Wilfrid Laurier University</span>
-      <span class="crest-o">Orientation</span>
     </div>
-    <h1>The Timetable</h1>
+    <h1>Orientation</h1>
     <p class="standfirst">Every published orientation event, laid out on the clock.</p>
   </div>
 </header>
@@ -3217,25 +3207,11 @@ function dayHtml(list, keys) {
   var tight = lanes > MAX_LANES;
   var listNow = asList || narrow;
 
-  /* The board opens on the busiest day ahead, so it points at where the run
-     starts. That sentence is only true until the run does start: from the second
-     morning onward the next day with events on it is not the beginning of
-     anything, and the week this page exists for is exactly the week it would be
-     saying so. The label follows the clock rather than going quietly false. */
-  var dated = keys.filter(function (k) { return k !== "TBA"; });
-  var begun = dated.length > 0 && dated[0] < NOW;
-  var firstK = begun ? dated.filter(function (k) { return k >= NOW; })[0] : dated[0];
-  var away = firstK && firstK !== day;
-  var fdt = away ? new Date(firstK + "T00:00:00") : null;
-
   var h = '<div class="dayhead"><div class="dayin">' +
     '<button class="step" data-step="-1"' + (i <= 0 ? " disabled" : "") + ' aria-label="Previous day">‹</button>' +
     '<div class="dtitle"><h2>' + (undated ? "Undated" : DOW[dt.getDay()] + " " + dt.getDate() + " " + MON[dt.getMonth()] + " " + dt.getFullYear()) + "</h2>" +
-    "<p>" + todays.length + " event" + (todays.length === 1 ? "" : "s") +
-    (parts.loose.length ? " · " + parts.loose.length + " without a clock time" : "") + "</p>" +
-    (away ? '<p class="peak">' + (begun ? "Next up" : "Orientation starts on") + " " +
-      '<button class="peakbtn" data-day="' + firstK + '">' + DOW[fdt.getDay()] + " " +
-      fdt.getDate() + " " + MON[fdt.getMonth()] + " ›</button></p>" : "") + "</div>" +
+    "<p>" + todays.length + " event" + (todays.length === 1 ? "" : "s") + "</p>" +
+    "</div>" +
     '<button class="step" data-step="1"' + (i >= keys.length - 1 ? " disabled" : "") + ' aria-label="Next day">›</button>' +
     "</div>" + (function () {
       /* The list reads the same events with the same edges, so the key holds in
@@ -3982,7 +3958,7 @@ function wireBlocks() {
       if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openSheet(+n.dataset.id); }
     };
   });
-  [].slice.call(document.querySelectorAll(".dhead[data-day], .smore[data-day], .peakbtn[data-day], .wkday[data-day], .clwhen[data-day]")).forEach(function (b) {
+  [].slice.call(document.querySelectorAll(".dhead[data-day], .smore[data-day], .wkday[data-day], .clwhen[data-day]")).forEach(function (b) {
     b.onclick = function (ev) { ev.stopPropagation(); day = b.dataset.day; view = "day"; redraw(); };
   });
   var mb = document.querySelector("[data-mode]");

@@ -42,12 +42,6 @@ a{color:var(--purple)}
   font-size:11px;font-weight:700;letter-spacing:.19em;text-transform:uppercase;
   font-stretch:88%;color:#fff;
 }
-.crest-o{
-  font-size:11px;font-weight:600;letter-spacing:.19em;text-transform:uppercase;
-  color:var(--gold);font-stretch:88%;
-}
-.crest-o::before{content:"";display:inline-block;width:22px;height:1px;background:var(--gold);
-  vertical-align:.28em;margin-right:10px}
 .mast h1{
   font-size:clamp(26px,3.2vw,38px);line-height:.98;font-weight:800;font-stretch:78%;
   text-transform:uppercase;letter-spacing:-.005em;
@@ -214,9 +208,12 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 }
 .step:hover:not(:disabled){background:var(--purple);color:#fff}
 .step:disabled{border-color:var(--line-h);color:#5F5872;cursor:default}
-.dtitle{flex:1;min-width:0}
+/* One line, so the date sits on the arrows' own line instead of riding above a
+   second row of text while the buttons centre on the pair. Baseline, not centre:
+   the count should sit on the date's baseline, not on the middle of its cap. */
+.dtitle{flex:1;min-width:0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .dtitle h2{font-size:clamp(20px,2.9vw,29px);font-weight:800;font-stretch:84%;line-height:1.05}
-.dtitle p{margin-top:5px;font-size:13.5px;color:var(--meta)}
+.dtitle p{font-size:13.5px;color:var(--meta)}
 .clashn{color:var(--gold-d);font-weight:700}
 
 /* ---- untimed events ---------------------------------------------------- */
@@ -465,12 +462,6 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
   color:var(--purple);border-bottom:2px solid var(--gold);padding-bottom:2px;
 }
 .modebtn:hover{border-bottom-color:var(--purple)}
-.peak{margin-top:4px;font-size:13px;color:var(--meta)}
-.peakbtn{
-  font-size:13px;font-weight:700;color:var(--purple);border-bottom:2px solid var(--gold);
-  padding-bottom:1px;
-}
-.peakbtn:hover{border-bottom-color:var(--purple)}
 .sdesc p + p{margin-top:.7em}
 
 /* ---- the whole run: one row per day, time left to right ---------------- */
@@ -694,7 +685,7 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
    the masthead, which scrolls away the moment a student starts reading their week.
 
    Drawn in the page's own link idiom — purple on the paper with a gold rule
-   beneath, hovering to purple, the same as the "Next up" control — because a
+   beneath, hovering to purple, the same as the other inline controls — because a
    credit that is a link should look like the other links and not like a badge.
    The rule sits under the word alone, so the logo is not underlined. Two links,
    one per profile, each named: hanging both off the name would have meant linking

@@ -791,3 +791,32 @@ collision otherwise draws no key at all, and a reader stepping across the run wa
 legend appear and vanish with no rule they could see - a defect reported from the page,
 not invented. clashcheck enforces it, with a negative test. Cutting it is a contract
 change, not a copy edit, and was left for a decision rather than taken as one.
+
+## The masthead, the day heading, and a legend that was asked to stay
+
+"The Timetable" was a name for the page rather than a name for the thing it lists. The
+masthead now reads Wilfrid Laurier University / Orientation, and the gold "Orientation"
+chip that used to sit beside the university name went with the change, so the word appears
+once instead of twice within forty pixels.
+
+The day heading sat above the arrows rather than on their line. `.dtitle` was a block two
+lines tall - date over count - inside a flex row set to `align-items:center`, so the
+buttons centred on the pair and the date rode above them. It is a baseline-aligned flex
+row itself now: the count sits on the date's baseline and the whole heading is the one
+line the arrows centre on.
+
+"Next up 9 Sept" is gone from the day header. It was a real control - a button that
+jumped to the next day carrying events - so the removal costs a shortcut, not only a
+sentence; the arrows and the day rail still reach the same place. Its variant for a reader
+arriving before the run, "Orientation starts on", went with it, along with four variables
+of date arithmetic, its stylesheet rules and its entry in the click-handler selector. The
+count of untimed events beside the day total went too; those events are still listed under
+"Time not published" with their own count.
+
+**The legend key was reviewed and kept.** "an ordinary event on your board" is the most
+self-describing string left on the page, and it stays, because the question was measured
+rather than argued: across six days of the undergraduate Waterloo board, three draw no
+clash and no ghost. Without that key `legendKeys()` returns an empty string on those days
+and the caller renders no legend element at all, so the strip would vanish on half the
+run and reappear on the other half. Keeping it also leaves clashcheck's rule - a key must
+name every state its board draws - intact, with its negative test still biting.
