@@ -507,8 +507,13 @@ def test_print(picks, chosen):
         if not ok(txt is not None, "Chrome printed an empty-plan %s PDF" % mode):
             continue
         check_one_print(txt, "empty plan as a " + mode, board_titles, [], mode, False)
-        ok("this is not a chosen schedule" in re.sub(r"\s+", " ", txt),
-           "empty plan as a %s: it says plainly that it is not a plan" % mode)
+        # The sheet used to say "this is not a chosen schedule" in its opening
+        # paragraph. That sentence is gone; the distinction is carried by the H1
+        # alone now, which check_one_print asserts above. Assert the other
+        # direction here so nothing can quietly start claiming to be a plan.
+        ok("MY ORIENTATION SCHEDULE" not in txt.upper()
+           and "I ticked" not in re.sub(r"\s+", " ", txt),
+           "empty plan as a %s: it does not claim to be a chosen plan" % mode)
 
 
 def test_print_is_the_same_from_any_view(picks, chosen):

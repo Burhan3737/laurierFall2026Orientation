@@ -643,3 +643,151 @@ passing because of the defect.
 The auditor brief gained a standing section naming this: one rule written down twice is
 this project's recurring defect, with the known copies listed.
 
+
+## A credit that had to look like a link
+
+The page had no author on it. Adding one took eight passes, and every pass failed on
+the same axis: it was drawn as an ornament rather than as a link.
+
+It began in the masthead, gold on the deep purple, a small square mark standing in for
+the word LinkedIn. That is where a credit conventionally goes and it is the wrong place
+here: the masthead scrolls away the moment a student picks a day, so the only people who
+ever saw it were people who had not started reading yet. It moved to the end of the
+control row, which stays.
+
+Then the shape. Rounded, when nothing else on this page is; a filled block, when
+everything else that can be clicked is a word with a gold rule under it. A glow was
+tried and dropped. What actually made it unclickable was smaller than any of that: the
+name was plain text and the two marks beside it were the links, so the part that looked
+least clickable was the only part that was. It now uses the page's own link idiom -
+purple on the paper, gold rule beneath, hovering to purple, the same as the "Next up"
+control.
+
+Two profiles, one person. Hanging both off the name would have meant choosing one of two
+equal profiles to be the destination, and reaching the same person twice by two routes
+that look identical. They are named instead, each with its own mark: **Built by Burhan**
+followed by LinkedIn and Instagram, each a link that says where it goes.
+
+The alignment took two goes for one reason worth writing down. `.by-nav` sits in a flex
+row, so it stretched to the row's full height, and baseline alignment *within* it then
+placed its lettering at the top of that tall box - correct internally, and visibly off
+the line the button labels and the search placeholder share. `align-self:center` on the
+item fixed the outer box; `align-items:baseline` inside it keeps the underlined names
+level with the un-underlined one, whose box is 3px shorter. Measured: buttons, search and
+the LinkedIn label all centre at 343.9px, the name at 342.4px, which is the missing
+underline and not a misalignment.
+
+The footer credit was removed - one place is enough - along with three more lines of the
+page describing itself: "what ticking or unticking changes", "Every event links back to
+the exact section of the page it came from", and "not affiliated with Wilfrid Laurier
+University".
+
+## To register stops explaining itself, and loses a second gold rule
+
+Four more passages of the page talking about itself are gone: the tally under "These
+events, one by one" counting how many carried their own link and how many were ticked;
+the note saying none of the orientation-wide banners was printed on your level's
+schedule; the paragraph explaining that Laurier prints its banner at the top of a page
+rather than against any one event; and the footer's "Laurier updates these schedules
+continuously". The reconfirm-before-travelling caution stays - it tells a student to do
+something, rather than telling them how the page was made.
+
+The extra gold rule was real and had a precise cause. `.regwide` draws the section with a
+4px gold left border. `li.regmine` - the banner printed on your own level's schedule -
+added a 3px gold inset bar 20px further in, so the two ran parallel. Graduate looked right
+only because its one banner was `regother`. With a single banner in the list the bar
+distinguished it from nothing while doubling the rule beside it, so it became
+`:not(:only-child)` - and then, once the filter below landed, went entirely.
+
+**A probe that was reading the wrong board.** The first measurement drove the page with
+`level=bachelor of education`. The token is `bachelor-of-education`; an unrecognised level
+falls back to undergraduate, so that row was the undergraduate board wearing a different
+label, and it agreed with the undergraduate row because it *was* the undergraduate row.
+The conclusion happened to survive - B.Ed has the same defect - but the evidence for it
+did not exist. The probe now prints `sel.level` back out with every reading, so a fallback
+cannot pass for a measurement again.
+
+### Banners from other levels' schedules are not shown at all
+
+Removing the "None of these was printed on a Graduate schedule" note took away the only
+thing telling a graduate student that the Register Now! under "Orientation itself" was
+not theirs. It was Laurier's Bachelor of Education banner, pointing at the undergraduate
+form, on the board because one graduate-visible event is published on that page.
+
+The fix is a filter, not a sentence: `pageRegGroups()` now keeps only banners printed on
+the student's own level's schedule. Put there rather than in the renderer because three
+callers read it - the screen, the printed booking checklist and the printed schedule -
+and this project's recurring defect is one rule written down twice.
+
+Matching moved from `indexOf` to a whole-word test. `"Waterloo Undergraduate Schedule"`
+must not read as a Graduate page, and case alone was carrying that: the level words are
+capitalised and "Undergraduate" holds a lowercase "graduate". That was thin enough while
+`mine` only decided sort order. It now decides what is shown.
+
+**And the first version of the filter deleted a registration.** Written to read the page
+title alone, it kept only banners on pages whose *titles* name a level - which is not
+where Laurier always says who a registration is for. The International and Exchange
+schedule is titled for no level and carries two banners, "Register Now! (undergraduate)"
+and "Register Now! (graduate)", and a sweep of the data for any other route to
+`graduate.html#orientation-details` returned exactly one hit: that banner. Laurier prints
+no registration on the Graduate schedule itself, so reading the heading rather than the
+label would have hidden graduate registration from every student on the board.
+
+The rule now asks the banner's own label first and the page title only if the label names
+no level - the same "read the event's own facts, not the heading above it" this project
+has already had to learn three times. Whole words and case-blind, so "(undergraduate)" is
+never read as a graduate label.
+
+Measured across six selections, with the level read back off the page: undergraduate gets
+the Waterloo Undergraduate banner; Bachelor of Education gets its own; graduate alone gets
+nothing; graduate with International and Exchange ticked gets "Register Now! (graduate)";
+undergraduate with the same stream gets its own plus the International undergraduate one
+and never the graduate one; and the Indigenous SEEDs banner appears in no wide section,
+because it names no level - it is reachable where it belongs, on the six SEEDs events
+whose accordion section carries it.
+
+Every banner on screen is now the reader's own, so the `regmine`/`regother` split, its
+gold bar and both "the schedule for your level" suffixes were dead and are gone, along
+with the lede under the heading. The second section, "These events, one by one", is now
+"Events to book" - it pairs with "Orientation itself", says what the list is for, and
+still reads correctly on a graduate board, where it is the only section on the page.
+
+## The page stops explaining itself
+
+A sweep of every rendered string in every view and state - screen, both printed
+documents, the empty variants, and the .ics a student downloads - turned up 51 passages
+of the page describing itself. Forty were cut or trimmed. The list is worth keeping,
+because the pattern is one thing repeated: a rule the code applies, restated in prose to
+a reader who cannot act on it.
+
+The heaviest concentration was on paper, which is where nobody had been looking. Two
+printed footers each carried a self-naming provenance sentence plus both phrases already
+deleted from the screen. The printed booking checklist opened with the exact sentence
+deleted from To register a round earlier - the screen was cleaned and its twin on paper
+was not. Every printout began by explaining what kind of document it was, above an H1
+that already said so.
+
+Cuts that would have destroyed a signal were made as trims instead: a drop-in row keeps
+"Open most of the day" and loses only the rule after it; a day's shared citation became
+"Source: <url>" rather than vanishing, because the address is provenance and only the
+sentence around it was narration; the .ics keeps Laurier's "publishes no usable time,
+only 'Check back for details'" and loses "Entered as all-day."
+
+Removing prose left code behind it, and that went too: the search-note's description-only
+counter, the clash view's event tally, two map-lookups whose only use was the caption
+saying a map could not answer, and six CSS rules for classes nothing emits any more.
+
+**A gate asserted one of the deleted sentences.** plus_check required the empty-plan
+printout to contain "this is not a chosen schedule". The contract behind it - a board
+printed because nothing was ticked must not read as a schedule somebody chose - is real,
+and it survives in the H1, which the same gate checks two lines earlier. The assertion was
+inverted rather than deleted: the sheet must not say "My orientation schedule" or "I
+ticked". The output proves it discriminates - the plan printouts do contain that heading
+and the empty ones do not.
+
+**One finding was refused.** "an ordinary event on your board" is the legend's third key,
+and it reads as pure self-description. It exists because a day holding one event and no
+collision otherwise draws no key at all, and a reader stepping across the run watched the
+legend appear and vanish with no rule they could see - a defect reported from the page,
+not invented. clashcheck enforces it, with a negative test. Cutting it is a contract
+change, not a copy edit, and was left for a decision rather than taken as one.

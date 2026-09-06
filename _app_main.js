@@ -451,9 +451,30 @@ function needsReg(e) { return regLinksOf(e).length > 0; }
 
 var LEVELWORD = { undergraduate: "Undergraduate", graduate: "Graduate",
                   "bachelor-of-education": "Bachelor of Education" };
+/* Whole words, not substrings, and case-blind, so "(undergraduate)" is never read
+   as a graduate label and "Waterloo Undergraduate Schedule" is never read as a
+   Graduate page. Case alone would have carried this — the level words are
+   capitalised and "Undergraduate" holds a lowercase "graduate" — which is too
+   thin a thread for a rule that decides what is shown rather than what sorts first. */
+function namesLevel(text, lvl) {
+  var w = LEVELWORD[lvl];
+  return !!w && new RegExp("(^|[^A-Za-z])" + w + "([^A-Za-z]|$)", "i").test(text || "");
+}
+/* Whether an orientation-wide registration is this student's. The banner's own
+   label is asked first and the page title only after it: Laurier prints both
+   "Register Now! (undergraduate)" and "Register Now! (graduate)" on the
+   International and Exchange schedule, whose title names no level, and the
+   graduate one is the only route to graduate registration anywhere in the data.
+   Reading the heading alone would have hidden it from every student. */
+function ownLevel(g) {
+  var named = null;
+  for (var k in LEVELWORD) if (namesLevel(g.text, k)) { named = k; break; }
+  if (named) return named === sel.level;
+  return namesLevel(g.pages.join(" "), sel.level);
+}
 /* The orientation-wide registrations reachable from a set of events, one entry
    per link, each naming the schedules it was printed on and how many events
-   carry it. Sorted so the schedule matching the student's own level leads. */
+   carry it — kept to the ones printed on this student's own level's schedule. */
 function pageRegGroups(list) {
   var byHref = {}, out = [];
   list.forEach(function (e) {
@@ -468,12 +489,16 @@ function pageRegGroups(list) {
       if (g.pages.indexOf(page) < 0) g.pages.push(page);
     });
   });
-  var word = LEVELWORD[sel.level] || "";
-  out.forEach(function (g) {
-    g.pages.sort();
-    g.mine = word ? g.pages.some(function (t) { return t.indexOf(word) >= 0; }) : false;
-  });
-  return out.sort(function (a, b) { return (b.mine ? 1 : 0) - (a.mine ? 1 : 0) || b.n - a.n; });
+  out.forEach(function (g) { g.pages.sort(); g.mine = ownLevel(g); });
+  /* Only the registration meant for this student's level. A board draws events from
+     other levels' pages — one graduate-visible event is published on the Bachelor
+     of Education schedule — and every such page carries its own "Register Now!".
+     Under the heading "Orientation itself" those read as the next thing to do, and
+     one of them sent a graduate student to the undergraduate form. Where Laurier
+     names no registration for a level the section is absent, which is the truth,
+     rather than filled with somebody else's. */
+  if (LEVELWORD[sel.level]) out = out.filter(function (g) { return g.mine; });
+  return out.sort(function (a, b) { return b.n - a.n; });
 }
 
 /* ---- where on earth is LH1001? -----------------------------------------
@@ -758,7 +783,7 @@ function icsBody(e) {
   if (e.c) bits.push("Cost: " + e.c);
   if (!parseWhen(e.n)) {
     bits.push("Laurier publishes no usable time for this event" +
-      (e.n ? ', only "' + e.n + '". Entered as all-day.' : ". Entered as all-day."));
+      (e.n ? ', only "' + e.n + '".' : "."));
   } else if (e.n) {
     bits.push("Published time: " + stripLead(e.n, e.d));
   }
@@ -1058,16 +1083,15 @@ function drawIdbar() {
   }
   var shown = META.streams.filter(function (t) { return live[t]; });
   if (shown.length) {
-    extras += '<div class="idq idq-wide"><span class="idlab">Also me ' +
-      '<span class="idhint">\u2014 what ticking or unticking changes</span></span><div class="ticks">' +
+    extras += '<div class="idq idq-wide"><span class="idlab">Also me</span>' +
+      '<div class="ticks">' +
       shown.map(function (t) {
         var on = sel.streams.indexOf(t) >= 0;
         var alt = on ? sel.streams.filter(function (x) { return x !== t; }) : sel.streams.concat([t]);
         var d = countExact({ level: sel.level, campus: sel.campus, term: sel.term,
                              streams: alt, program: sel.program }) - n;
         return '<button class="tick' + (on ? " on" : "") + '" data-k="stream" data-v="' + esc(t) +
-               '" aria-pressed="' + on + '" title="' +
-               (on ? "unticking removes " + (-d) : "ticking adds " + d) + ' events">' +
+               '" aria-pressed="' + on + '">' +
                esc(streamLabel(t)) + '<span class="tickn">' + (d > 0 ? "+" + d : String(d)) +
                "</span></button>";
       }).join("") + "</div></div>";
@@ -1185,18 +1209,13 @@ function drawNav() {
        'aria-label="Search the board by title, venue, host or description" ' +
        'placeholder="Search title, venue, host" value="' + esc(q) + '">' +
        (q ? '<button class="qclr" id="qclr">clear</button>' : "") +
-       "</div></div>";
+       "</div>" + credit() + "</div>";
   if (q) {
     var onBoard = list.filter(function (e) { return ghosts || assess(e).ok; });
     var shown = onBoard.length;
-    var deep = onBoard.filter(descOnly).length;
     var whole = onePerEvent(sourcePool()).length;
     h += '<p class="qnote">Search &ldquo;' + esc(q) + '&rdquo; — <b>' + shown +
-      "</b> of your " + whole + " events match on title, venue, host, what it is " +
-      "part of, or Laurier&rsquo;s own description" +
-      (deep ? "; <b>" + deep + "</b> of them only in the description" : "") + ". " +
-      "It narrows what is drawn; it does not change what you are eligible for." +
-      (view === "plan" ? " Your plan below is not filtered by it." : "") + "</p>";
+      "</b> of your " + whole + " events match.</p>";
   }
   /* My plan and To register carry their own day headings; the density rail
      under them is 190px of a phone screen restating what is directly below. */
@@ -1539,6 +1558,26 @@ function layoutModel(d) {
 }
 window.layoutModel = layoutModel;
 
+
+
+/* Who made this. Drawn at the end of the control row; .by-nav in the stylesheet
+   carries why it is shaped the way it is. Worth recording here: an earlier version
+   left the name as plain text and hung the links off two small marks beside it, so
+   the part that looked least clickable was the only part that was. */
+var MK_LI = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>';
+var MK_IG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.43.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23a3.7 3.7 0 0 1-.9 1.38c-.42.42-.82.68-1.38.9-.43.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.43-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.43-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.31-1.46.72-2.13 1.38A5.9 5.9 0 0 0 .63 4.14C.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.72 1.46 1.38 2.13a5.9 5.9 0 0 0 2.13 1.38c.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56a5.9 5.9 0 0 0 2.13-1.38 5.9 5.9 0 0 0 1.38-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.9 5.9 0 0 0-1.38-2.13A5.9 5.9 0 0 0 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0z"/>' +
+            '<path d="M12 5.84A6.16 6.16 0 1 0 12 18.16 6.16 6.16 0 0 0 12 5.84zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/><path d="M18.41 4.15a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>';
+function marks() {
+  return '<a class="mk" href="https://www.linkedin.com/in/mburhantahir" target="_blank" ' +
+      'rel="noopener">' + MK_LI + '<span class="lbl">LinkedIn</span></a>' +
+    '<a class="mk" href="https://www.instagram.com/mburhantahir" target="_blank" ' +
+      'rel="noopener">' + MK_IG + '<span class="lbl">Instagram</span></a>';
+}
+function credit() {
+  return '<span class="by-nav"><span class="who">Built by Burhan</span>' +
+    marks() + "</span>";
+}
+
 /* ---- the board ---------------------------------------------------------- */
 var looseCarry = [];
 function drawBoard() {
@@ -1551,11 +1590,9 @@ function drawBoard() {
   } else if (!keys.length) {
     $("board").innerHTML = q
       ? '<div class="empty"><p>Nothing on your board matches &ldquo;' + esc(q) + '&rdquo;.</p>' +
-        "<p>The search reads the title, the venue, the host, what the event is part " +
-        "of, and Laurier&rsquo;s own description of it.</p>" +
         '<p><button class="pbtn" id="qclr2">Clear the search</button></p></div>'
       : '<div class="empty"><p>Laurier publishes nothing for this combination yet.</p>' +
-        "<p>Tick a stream above — some sessions only appear once you say they apply to you.</p></div>";
+        "<p>Tick a stream above.</p></div>";
   } else {
     $("board").innerHTML = view === "week" ? weekHtml(list, keys)
                         : view === "clash" ? clashHtml(list)
@@ -1673,17 +1710,10 @@ function clashClusters(list) {
 function clashHtml(list) {
   var groups = clashClusters(list);
   if (!groups.length) {
-    return '<div class="empty"><p>Nothing you can attend overlaps.</p>' +
-      "<p>Every event on your board runs at a time of its own.</p></div>";
+    return '<div class="empty"><p>Nothing you can attend overlaps.</p></div>';
   }
-  var caught = {};
-  groups.forEach(function (g) { g.items.forEach(function (it) { caught[it.ev.__i] = true; }); });
-  var n = Object.keys(caught).length;
   var h = '<div class="clashhead"><h2>' + groups.length + " moment" + (groups.length === 1 ? "" : "s") +
-    " where you have to choose</h2>" +
-    '<p class="lede">' + n + " of your " + list.length + " events are in one. Desks and fairs that stay " +
-    "open across the middle of the day are left out — they are not a choice you " +
-    "have to make.</p></div>";
+    " where you have to choose</h2></div>";
 
   h += '<div class="clashlist">' + groups.map(function (g) {
     var dt = new Date(g.day + "T00:00:00");
@@ -1743,7 +1773,6 @@ function weekHtml(list, keys) {
   });
   if (!all.length) {
     return '<div class="loosebar"><h3>Nothing on the clock <span>' + list.length + "</span></h3>" +
-      '<p class="lede">Laurier publishes no usable time for any of these, so there is no run to draw.</p>' +
       '<div class="chips">' + list.map(looseHtml).join("") + "</div></div>";
   }
   // how wide a lane actually is, so a bar too narrow to hold a title can be
@@ -1837,7 +1866,6 @@ function weekHtml(list, keys) {
     '<div class="wkaxis">' + ticks + "</div></div>" + body;
   if (looseCarry.length) {
     h += '<div class="loosebar"><h3>No clock time published <span>' + looseCarry.length + "</span></h3>" +
-      '<p class="lede">Laurier gives these a day but no usable time, or no date at all. They are listed rather than placed, because guessing would be worse.</p>' +
       '<div class="chips">' + looseCarry.map(function (p) {
         var k = p[0], e = p[1];
         var lab = k === "TBA" ? "Undated"
@@ -2139,10 +2167,7 @@ function planHtml() {
   var picks = planEvents();
   if (!picks.length) {
     return '<div class="empty planhead planempty"><h2>Your plan is empty</h2>' +
-      "<p>Tick an event anywhere on this page — on a day, inside a clash, or from its " +
-      "detail card — and it collects here.</p>" +
-      "<p>The plan is kept in this browser, on this device. Close the page and come back " +
-      "tomorrow and it is still here. Nothing is sent anywhere and Laurier is not told.</p>" +
+      "<p>Tick an event to collect it here.</p>" +
       '<p><button class="pbtn" data-view="day">Go and pick some events ›</button></p>' +
       /* Printing with nothing ticked produces the whole board, and which of the
          two forms it comes out in is decided by this switch. Hidden here, it was
@@ -2154,10 +2179,6 @@ function planHtml() {
           'aria-pressed="' + (!planCal) + '">List</button>' +
         '<button class="pv' + (planCal ? " on" : "") + '" data-planview="cal" ' +
           'aria-pressed="' + planCal + '">Calendar</button>' +
-        '<span class="pvnote">With nothing ticked there is no plan to print, so ' +
-          "Ctrl+P prints every event you may attend — as " +
-          (planCal ? "a calendar of the whole board" : "a written list") +
-          ", headed as the board rather than as a schedule you chose.</span>" +
       "</div></div>";
   }
   var cm = clashMap(), t = icsTally(picks);
@@ -2167,16 +2188,13 @@ function planHtml() {
 
   var h = '<div class="planhead"><div class="planin">' +
     "<h2>My plan</h2>" +
-    '<p class="lede"><b>' + picks.length + "</b> event" + (picks.length === 1 ? "" : "s") +
-    " ticked" +
-    (nClash ? ", <b class=\"warnn\">" + nClash + " of them overlapping</b>"
-            : drop.length ? ", and no two timed sessions overlap" : ", nothing overlapping") +
-    ".</p>" +
+    /* The count of what you ticked is on the screen already, in the list below it.
+       Only the overlap is worth saying, and only when there is one. */
+    (nClash ? '<p class="lede"><b class="warnn">' + nClash + "</b> of your picks overlap.</p>"
+            : "") +
     (drop.length ? '<p class="dropnote"><b>' + drop.length + "</b> of your picks " +
       (drop.length === 1 ? "is a session that stays" : "are sessions that stay") +
-      " open across the middle of the day — a desk, a fair, a drop-in. This page never " +
-      "counts those as clashing with anything, here or in the Clashes lens, because you can " +
-      "walk up to them whenever suits you. They are marked below; nothing else is hidden.</p>"
+      " open across the middle of the day — a desk, a fair, a drop-in.</p>"
       : "") +
     lostNote() +
     /* How the plan is read on screen. Printing no longer follows it: a sheet of
@@ -2200,8 +2218,7 @@ function planHtml() {
        picks will be missing from it, so that alone is still said. */
     (t.none ? '<p class="acct"><b class="warnn">' + t.none + "</b> of your picks cannot go " +
       "into a calendar file — Laurier publishes no date for " +
-      (t.none === 1 ? "it" : "them") + ". " + (t.none === 1 ? "It is" : "They are") +
-      " listed below.</p>" : "") +
+      (t.none === 1 ? "it" : "them") + ".</p>" : "") +
     "</div></div>";
 
   h += planCal ? planCalHtml(picks) : '<div class="planlist">' + byDay(picks).map(function (g) {
@@ -2210,22 +2227,21 @@ function planHtml() {
       '<span class="pdayn">' + g.items.length + "</span></h3>" +
       g.items.map(function (e) {
         var hit = cm[dupKey(e)] || [], a = assess(e);
-        var m = mapFor(e), w = e.d ? parseWhen(e.n) : null;
+        var w = e.d ? parseWhen(e.n) : null;
         var isDrop = !!w && isDropIn(w);
         return '<article class="pl' + (hit.length ? " hit" : "") + (a.ok ? "" : " off") + '">' +
           '<div class="plt">' + esc(whenLabel(e)) +
             (!e.d ? '<span class="plnod">no date</span>' : "") + "</div>" +
           '<div class="plb"><h4>' + esc(title(e)) + "</h4>" +
             '<p class="plw">' + esc(e.w || (e.vr ? "Online" : "Venue not published")) +
-              mapLink(e) + (m ? "" : '<span class="nomap"> — nothing here a map can find</span>') +
+              mapLink(e) +
               (e.h ? ' <span class="pdot">·</span> ' + esc(e.h) : "") + "</p>" +
             (hit.length ? '<p class="plclash"><b>Overlaps</b> ' + hit.map(function (o) {
                 return esc(title(o)) + " (" + esc(whenLabel(o)) + ")";
               }).join("; ") + "</p>" : "") +
-            (isDrop ? '<p class="pldrop"><b>Open most of the day</b> — not counted as ' +
-              "clashing with anything above. Fit it in where it suits you.</p>" : "") +
+            (isDrop ? '<p class="pldrop"><b>Open most of the day</b></p>' : "") +
             (a.ok ? "" : '<p class="ploff">Not on your current board — ' + esc(a.reason) +
-              ". It stays in your plan; change the band above to see it.</p>") +
+              ".</p>") +
             regRow(e) +
             /* The controls belong beside the event they act on, not pinned to a
                far gutter with 900px of white between. Reading order matters too:
@@ -2244,8 +2260,7 @@ function planHtml() {
   if (offBoard.length)
     h += '<p class="planfoot">' + offBoard.length + " event" + (offBoard.length === 1 ? "" : "s") +
       " in your plan " + (offBoard.length === 1 ? "is" : "are") + " not on the board you are " +
-      "currently looking at. Nothing has been removed — the identity band decides what the " +
-      "board shows, and your plan outlives it.</p>";
+      "currently looking at.</p>";
   return h;
 }
 
@@ -2267,52 +2282,29 @@ function regHtml(list) {
   });
   own = sortRun(own);
   var wide = pageRegGroups(mine);
-  var done = own.filter(isDone).length;
 
-  var h = '<div class="reghead"><div class="planin"><h2>To register</h2>' +
-    '<p class="lede">What still needs booking before you turn up. Ticking something off is ' +
-    "kept in this browser, like your plan.</p></div></div>";
+  var h = '<div class="reghead"><div class="planin"><h2>To register</h2></div></div>';
 
   if (wide.length) {
     h += '<section class="regwide"><h3>Orientation itself</h3>' +
-      '<p class="lede">Laurier prints ' + (wide.length === 1 ? "this" : "these") +
-      " at the top of the schedule page" + (wide.length === 1 ? "" : "s") +
-      " rather than against any one event. " + (wide.length === 1 ? "It covers" : "They cover") +
-      " the whole orientation, so " + (wide.length === 1 ? "it is" : "they are") +
-      " listed once here instead of against each of the " +
-      wide.reduce(function (n, x) { return n + x.n; }, 0) + " events carrying " +
-      (wide.length === 1 ? "it" : "them") + ". Laurier gives them all the same words, so " +
-      "each is labelled with the schedule it was printed on.</p><ul class=\"reglist\">" +
+      '<ul class="reglist">' +
       wide.map(function (x) {
-        return '<li class="' + (x.mine ? "regmine" : "regother") + '">' +
+        return "<li>" +
           '<p class="regfrom">On Laurier&rsquo;s <b>' + esc(x.pages.join(" and ")) +
-            "</b>" + (x.mine ? " — the schedule for your level" : "") + "</p>" +
+            "</b></p>" +
           '<a class="lk primary" href="' + esc(x.href) + '" target="_blank" rel="noopener">' +
             esc(x.text) + " →</a>" +
           '<span class="regurl">' + esc(x.href) + "</span></li>";
       }).join("") + "</ul></section>";
-    if (!wide.some(function (x) { return x.mine; })) {
-      h = h.replace("</ul></section>",
-        '</ul><p class="regnone">None of these was printed on a ' +
-        esc(LEVELWORD[sel.level] || sel.level) + " schedule — Laurier does not repeat its " +
-        "own registration banner on every page, and the events on your board come from " +
-        "elsewhere. Its schedule pages are listed in full at the foot of this page.</p>" +
-        "</section>");
-    }
   }
 
   if (!own.length) {
     h += '<div class="empty"><p>No event on your board carries a registration or ticket link ' +
-      "of its own.</p><p>" + (wide.length ? "Only the orientation-wide registration above applies to you."
-        : "Nothing here needs booking.") + "</p></div>";
+      "of its own.</p></div>";
     return h;
   }
 
-  h += '<section class="regown"><h3>These events, one by one</h3>' +
-    '<p class="lede"><b>' + own.length + "</b> event" + (own.length === 1 ? "" : "s") +
-    " on your board " + (own.length === 1 ? "carries" : "carry") +
-    " a registration, RSVP or ticket link of " + (own.length === 1 ? "its" : "their") + " own. " +
-    "<b>" + done + "</b> ticked off.</p>" +
+  h += '<section class="regown"><h3>Events to book</h3>' +
     byDay(own).map(function (g) {
       return '<div class="rgday' + (g.k !== "TBA" && g.k < NOW ? " past" : "") + '">' +
         '<h4 class="pdayh">' + esc(dayLabel(g.k)) + "</h4>" +
@@ -2374,25 +2366,21 @@ function printRegHtml() {
   });
   own = sortRun(own);
   var wide = pageRegGroups(mine);
-  var done = own.filter(isDone).length;
 
   PRWHAT = "What I still have to book";
   var h = '<div class="prsheet"><header class="prhead">' +
     '<p class="prcrest">Wilfrid Laurier University · Orientation</p>' +
     "<h1>What I still have to book</h1>" +
     '<p class="prwho">' + esc(printWho()) + "</p>" +
-    '<p class="prwhat">' + own.length + " event" + (own.length === 1 ? "" : "s") +
-      " on my board " + (own.length === 1 ? "carries" : "carry") + " a registration, RSVP or " +
-      "ticket link of " + (own.length === 1 ? "its" : "their") + " own; " + done +
-      " already ticked off. Compiled from Laurier's published schedules on " + META.compiled + ".</p>" +
+    '<p class="prwhat">Compiled from Laurier&rsquo;s published schedules on ' +
+      esc(META.compiled) + ".</p>" +
     "</header>";
 
   if (wide.length) {
     h += '<section class="prreg"><h2>Register for orientation itself</h2>' +
       wide.map(function (x) {
         return '<p class="prurl"><b>' + esc(x.text) + "</b> — on Laurier&rsquo;s " +
-          esc(x.pages.join(" and ")) + (x.mine ? " (the schedule for your level)" : "") +
-          "<br>" + esc(x.href) + "</p>";
+          esc(x.pages.join(" and ")) + "<br>" + esc(x.href) + "</p>";
       }).join("") + "</section>";
   }
   if (!own.length) {
@@ -2419,9 +2407,7 @@ function printRegHtml() {
           "</div></div>";
       }).join("") + "</section>";
   }).join("");
-  h += '<footer class="prfoot"><p>Printed from the Laurier Orientation Event Finder, ' +
-    "compiled " + META.compiled + " from " + META.nSources + " published Laurier schedules. " +
-    "Laurier updates these continuously — reconfirm a deadline before relying on it.</p>" +
+  h += '<footer class="prfoot"><p>Reconfirm a deadline before relying on it.</p>' +
     "</footer></div>";
   return h;
 }
@@ -2536,8 +2522,7 @@ function printEntry(e, no, hit, common) {
      every one of them printed "Open to you" directly above a note saying it
      was not on the board you were looking at. A pick reaches paper whenever a
      stream it needs is not currently ticked, so this was not a corner case.
-     Laurier's own reason is the honest line, and the note below no longer
-     repeats it. */
+     Laurier's own reason is the honest line, and it is the only one printed. */
   bits.push(a.ok ? audienceLine(e) : a.reason);
   if (e.c) bits.push("Cost: " + e.c);
   return '<div class="prev">' +
@@ -2550,13 +2535,10 @@ function printEntry(e, no, hit, common) {
         esc(e.w || (e.vr ? "Online" : "Venue not published by Laurier")) +
         (m && m.tail ? " · " + esc(m.tail) : "") + "</p>" +
       '<p class="prm">' + esc(bits.join(" · ")) + "</p>" +
-      (a.ok ? "" : '<p class="proff"><b>Note:</b> not on the board you were ' +
-        "looking at.</p>") +
       (hit && hit.length ? '<p class="prc"><b>Overlaps:</b> ' + esc(hit.map(function (o) {
           return title(o) + " (" + whenLabel(o) + ")";
         }).join("; ")) + "</p>" : "") +
-      (isDrop ? '<p class="prc"><b>Open most of the day:</b> not counted as clashing ' +
-        "with anything above.</p>" : "") +
+      (isDrop ? '<p class="prc"><b>Open most of the day.</b></p>' : "") +
       regLinksOf(e).map(function (l) {
         return '<p class="prurl"><b>Register (' + esc(l.text) + ")</b><br>" +
           esc(l.href) + "</p>";
@@ -2586,14 +2568,10 @@ function printSheetHead(usingPlan, list) {
     '<p class="prcrest">Wilfrid Laurier University · Orientation</p>' +
     "<h1>" + (usingPlan ? "My orientation schedule" : "Everything I may attend") + "</h1>" +
     '<p class="prwho">' + esc(printWho()) + "</p>" +
-    '<p class="prwhat">' + (usingPlan
-      ? "The " + list.length + " event" + (list.length === 1 ? "" : "s") +
-        " I ticked, and nothing else — this is my plan, not the whole board."
-      : "Nothing is ticked, so this is not a chosen schedule: it is every event I am " +
-        "eligible for" + (q ? ' matching the search "' + esc(q) + '"' : "") + ", " +
-        list.length + " in all.") + " " +
-    " Read from Laurier’s published schedules on " + META.readOn.replace(/^on /, "") +
-    ".</p></header>";
+    '<p class="prwhat">' + list.length + " event" + (list.length === 1 ? "" : "s") +
+      (q ? ' matching the search "' + esc(q) + '"' : "") +
+      " · read from Laurier’s published schedules on " +
+      META.readOn.replace(/^on /, "") + ".</p></header>";
 }
 
 /* ---- the addresses a grid cannot carry ----------------------------------
@@ -2629,7 +2607,6 @@ function printAddresses(days) {
           esc(e.w || (e.vr ? "Online" : "Venue not published by Laurier")) +
           (m && m.tail ? " · " + esc(m.tail) : "") +
           "<br>" + esc(bits.join(" · ")) +
-          (a.ok ? "" : "<br>Not on the board I was looking at.") +
           regLinksOf(e).map(function (l) {
             return "<br>Register (" + esc(l.text) + "): " + esc(l.href);
           }).join("") +
@@ -2639,9 +2616,7 @@ function printAddresses(days) {
       }).join("") + "</section>";
   }).join("");
   return '<section class="praddr"><h2>Where each one is, and how to book it</h2>' +
-    '<p class="prlede">The numbers are the numbers in the boxes above. Every venue, ' +
-    "every registration and ticket address, and every citation a day heading did not " +
-    "already carry.</p>" + body + "</section>";
+    body + "</section>";
 }
 
 /* ---- the printed schedule -----------------------------------------------
@@ -2671,8 +2646,7 @@ function printHtml() {
     h += '<section class="prreg"><h2>Register for orientation itself</h2>' +
       wide.map(function (x) {
         return '<p class="prurl"><b>' + esc(x.text) + "</b> — on Laurier&rsquo;s " +
-          esc(x.pages.join(" and ")) + (x.mine ? " (the schedule for your level)" : "") +
-          "<br>" + esc(x.href) + "</p>";
+          esc(x.pages.join(" and ")) + "<br>" + esc(x.href) + "</p>";
       }).join("") + "</section>";
   }
 
@@ -2720,8 +2694,7 @@ function printHtml() {
 
     var head = '<section class="prday"><h2>' + esc(dayLabel(g.k)) + "</h2>" +
       printRunHead() +
-      (common ? '<p class="prdaycite">Every entry below is cited from ' +
-        esc(common) + "</p>" : "");
+      (common ? '<p class="prdaycite">Source: ' + esc(common) + "</p>" : "");
 
     if (parts.long.length) {
       head += '<p class="prallday"><b>Open most of the day</b> ' +
@@ -2769,11 +2742,8 @@ function printHtml() {
 
   h += printAddresses(appendix);
 
-  h += '<footer class="prfoot"><p>Printed from the Laurier Orientation Event Finder, ' +
-    "compiled " + META.compiled + " from " + META.nSources + " published Laurier schedules. " +
-    "Laurier updates these continuously — reconfirm before travelling to a venue. " +
-    "Eligibility shown here is an interpretation of each page's stated audience, not an " +
-    "official ruling.</p></footer></div>";
+  h += '<footer class="prfoot"><p>Reconfirm before travelling to a venue.</p>' +
+    "</footer></div>";
   return h;
 }
 
@@ -2881,12 +2851,9 @@ function openSheet(i) {
      days. Each day is its own entry so it lands on the right day of the board;
      without this the student who opens day two sees one isolated afternoon and
      no sign that the welcome started yesterday and continues tomorrow. */
-  row("More days", e.ro ? "Laurier publishes this welcome as one event running "
-      + esc(e.ro).replace(/\.$/, "") + ". Each of those days is on this board on its own."  : "");
-  var mp = mapFor(e);
+  row("More days", e.ro ? esc(e.ro).replace(/\.$/, "") : "");
   row("Where", e.w
-    ? esc(e.w) + mapLink(e) +
-      (mp ? "" : '<span class="nomap"> — nothing here a map can find</span>')
+    ? esc(e.w) + mapLink(e)
     : (e.vr ? "Online" : "Not published by Laurier"));
   row("Part of", esc(e.pt));
   row("Host", esc(e.h));
@@ -2894,7 +2861,7 @@ function openSheet(i) {
   row("Cost", esc(e.c));
   row("Stream", (e.tg || []).length ? esc((e.tg || []).join(", ")) : "");
   if (e.s && /Program and Faculty Welcomes/i.test(e.s))
-    row("Note", "This is a welcome for one specific program. Attend only the one matching your own.");
+    row("Note", "Attend only the welcome matching your own program.");
   row("Schedule", esc(e.lv === "all" ? "All levels" : e.lv) + " &middot; " +
       (e.vr ? "Online — open to all campuses" : esc((e.cp || []).join(", "))) + " &middot; " + esc(e.tm));
   Object.keys(e.si || {}).forEach(function (k) { row(k, esc(e.si[k])); });
@@ -2927,12 +2894,6 @@ function openSheet(i) {
         return { "no-date": "date", "no-time": "time", "no-venue": "venue" }[f] || f;
       }).join(", ") + ".</p>" : "";
 
-  /* Laurier publishes the same event on several of its schedule pages. It is one
-     event and it is shown once; every place it was published is named below, so
-     a student who found it somewhere else can still see where. */
-  var dupNote = src.length > 1 ? '<p class="dupnote">Laurier publishes this on <b>' +
-    src.length + " of its schedule pages</b>. It is one event, shown once — " +
-    "every page it appears on is listed at the foot of this card.</p>" : "";
 
   /* Where this event sits in its day, and what it runs into. This is the one
      thing a clock can say that a list cannot, so the sheet leads with it. */
@@ -2953,9 +2914,7 @@ function openSheet(i) {
           (100 * (x.s - lo) / w) + "%;width:" + Math.max(0.9, 100 * (x.e - x.s) / w) + '%" title="' +
           esc(clock(x.s) + " " + x.ev.t) + '"></span>';
       }).join("") + '</div><div class="trends"><span>' + clock(lo) + "</span><span>" +
-        clock(hi) + '</span></div><p class="trcap">Where this sits in ' +
-        DOW[new Date(e.d + "T00:00:00").getDay()] + "’s run: purple is this " +
-        "event, gold is what it collides with, grey is everything else that day.</p></div>";
+        clock(hi) + "</span></div></div>";
     }
   }
 
@@ -2982,7 +2941,7 @@ function openSheet(i) {
                '">Add to calendar (.ics)</button>'
              : '<span class="noics">No date published — this cannot go in a calendar</span>') +
       "</div>" +
-      dupNote + ribbon +
+      ribbon +
       '<dl class="facts">' + facts + "</dl>" +
       clashList + linkHtml +
       (e.x ? '<div class="sdesc">' + paras(e.x).map(function (t) {
@@ -2995,8 +2954,7 @@ function openSheet(i) {
           return '<span class="citeone"><a href="' + esc(o.u) + '" target="_blank" rel="noopener">' +
             esc(o.u) + "</a>" + (o.s ? "<em>" + esc(o.s) + "</em>" : "") + "</span>";
         }).join("") +
-        "Read " + META.readOn + ", including the venue, host and registration detail Laurier " +
-        "keeps hidden until you open an event.</p>" +
+        "Read " + META.readOn + ".</p>" +
     "</div>";
   $("sheet").hidden = false; $("scrim").hidden = false;
   document.body.classList.add("locked");
@@ -3100,9 +3058,7 @@ var LOSTPICKS = (function () {
 function lostNote() {
   if (!LOSTPICKS) return "";
   return '<p class="lostnote"><b>' + LOSTPICKS + "</b> event" + (LOSTPICKS === 1 ? "" : "s") +
-    " you ticked " + (LOSTPICKS === 1 ? "is" : "are") + " not in this version of the file. " +
-    "Laurier edits these schedules continuously; when a time or a venue changes, the tick " +
-    "no longer matches anything and cannot be shown. Nothing else in your plan is affected.</p>";
+    " you ticked " + (LOSTPICKS === 1 ? "is" : "are") + " not in this version of the file.</p>";
 }
 readHash();
 /* The hash is written here and nowhere else. Two toggles had been added over the
