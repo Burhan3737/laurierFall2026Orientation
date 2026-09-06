@@ -465,6 +465,12 @@ main{max-width:1440px;margin:0 auto;padding:0 26px 40px}
 @media (max-width:900px){
   .seg{flex-wrap:wrap;border:0;gap:0}
   .seg .segb{border:1px solid var(--purple);margin:0 -1px -1px 0}
+  /* On a wide screen the group's own border draws the right-hand edge, so the last
+     button drops its own to avoid a doubled line. Here the group has no border --
+     the buttons carry their own so they can wrap -- and that rule was still in
+     force, leaving Bachelor of Education and Milton with no closing edge. Width and
+     style only: the disabled state sets its own border-colour and must keep it. */
+  .seg .segb:last-child{border-right-width:1px;border-right-style:solid}
 }
 .modebtn{
   margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;

@@ -11,6 +11,7 @@ The no-argument invocation is the canonical build and its output is byte-for-byt
 stable; --css/--out only swap the stylesheet and the destination.
 """
 import json, io, os, re, datetime, subprocess, sys, argparse
+import urllib.parse
 
 _ap = argparse.ArgumentParser(description=__doc__)
 _ap.add_argument('--css', default='_style_main.css', help='stylesheet to inline')
@@ -202,25 +203,31 @@ else:
 # A student sends this to another student, and a link with no card attached looks
 # like nothing. The description is what the page is, not a pitch.
 #
-# The icon is a plain leaf, drawn here from two curves and a stem. It carries the
-# page's own colours and nothing of anyone's identity: no hawk, no crest, no
-# lettering that could be read as a wordmark. This is not Laurier's page, so it
-# must not wear Laurier's marks -- an icon that borrows them claims an authority
-# the footer explicitly disclaims, quite apart from being someone else's property.
-FAVICON = ("data:image/svg+xml,"
-           "%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E"
-           "%3Crect%20width='64'%20height='64'%20fill='%23210049'/%3E"
-           # Tilted, with a stem. Upright and symmetrical it read as an almond,
-           # not a leaf; the lean and the stalk are what make the shape legible.
-           # One vein, not five: at 16px -- the only size a tab ever shows -- four
-           # side veins closed up into a smudge.
-           "%3Cg%20transform='rotate(-25%2032%2032)'%3E"
-           "%3Cpath%20d='M32%2010c14%2013%2019%2028%200%2042C13%2038%2018%2023%2032%2010z'"
-           "%20fill='%23F2A900'/%3E"
-           "%3Cpath%20d='M32%2017v39'%20stroke='%23210049'%20stroke-width='3'"
-           "%20stroke-linecap='round'/%3E"
-           "%3C/g%3E"
-           "%3C/svg%3E")
+# The icon is the maple leaf of the Canadian flag, in the page's own colours. It
+# is deliberately not Laurier's: this is not Laurier's page -- the footer says so
+# -- and an icon carrying their hawk, their crest or even a bare "L" would claim
+# an authority the footer disclaims, quite apart from being their property. The
+# flag leaf is a national symbol and free to reproduce.
+#
+# Written as a path and encoded here rather than pasted in as an encoded blob, so
+# it can still be read and changed. The transform fits the path's own bounding box
+# (487.1, 110.0, 223.9 x 250.0, measured rather than assumed) into the tile with a
+# little air around it.
+LEAF_PATH = ("m 600,110 -19.7,36.8 c -2.2,4 -6.2,3.6 -10.2,1.6 l -14.3,-7.4 10.7,56.7 "
+             "c 2.2,10.4 -5,10.4 -8.6,5.9 l -24.9,-27.9 -4,14.2 c -0.5,1.9 -2.5,3.8 -5.6,3.3 "
+             "l -31.5,-6.6 8.3,30.1 c 1.8,6.7 3.2,9.5 -1.8,11.3 l -11.3,5.3 54.6,44.3 "
+             "c 5.4,4.2 3.6,5.5 1.7,11.5 l -4.8,15.7 51.6,-6 c 1.6,0 2.6,0.9 2.6,2.8 "
+             "l -2.2,58.4 h 15.9 l -1.2,-58.2 c 0,-1.9 0.9,-3 2.5,-3 l 51.7,6 -4.8,-15.7 "
+             "c -1.9,-6 -3.7,-7.3 1.7,-11.5 l 54.6,-44.3 -11.3,-5.3 c -5,-1.8 -3.6,-4.6 -1.8,-11.3 "
+             "l 8.3,-30.1 -31.5,6.6 c -3.1,0.5 -5.1,-1.4 -5.6,-3.3 l -4,-14.2 -24.9,27.9 "
+             "c -3.6,4.5 -10.8,4.5 -8.6,-5.9 l 10.7,-56.7 -14.3,7.4 c -4,2 -8,2.4 -10.2,-1.6 z")
+_LEAF_SVG = (
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
+    "<rect width='64' height='64' fill='#210049'/>"
+    "<g transform='translate(-97.39 -18.76) scale(0.216)'>"
+    "<path d='" + LEAF_PATH + "' fill='#F2A900'/></g></svg>")
+FAVICON = "data:image/svg+xml," + urllib.parse.quote(_LEAF_SVG, safe="=:/'<>")
+
 DESCRIPTION = ("Every published Wilfrid Laurier orientation event for Fall 2026, laid out "
                "on the clock. Say who you are and read your week by the hour, with the "
                "overlaps showing.")
